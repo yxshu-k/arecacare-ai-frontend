@@ -27,7 +27,7 @@ export const diseaseService = {
 
             // The 'api.js' Axios instance handles Authorization Bearer headers automatically,
             // but we MUST override the Content-Type manually for THIS request!
-            const response = await api.post('/api/disease/predict', formData, {
+            const response = await api.post('/predict', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
@@ -46,7 +46,7 @@ export const diseaseService = {
             if (error.response && error.response.data) {
                 throw new Error(error.response.data.detail || error.response.data.message || 'Image prediction failed.');
             }
-            throw new Error('Network error during prediction. Is the ML backend running?');
+            throw new Error(error.message || 'Network error during prediction. Is the ML backend running?');
         }
     }
 };

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import { colors } from '../theme/colors';
 import { requestCameraPermission } from '../services/permissionsService';
 import * as ImagePicker from 'expo-image-picker';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
 const { width, height } = Dimensions.get('window');
 
@@ -13,18 +14,14 @@ const { width, height } = Dimensions.get('window');
 // We will mock the camera view with a beautiful dark overlay.
 
 export default function ScanPlantScreen({ navigation }) {
-    const [hasPermission, setHasPermission] = useState(null);
-
-    useEffect(() => {
-        (async () => {
-            const granted = await requestCameraPermission();
-            setHasPermission(granted);
-        })();
-    }, []);
+    const [permission, requestPermission] = useCameraPermissions();
+    const [facing, setFacing] = useState('back');
+    const [flash, setFlash] = useState('off');
+    const cameraRef = React.useRef(null);
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: true,
             quality: 0.8,
         });
@@ -34,24 +31,32 @@ export default function ScanPlantScreen({ navigation }) {
         }
     };
 
-    const takePhoto = async () => {
-        const { status } = await ImagePicker.requestCameraPermissionsAsync();
-        if (status !== 'granted') {
-            alert('Sorry, we need camera permissions to make this work!');
-            return;
-        }
+    const toggleCameraFacing = () => {
+        setFacing(current => (current === 'back' ? 'front' : 'back'));
+    };
 
-        let result = await ImagePicker.launchCameraAsync({
-            allowsEditing: true,
-            quality: 0.8,
-        });
+    const toggleFlash = () => {
+        setFlash(current => (current === 'off' ? 'on' : 'off'));
+    };
 
-        if (!result.canceled && result.assets && result.assets.length > 0) {
-            navigation.navigate('ImagePreview', { imageUri: result.assets[0].uri });
+    const takePhotoNative = async () => {
+        if (cameraRef.current) {
+            try {
+                const photo = await cameraRef.current.takePictureAsync({
+                    quality: 0.8,
+                });
+                navigation.navigate('ImagePreview', { imageUri: photo.uri });
+            } catch (err) {
+                console.error("Camera capture failed", err);
+            }
         }
     };
 
-    if (hasPermission === false) {
+    if (!permission) {
+        return <View style={styles.container} />; // Loading state
+    }
+
+    if (!permission.granted) {
         return (
             <View style={styles.permissionDenied}>
                 <Feather name="camera-off" size={60} color="#DC2626" />
@@ -59,19 +64,21 @@ export default function ScanPlantScreen({ navigation }) {
                 <AppText variant="bodyMedium" style={{ marginTop: 12, color: colors.textLight, textAlign: 'center', marginHorizontal: 40 }}>
                     ArecaCare needs camera access to scan your crops. Please enable it in your device settings.
                 </AppText>
-                <AppButton title="Go Back" onPress={() => navigation.goBack()} style={{ marginTop: 30, width: '60%' }} />
+                <AppButton title="Grant Permission" onPress={requestPermission} style={{ marginTop: 30, width: '60%' }} />
+                <AppButton title="Go Back" variant="outline" onPress={() => navigation.goBack()} style={{ marginTop: 16, width: '60%' }} />
             </View>
         );
     }
 
     return (
         <View style={styles.container}>
-            {/* Mock Camera View */}
-            <View style={styles.cameraFrame}>
-                <View style={styles.placeholderBg}>
-                    <MaterialCommunityIcons name="leaf" size={120} color="rgba(255,255,255,0.1)" />
-                </View>
-
+            {/* Native Live Camera View */}
+            <CameraView
+                style={styles.cameraFrame}
+                facing={facing}
+                enableTorch={flash === 'on'}
+                ref={cameraRef}
+            >
                 {/* Scanner Overlay UI */}
                 <View style={styles.overlay}>
                     {/* Header */}
@@ -80,8 +87,8 @@ export default function ScanPlantScreen({ navigation }) {
                             <Feather name="x" size={24} color={colors.white} />
                         </TouchableOpacity>
                         <AppText variant="heading2" style={{ color: colors.white }}>Scan Plant</AppText>
-                        <TouchableOpacity style={styles.roundBtn}>
-                            <Feather name="zap" size={24} color={colors.white} />
+                        <TouchableOpacity style={[styles.roundBtn, flash === 'on' && { backgroundColor: 'rgba(255, 255, 255, 0.4)' }]} onPress={toggleFlash}>
+                            <Feather name={flash === 'on' ? "zap" : "zap-off"} size={24} color={colors.white} />
                         </TouchableOpacity>
                     </View>
 
@@ -104,17 +111,17 @@ export default function ScanPlantScreen({ navigation }) {
 
                         <TouchableOpacity
                             style={styles.captureBtnOuter}
-                            onPress={takePhoto}
+                            onPress={takePhotoNative}
                         >
                             <View style={styles.captureBtnInner} />
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.secondaryBtn}>
-                            <MaterialCommunityIcons name="history" size={26} color={colors.white} />
+                        <TouchableOpacity style={styles.secondaryBtn} onPress={toggleCameraFacing}>
+                            <Ionicons name="camera-reverse-outline" size={26} color={colors.white} />
                         </TouchableOpacity>
                     </View>
                 </View>
-            </View>
+            </CameraView>
         </View>
     );
 }
