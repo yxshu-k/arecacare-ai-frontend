@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { colors } from '../theme/colors';
+import { requestMicrophonePermission } from '../services/permissionsService';
 
 const ChatBubble = ({ text, isAI }) => (
     <View style={[styles.bubbleWrapper, isAI ? styles.bubbleWrapperAI : styles.bubbleWrapperUser]}>
@@ -22,6 +23,15 @@ const ChatBubble = ({ text, isAI }) => (
 
 export default function ChatAssistantScreen({ navigation }) {
     const [inputText, setInputText] = useState('');
+
+    const handleVoicePress = async () => {
+        const granted = await requestMicrophonePermission();
+        if (!granted) {
+            Alert.alert("Microphone Denied", "We need access to your microphone to use voice features.");
+        } else {
+            // logic to start voice recording
+        }
+    };
 
     return (
         <Screen style={styles.screen} noPadding>
@@ -69,7 +79,7 @@ export default function ChatAssistantScreen({ navigation }) {
                             onChangeText={setInputText}
                             multiline
                         />
-                        <TouchableOpacity style={styles.voiceBtn}>
+                        <TouchableOpacity style={styles.voiceBtn} onPress={handleVoicePress}>
                             <Feather name="mic" size={20} color={colors.textMedium} />
                         </TouchableOpacity>
                     </View>

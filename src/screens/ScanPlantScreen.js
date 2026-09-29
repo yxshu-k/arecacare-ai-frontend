@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import AppText from '../components/AppText';
+import AppButton from '../components/AppButton';
 import { colors } from '../theme/colors';
+import { requestCameraPermission } from '../services/permissionsService';
 
 const { width, height } = Dimensions.get('window');
 
@@ -10,6 +12,28 @@ const { width, height } = Dimensions.get('window');
 // We will mock the camera view with a beautiful dark overlay.
 
 export default function ScanPlantScreen({ navigation }) {
+    const [hasPermission, setHasPermission] = useState(null);
+
+    useEffect(() => {
+        (async () => {
+            const granted = await requestCameraPermission();
+            setHasPermission(granted);
+        })();
+    }, []);
+
+    if (hasPermission === false) {
+        return (
+            <View style={styles.permissionDenied}>
+                <Feather name="camera-off" size={60} color="#DC2626" />
+                <AppText variant="heading2" style={{ marginTop: 24, color: colors.white }}>Camera Access Denied</AppText>
+                <AppText variant="bodyMedium" style={{ marginTop: 12, color: colors.textLight, textAlign: 'center', marginHorizontal: 40 }}>
+                    ArecaCare needs camera access to scan your crops. Please enable it in your device settings.
+                </AppText>
+                <AppButton title="Go Back" onPress={() => navigation.goBack()} style={{ marginTop: 30, width: '60%' }} />
+            </View>
+        );
+    }
+
     return (
         <View style={styles.container}>
             {/* Mock Camera View */}
@@ -73,6 +97,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#1E293B',
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    permissionDenied: {
+        flex: 1,
+        backgroundColor: colors.black,
+        justifyContent: 'center',
+        alignItems: 'center'
     },
     overlay: {
         flex: 1,
