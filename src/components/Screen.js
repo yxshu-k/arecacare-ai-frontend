@@ -1,5 +1,6 @@
 import React from 'react';
-import { SafeAreaView, StyleSheet, View, Platform, StatusBar } from 'react-native';
+import { StyleSheet, View, Platform, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors } from '../theme/colors';
 
 const Screen = ({ children, style, noPadding = false }) => {
@@ -16,7 +17,8 @@ const styles = StyleSheet.create({
     screen: {
         flex: 1,
         backgroundColor: colors.background,
-        // Add margin top for Android since SafeAreaView only works on iOS
+        // With react-native-safe-area-context we usually don't need manual pt, 
+        // but just in case for strict consistency on Android:
         paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
     view: {

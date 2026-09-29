@@ -1,10 +1,20 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { colors } from '../theme/colors';
 
-export default function SplashScreen() {
+export default function SplashScreen({ navigation }) {
+    useEffect(() => {
+        // If rendered within AuthNavigator, wait 2 seconds then go to Onboarding
+        if (navigation) {
+            const timer = setTimeout(() => {
+                navigation.replace('Onboarding');
+            }, 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [navigation]);
+
     return (
         <Screen noPadding>
             <View style={styles.container}>
