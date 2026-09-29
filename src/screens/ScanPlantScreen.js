@@ -5,6 +5,7 @@ import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import { colors } from '../theme/colors';
 import { requestCameraPermission } from '../services/permissionsService';
+import * as ImagePicker from 'expo-image-picker';
 
 const { width, height } = Dimensions.get('window');
 
@@ -20,6 +21,35 @@ export default function ScanPlantScreen({ navigation }) {
             setHasPermission(granted);
         })();
     }, []);
+
+    const pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            navigation.navigate('ImagePreview', { imageUri: result.assets[0].uri });
+        }
+    };
+
+    const takePhoto = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== 'granted') {
+            alert('Sorry, we need camera permissions to make this work!');
+            return;
+        }
+
+        let result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            quality: 0.8,
+        });
+
+        if (!result.canceled && result.assets && result.assets.length > 0) {
+            navigation.navigate('ImagePreview', { imageUri: result.assets[0].uri });
+        }
+    };
 
     if (hasPermission === false) {
         return (
@@ -68,13 +98,13 @@ export default function ScanPlantScreen({ navigation }) {
 
                     {/* Bottom Action Bar */}
                     <View style={styles.bottomBar}>
-                        <TouchableOpacity style={styles.secondaryBtn}>
+                        <TouchableOpacity style={styles.secondaryBtn} onPress={pickImage}>
                             <Feather name="image" size={24} color={colors.white} />
                         </TouchableOpacity>
 
                         <TouchableOpacity
                             style={styles.captureBtnOuter}
-                            onPress={() => navigation.navigate('ImagePreview')}
+                            onPress={takePhoto}
                         >
                             <View style={styles.captureBtnInner} />
                         </TouchableOpacity>

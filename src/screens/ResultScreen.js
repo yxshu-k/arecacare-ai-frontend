@@ -6,7 +6,13 @@ import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import { colors } from '../theme/colors';
 
-export default function ResultScreen({ navigation }) {
+export default function ResultScreen({ route, navigation }) {
+    const { prediction } = route.params || {};
+
+    const diseaseName = prediction?.prediction || 'Unknown Condition';
+    const confidence = prediction?.confidence || 0;
+    const imageUrl = prediction?.saved_path || null;
+
     return (
         <Screen style={styles.screen} noPadding>
             <View style={styles.header}>
@@ -22,21 +28,27 @@ export default function ResultScreen({ navigation }) {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
                 {/* Result Highlight Card */}
-                <View style={styles.resultCard}>
-                    <View style={styles.mockImageMini}>
-                        <MaterialCommunityIcons name="leaf" size={40} color={colors.white} />
-                    </View>
+                <View style={[styles.resultCard, { backgroundColor: diseaseName === 'Healthy' ? '#DCFCE7' : '#FEF2F2', borderColor: diseaseName === 'Healthy' ? '#BBF7D0' : '#FECACA' }]}>
+                    {imageUrl ? (
+                        <Image source={{ uri: imageUrl }} style={styles.mockImageMini} />
+                    ) : (
+                        <View style={styles.mockImageMini}>
+                            <MaterialCommunityIcons name="leaf" size={40} color={colors.white} />
+                        </View>
+                    )}
                     <View style={styles.resultContent}>
-                        <AppText variant="heading2" style={{ color: '#DC2626' }}>Leaf Spot Disease</AppText>
+                        <AppText variant="heading2" style={{ color: diseaseName === 'Healthy' ? '#16A34A' : '#DC2626' }}>{diseaseName}</AppText>
                         <View style={styles.confidenceBadge}>
-                            <Feather name="check-circle" size={14} color={colors.primary} />
-                            <AppText variant="caption" style={{ color: colors.primary, marginLeft: 4, fontWeight: '700' }}>
-                                Confidence: 92.4%
+                            <Feather name={diseaseName === 'Healthy' ? "check-circle" : "alert-triangle"} size={14} color={diseaseName === 'Healthy' ? '#16A34A' : colors.primary} />
+                            <AppText variant="caption" style={{ color: diseaseName === 'Healthy' ? '#16A34A' : colors.primary, marginLeft: 4, fontWeight: '700' }}>
+                                Confidence: {confidence.toFixed(1)}%
                             </AppText>
                         </View>
-                        <View style={styles.severityTag}>
-                            <AppText variant="caption" style={{ color: '#DC2626', fontWeight: '700' }}>High Severity</AppText>
-                        </View>
+                        {diseaseName !== 'Healthy' && (
+                            <View style={styles.severityTag}>
+                                <AppText variant="caption" style={{ color: '#DC2626', fontWeight: '700' }}>High Severity</AppText>
+                            </View>
+                        )}
                     </View>
                 </View>
 

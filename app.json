@@ -2,6 +2,7 @@
   "expo": {
     "name": "arecacare-ai-frontend",
     "slug": "arecacare-ai-frontend",
+    "scheme": "arecacare",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -21,7 +22,8 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-web-browser"
     ]
   }
 }

@@ -1,11 +1,11 @@
 import React from 'react';
-import { View, TextInput, StyleSheet } from 'react-native';
+import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import AppText from './AppText';
 
-const AppTextInput = ({ icon, label, ...otherProps }) => {
+const AppTextInput = ({ icon, rightIcon, onRightIconPress, label, ...otherProps }) => {
     return (
         <View style={styles.container}>
             {label && <AppText variant="bodyMedium" style={styles.label}>{label}</AppText>}
@@ -17,6 +17,11 @@ const AppTextInput = ({ icon, label, ...otherProps }) => {
                     autoCapitalize="none"
                     {...otherProps}
                 />
+                {rightIcon && (
+                    <TouchableOpacity onPress={onRightIconPress} style={{ padding: 4 }}>
+                        <Feather name={rightIcon} size={20} color={colors.textMedium} />
+                    </TouchableOpacity>
+                )}
             </View>
         </View>
     );

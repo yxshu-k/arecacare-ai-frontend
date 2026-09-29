@@ -1,21 +1,33 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ActivityIndicator, Image, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import { colors } from '../theme/colors';
+import { diseaseService } from '../services/diseaseService';
 
-export default function ImagePreviewScreen({ navigation }) {
+export default function ImagePreviewScreen({ route, navigation }) {
+    const { imageUri } = route.params || {};
     const [analyzing, setAnalyzing] = useState(false);
 
-    const handleAnalyze = () => {
+    const handleAnalyze = async () => {
+        if (!imageUri) {
+            Alert.alert("Missing Image", "Please select an image first.");
+            return;
+        }
+
         setAnalyzing(true);
-        // Simulate AI inference time
-        setTimeout(() => {
+        try {
+            // Upload the RAW multipart image to FastAPI
+            const prediction = await diseaseService.predict(imageUri);
             setAnalyzing(false);
-            navigation.replace('Result'); // push to results
-        }, 2500);
+            // Transition to result screen with real ML payload
+            navigation.replace('Result', { prediction });
+        } catch (error) {
+            setAnalyzing(false);
+            Alert.alert("Analysis Error", error.message);
+        }
     };
 
     return (
@@ -29,15 +41,18 @@ export default function ImagePreviewScreen({ navigation }) {
                 <View style={{ width: 28 }} />
             </View>
 
-            {/* Image Container Mock */}
+            {/* Image Container */}
             <View style={styles.imageContainer}>
-                {/* Placeholder for the taken photo */}
-                <View style={styles.mockOverlay}>
-                    <MaterialCommunityIcons name="leaf" size={120} color={colors.primary} />
-                    <AppText variant="body" color="textMedium" style={{ marginTop: 20 }}>
-                        Arecanut Leaf Sample
-                    </AppText>
-                </View>
+                {imageUri ? (
+                    <Image source={{ uri: imageUri }} style={{ width: '100%', height: '100%', resizeMode: 'cover' }} />
+                ) : (
+                    <View style={styles.mockOverlay}>
+                        <MaterialCommunityIcons name="image-off" size={60} color={colors.textLight} />
+                        <AppText variant="body" color="textLight" style={{ marginTop: 10 }}>
+                            No image selected
+                        </AppText>
+                    </View>
+                )}
 
                 {/* Scanning Animation UI overlay */}
                 {analyzing && (

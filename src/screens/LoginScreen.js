@@ -1,23 +1,48 @@
 import React, { useState, useContext } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, Alert, Keyboard } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import AppTextInput from '../components/AppTextInput';
+import GoogleAuthButton from '../components/GoogleAuthButton';
 import { AuthContext } from '../context/AuthContext';
 import { colors } from '../theme/colors';
 
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState({});
     const { login } = useContext(AuthContext);
 
+    const validateForm = () => {
+        let valid = true;
+        let newErrors = {};
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!email || !emailRegex.test(email)) {
+            newErrors.email = 'Please enter a valid email address';
+            valid = false;
+        }
+
+        if (!password || password.length === 0) {
+            newErrors.password = 'Please enter your password';
+            valid = false;
+        }
+
+        setErrors(newErrors);
+        return valid;
+    };
+
     const handleLogin = async () => {
+        Keyboard.dismiss();
+        if (!validateForm()) return;
+
         setLoading(true);
         try {
-            await login(email, password);
+            await login(email.trim(), password);
         } catch (e) {
             console.error(e);
         } finally {
@@ -49,16 +74,21 @@ export default function LoginScreen({ navigation }) {
                             placeholder="farmer@example.com"
                             keyboardType="email-address"
                             value={email}
-                            onChangeText={setEmail}
+                            onChangeText={(text) => { setEmail(text); setErrors({ ...errors, email: '' }) }}
                         />
+                        {errors.email && <AppText style={styles.errorText}>{errors.email}</AppText>}
+
                         <AppTextInput
                             label="Password"
                             icon="lock"
                             placeholder="••••••••"
-                            secureTextEntry
+                            secureTextEntry={!showPassword}
                             value={password}
-                            onChangeText={setPassword}
+                            onChangeText={(text) => { setPassword(text); setErrors({ ...errors, password: '' }) }}
+                            rightIcon={showPassword ? "eye" : "eye-off"}
+                            onRightIconPress={() => setShowPassword(!showPassword)}
                         />
+                        {errors.password && <AppText style={styles.errorText}>{errors.password}</AppText>}
 
                         <TouchableOpacity style={styles.forgotPassword}>
                             <AppText variant="bodyMedium" color="primary">Forgot Password?</AppText>
@@ -71,12 +101,7 @@ export default function LoginScreen({ navigation }) {
                             style={styles.loginBtn}
                         />
 
-                        <AppButton
-                            title="Login with Google 🌐"
-                            variant="outline"
-                            onPress={() => { }}
-                            style={styles.googleBtn}
-                        />
+                        <GoogleAuthButton title="Continue with Google" />
                     </View>
 
                     <View style={styles.footer}>
@@ -98,9 +123,9 @@ const styles = StyleSheet.create({
     iconBackground: { backgroundColor: '#E8F5E9', padding: 16, borderRadius: 24, marginBottom: 16 },
     subtitle: { marginTop: 8, textAlign: 'center' },
     form: { marginBottom: 30 },
+    errorText: { color: '#DC2626', fontSize: 12, marginBottom: 16, marginTop: -8, marginLeft: 4 },
     forgotPassword: { alignItems: 'flex-end', marginTop: 4, marginBottom: 24 },
     loginBtn: { marginBottom: 16 },
-    googleBtn: { marginBottom: 10 },
     footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 20, paddingBottom: 20 },
     signupText: { fontWeight: '700' }
 });

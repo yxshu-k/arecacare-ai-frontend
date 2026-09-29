@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
@@ -25,7 +25,29 @@ const MenuRow = ({ icon, title, value, isDestructive, onPress }) => (
 );
 
 export default function ProfileScreen({ navigation }) {
-    const { userData, logout } = useContext(AuthContext);
+    const { userData, logout, deactivate } = useContext(AuthContext);
+
+    const handleLogout = () => {
+        Alert.alert(
+            "Log Out",
+            "Are you sure you want to log out of your account?",
+            [
+                { text: "Cancel", style: "cancel" },
+                { text: "Log Out", style: "destructive", onPress: logout }
+            ]
+        );
+    };
+
+    const handleDeactivate = () => {
+        Alert.alert(
+            "Deactivate Account",
+            "Are you sure you want to permanently delete your ArecaCare account? This action cannot be undone.",
+            [
+                { text: "Cancel", style: "cancel" },
+                { text: "Delete", style: "destructive", onPress: deactivate }
+            ]
+        );
+    };
 
     return (
         <Screen style={styles.screen} noPadding>
@@ -63,7 +85,8 @@ export default function ProfileScreen({ navigation }) {
                 </View>
 
                 <View style={styles.section}>
-                    <MenuRow icon="log-out" title="Log Out" isDestructive onPress={logout} />
+                    <MenuRow icon="log-out" title="Log Out" onPress={handleLogout} />
+                    <MenuRow icon="user-x" title="Deactivate Account" isDestructive onPress={handleDeactivate} />
                 </View>
 
                 <View style={styles.footerInfo}>
