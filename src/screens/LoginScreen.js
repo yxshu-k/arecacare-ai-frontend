@@ -6,6 +6,7 @@ import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import AppTextInput from '../components/AppTextInput';
 import { AuthContext } from '../context/AuthContext';
+import { colors } from '../theme/colors';
 
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
