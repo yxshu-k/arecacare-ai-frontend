@@ -1,14 +1,29 @@
 import React, { useState } from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, Dimensions } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import { colors } from '../theme/colors';
 
+const { width } = Dimensions.get('window');
+
 const ONBOARDING_DATA = [
-    { icon: '🌱', title: 'AI-Powered Arecanut Care', description: 'Smart disease detection and agricultural advisory right in your pocket. Protect your crops with AI.' },
-    { icon: '🔍', title: 'Early Detection', description: 'Snap a picture of a leaf to instantly identify diseases like Leaf Spot, Yellow Leaf, and Bud Rot.' },
-    { icon: '📈', title: 'Better Yield', description: 'Get actionable treatments, calculate yield predictions, and receive tailored farming tips.' }
+    {
+        icon: 'shield',
+        title: 'AI-Powered Care',
+        description: 'Smart disease detection and agricultural advisory right in your pocket. Protect your crops with AI.'
+    },
+    {
+        icon: 'camera',
+        title: 'Early Detection',
+        description: 'Snap a picture of a leaf to instantly identify diseases like Leaf Spot, Yellow Leaf, and Bud Rot.'
+    },
+    {
+        icon: 'trending-up',
+        title: 'Better Yield',
+        description: 'Get actionable treatments, calculate yield predictions, and receive tailored farming tips.'
+    }
 ];
 
 export default function OnboardingScreen({ navigation }) {
@@ -18,7 +33,6 @@ export default function OnboardingScreen({ navigation }) {
         if (step < ONBOARDING_DATA.length - 1) {
             setStep(step + 1);
         } else {
-            // When onboarding is finished, navigate to Login
             navigation.replace('Login');
         }
     };
@@ -30,7 +44,9 @@ export default function OnboardingScreen({ navigation }) {
         <Screen>
             <View style={styles.container}>
                 <View style={styles.content}>
-                    <AppText variant="heading1" style={styles.icon}>{currentData.icon}</AppText>
+                    <View style={styles.imagePlaceholder}>
+                        <Feather name={currentData.icon} size={80} color={colors.primary} />
+                    </View>
                     <AppText variant="heading2" style={styles.title}>{currentData.title}</AppText>
                     <AppText variant="body" color="textMedium" style={styles.description}>
                         {currentData.description}
@@ -43,7 +59,11 @@ export default function OnboardingScreen({ navigation }) {
                             <View key={index} style={[styles.dot, step === index && styles.dotActive]} />
                         ))}
                     </View>
-                    <AppButton title={isLast ? "Get Started" : "Next"} variant="primary" onPress={handleNext} />
+                    <AppButton
+                        title={isLast ? "Get Started" : "Next"}
+                        variant="primary"
+                        onPress={handleNext}
+                    />
                 </View>
             </View>
         </Screen>
@@ -51,13 +71,21 @@ export default function OnboardingScreen({ navigation }) {
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, justifyContent: 'space-between', paddingVertical: 20 },
-    content: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 16 },
-    icon: { fontSize: 90, marginBottom: 40 },
+    container: { flex: 1, justifyContent: 'space-between', paddingVertical: 30 },
+    content: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
+    imagePlaceholder: {
+        width: width * 0.6,
+        height: width * 0.6,
+        backgroundColor: '#E8F5E9',
+        borderRadius: (width * 0.6) / 2,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 40,
+    },
     title: { textAlign: 'center', marginBottom: 16, color: colors.primary },
-    description: { textAlign: 'center', lineHeight: 24 },
+    description: { textAlign: 'center', lineHeight: 26 },
     footer: { paddingBottom: 20 },
-    dotsContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 30 },
-    dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.border, marginHorizontal: 4 },
-    dotActive: { width: 24, backgroundColor: colors.primary }
+    dotsContainer: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginBottom: 40 },
+    dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: colors.border, marginHorizontal: 6 },
+    dotActive: { width: 32, backgroundColor: colors.primary }
 });

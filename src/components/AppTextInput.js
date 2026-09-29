@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, TextInput, StyleSheet } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import AppText from './AppText';
@@ -9,7 +10,7 @@ const AppTextInput = ({ icon, label, ...otherProps }) => {
         <View style={styles.container}>
             {label && <AppText variant="bodyMedium" style={styles.label}>{label}</AppText>}
             <View style={styles.inputContainer}>
-                {icon && <AppText style={styles.icon}>{icon}</AppText>}
+                {icon && <Feather name={icon} size={20} color={colors.textMedium} style={styles.icon} />}
                 <TextInput
                     style={styles.input}
                     placeholderTextColor={colors.textLight}
@@ -26,23 +27,26 @@ const styles = StyleSheet.create({
         marginVertical: 10,
     },
     label: {
-        marginBottom: 6,
+        marginBottom: 8,
         color: colors.text,
-        fontWeight: '500',
+        fontWeight: '600',
     },
     inputContainer: {
         backgroundColor: colors.surface,
-        borderRadius: 8,
+        borderRadius: 12,
         flexDirection: 'row',
-        padding: 12,
+        padding: 14,
         borderWidth: 1,
         borderColor: colors.border,
         alignItems: 'center',
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.03,
+        shadowRadius: 2,
+        elevation: 2,
     },
     icon: {
-        marginRight: 10,
-        fontSize: 18,
-        color: colors.textMedium,
+        marginRight: 12,
     },
     input: {
         flex: 1,

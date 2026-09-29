@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
@@ -31,7 +32,9 @@ export default function LoginScreen({ navigation }) {
             >
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
                     <View style={styles.header}>
-                        <AppText variant="heading1" style={styles.logo}>🌿</AppText>
+                        <View style={styles.iconBackground}>
+                            <MaterialCommunityIcons name="leaf" size={48} color={colors.primary} />
+                        </View>
                         <AppText variant="heading1">Welcome Back!</AppText>
                         <AppText variant="bodyMedium" color="textMedium" style={styles.subtitle}>
                             Log in to access smart farming tools
@@ -41,7 +44,7 @@ export default function LoginScreen({ navigation }) {
                     <View style={styles.form}>
                         <AppTextInput
                             label="Email Address"
-                            icon="✉️"
+                            icon="mail"
                             placeholder="farmer@example.com"
                             keyboardType="email-address"
                             value={email}
@@ -49,7 +52,7 @@ export default function LoginScreen({ navigation }) {
                         />
                         <AppTextInput
                             label="Password"
-                            icon="🔒"
+                            icon="lock"
                             placeholder="••••••••"
                             secureTextEntry
                             value={password}
@@ -91,7 +94,7 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     scroll: { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 },
     header: { alignItems: 'center', marginBottom: 40 },
-    logo: { fontSize: 60, marginBottom: 10 },
+    iconBackground: { backgroundColor: '#E8F5E9', padding: 16, borderRadius: 24, marginBottom: 16 },
     subtitle: { marginTop: 8, textAlign: 'center' },
     form: { marginBottom: 30 },
     forgotPassword: { alignItems: 'flex-end', marginTop: 4, marginBottom: 24 },

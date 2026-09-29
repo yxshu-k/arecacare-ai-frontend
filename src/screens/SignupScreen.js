@@ -35,10 +35,10 @@ export default function SignupScreen({ navigation }) {
                     </View>
 
                     <View style={styles.form}>
-                        <AppTextInput label="Full Name" icon="👤" placeholder="Ramesh Kumar" value={name} onChangeText={setName} />
-                        <AppTextInput label="Phone Number" icon="📱" placeholder="+91 98765 43210" keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
-                        <AppTextInput label="Email Address" icon="✉️" placeholder="farmer@example.com" keyboardType="email-address" value={email} onChangeText={setEmail} />
-                        <AppTextInput label="Password" icon="🔒" placeholder="••••••••" secureTextEntry value={password} onChangeText={setPassword} />
+                        <AppTextInput label="Full Name" icon="user" placeholder="Ramesh Kumar" value={name} onChangeText={setName} />
+                        <AppTextInput label="Phone Number" icon="phone" placeholder="+91 98765 43210" keyboardType="phone-pad" value={phone} onChangeText={setPhone} />
+                        <AppTextInput label="Email Address" icon="mail" placeholder="farmer@example.com" keyboardType="email-address" value={email} onChangeText={setEmail} />
+                        <AppTextInput label="Password" icon="lock" placeholder="••••••••" secureTextEntry value={password} onChangeText={setPassword} />
 
                         <AppButton title="Sign Up" onPress={handleSignup} loading={loading} style={styles.signupBtn} />
                     </View>
