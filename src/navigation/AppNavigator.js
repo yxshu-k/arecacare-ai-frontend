@@ -5,7 +5,7 @@ import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import Screen from '../components/Screen';
 import { AuthContext } from '../context/AuthContext';
-import HomeScreen from '../screens/HomeScreen';
+import HomeNavigator from './HomeNavigator';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
@@ -40,7 +40,7 @@ export default function AppNavigator() {
         >
             <Tab.Screen
                 name="Dashboard"
-                component={HomeScreen}
+                component={HomeNavigator}
                 options={{ tabBarIcon: ({ color }) => <Feather name="grid" size={24} color={color} /> }}
             />
             <Tab.Screen

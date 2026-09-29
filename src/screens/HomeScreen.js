@@ -48,7 +48,7 @@ export default function HomeScreen({ navigation }) {
                 {/* Primary Action (Scan Plant) */}
                 <TouchableOpacity
                     style={styles.primaryAction}
-                    onPress={() => { /* Wait for Phase 7 */ }}
+                    onPress={() => navigation.navigate('ScanPlant')}
                 >
                     <View style={styles.primaryActionHeader}>
                         <View>
@@ -78,7 +78,7 @@ export default function HomeScreen({ navigation }) {
                     subtitle="Calculate arecanut output per acre"
                     icon="bar-chart-2"
                     color={colors.primary}
-                    onPress={() => { }}
+                    onPress={() => navigation.navigate('YieldInput')}
                 />
 
                 <ActionCard
