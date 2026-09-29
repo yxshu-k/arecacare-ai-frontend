@@ -70,9 +70,9 @@ export default function ResultScreen({ navigation }) {
                     style={{ marginBottom: 12 }}
                 />
                 <AppButton
-                    title="Save Report"
+                    title="View Disease Info"
                     variant="outline"
-                    onPress={() => navigation.navigate('HomeMain')}
+                    onPress={() => navigation.navigate('DiseaseInfo')}
                 />
             </View>
         </Screen>

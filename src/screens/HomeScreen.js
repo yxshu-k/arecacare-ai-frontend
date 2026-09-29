@@ -94,7 +94,15 @@ export default function HomeScreen({ navigation }) {
                     subtitle="Rainfall and humidity insights"
                     icon="cloud-rain"
                     color="#3B82F6"
-                    onPress={() => { }}
+                    onPress={() => navigation.navigate('Weather')}
+                />
+
+                <ActionCard
+                    title="AI Chat Assistant"
+                    subtitle="Ask AgriBot any farming question"
+                    icon="message-circle"
+                    color="#E11D48"
+                    onPress={() => navigation.navigate('ChatAssistant')}
                 />
 
             </ScrollView>

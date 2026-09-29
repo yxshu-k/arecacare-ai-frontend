@@ -8,6 +8,9 @@ import ResultScreen from '../screens/ResultScreen';
 import TreatmentDetailsScreen from '../screens/TreatmentDetailsScreen';
 import YieldInputScreen from '../screens/YieldInputScreen';
 import YieldResultScreen from '../screens/YieldResultScreen';
+import WeatherScreen from '../screens/WeatherScreen';
+import DiseaseInfoScreen from '../screens/DiseaseInfoScreen';
+import ChatAssistantScreen from '../screens/ChatAssistantScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -21,6 +24,9 @@ export default function HomeNavigator() {
             <Stack.Screen name="TreatmentDetails" component={TreatmentDetailsScreen} />
             <Stack.Screen name="YieldInput" component={YieldInputScreen} />
             <Stack.Screen name="YieldResult" component={YieldResultScreen} />
+            <Stack.Screen name="Weather" component={WeatherScreen} />
+            <Stack.Screen name="DiseaseInfo" component={DiseaseInfoScreen} />
+            <Stack.Screen name="ChatAssistant" component={ChatAssistantScreen} />
         </Stack.Navigator>
     );
 }
