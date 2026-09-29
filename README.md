@@ -32,34 +32,31 @@ To ensure a robust, enterprise-grade mobile application, we are strictly using t
 ---
 
 ## 🗺️ The Complete Development Workflow
-Our development is meticulously structured across **6 weeks (37 days)**, moving from blueprint to production. This is our step-by-step master plan:
+Our development is meticulously structured across strictly managed phases, moving from the initial blueprint UI to a production-ready application. Below is the exact step-by-step history of what has been accomplished and what remains:
 
-### ⚙️ Stage 1: Foundation (Week 1)
-- **Phase 0:** Plan & Understand Backend API Contracts.
-- **Phase 1:** Project Foundation (Initialize Expo, establish `src/` folder architecture, and `.env` setup).
-- **Phase 2:** Design System & Components (Colors, Typography, Reusable `AppButton`, `Card`, `Screen`, `AppText`).
-- **Phase 3:** Splash Screen & Onboarding (3-step intro flow for beginner farmers).
-- **Phase 4:** Authentication (Login, Signup screens, and JWT token passing).
-- **Phase 5:** Navigation Architecture (Connecting all screens together via React Navigation).
+### ⚙️ Stage 1: Foundation & Core UI (Completed ✅)
+- **Phase 1: Project Foundation**: Bootstrapped the Expo SDK 57 environment, established a strict modular directory structure (`components/`, `screens/`, `navigation/`), and cleared all default boilerplate.
+- **Phase 2: Design System & Components**: Defined the Agricultural Green color palette and standardized scalable typography. Built robust, reusable UI atoms (`AppText`, `AppButton`, `AppTextInput`, and `Screen` wrappers).
+- **Phase 3: Splash & Onboarding**: Built the dynamic `SplashScreen` and a 3-step `OnboardingScreen` educational flow.
+- **Phase 4: Authentication**: Developed High-Fidelity `LoginScreen` and `SignupScreen`. Implemented `AuthContext` for global session management using `expo-secure-store` for safe, encrypted token persistence.
+- **Phase 5: Navigation Architecture**: Integrated React Navigation (Native Stack + Bottom Tabs). Established `RootNavigator` to act as an authentication gatekeeper, seamlessly handling logged-in vs logged-out routing.
+- **Phase 6: Professional UI & Home Dashboard**: Replaced all placeholder emojis globally with `@expo/vector-icons` for an enterprise aesthetic. Built the primary `HomeScreen` dashboard featuring dynamic Action Cards and a personalized greeting system.
 
-### 🌿 Stage 2: Core Features (Week 2-3)
-- **Phase 6:** Treatment Status & Details
-- **Phase 7:** Yield Prediction (Input forms and Yield Results screen)
-- **Phase 8:** Tips & Articles (List views and detailed farming articles)
-- **Phase 9:** Profile Management (User info, form details, logout)
-- **Phase 10:** Settings (Theme, notifications)
-- **Phase 11:** Language / Localization (Multilingual support for rural farmers)
+### 🌿 Stage 2: Core AI Features (Completed ✅)
+- **Phase 7: AI Disease Diagnostics Flow**: Engineered nested Stack routing for the plant scanning process. Built the Camera Viewfinder UI (`ScanPlantScreen`), a mock AI-inference `ImagePreviewScreen`, and constructed the highly detailed scientific readouts (`ResultScreen` & `TreatmentDetailsScreen`).
+- **Phase 8: Yield Prediction Engine**: Developed the environmental data input forms (`YieldInputScreen`) securely wrapped in iOS/Android KeyboardAvoidingViews. Constructed the stunning prediction metric gauge dashboard (`YieldResultScreen`).
+- **Phase 9: History, Tips, & Profile**: Finalized all bottom tab screens. Built `HistoryScreen` (timeline of past AI scans with severity color-coding), `TipsScreen` (farming knowledge repository with bookmarks), and `ProfileScreen` (user settings matrix and secure logout control).
 
-### 🤖 Stage 3: Smart Features (Week 4)
-- **Phase 12:** Weather & Advisory (Real-time weather data integration)
-- **Phase 13:** AI Assistant (Chat interface, voice support, TTS/STT)
-- **Phase 14:** State Handling (Global Error, Loading, and Offline UI states)
-- **Phase 15:** Permissions & Security (Camera, microphone, secure local storage)
+### 🤖 Stage 3: Smart Integrations (Upcoming ⏳)
+- **Phase 10: Settings**: Implement system toggles including Dark Mode and Push Notification configurations.
+- **Phase 11: Language / Localization**: Introduce multilingual translation engines to support rural farmers seamlessly across the entire UI.
+- **Phase 12: Weather & Advisory**: Integrate real-time weather API logic into the Home Dashboard.
+- **Phase 13: AI Assistant**: Build the interactive Chat interface, Voice recording support, and TTS/STT (Text-to-Speech) pipelines.
 
-### 🚀 Stage 4: Production (Week 5-6)
-- **Phase 16:** Testing & Integration (Unit testing, API mocking, user flow validation)
-- **Phase 17:** UI Polish & Optimization (Performance fixes, device testing across Android/iOS simulators)
-- **Phase 18:** Production Build (Final APK/AAB generation and documentation)
+### 🚀 Stage 4: Production Polish (Upcoming ⏳)
+- **Phase 14: State Handling**: Wire up global Error boundaries, Skeleton Loading states, and Offline UI handling.
+- **Phase 15: Permissions & Device Security**: Robustly construct the native bridges for Camera, Microphone, and Local Storage access prompts.
+- **Phase 16 - 18**: Final E2E Testing, UI Performance Optimization on Android/iOS devices, and final Production App Bundling (APK/AAB).
 
 ---
 
@@ -73,7 +70,7 @@ This mobile app strictly interfaces with the existing ArecaCare FastAPI Backend.
 
 ---
 
-## 🏃‍♂️ How to Run the App Locally
+## 🏃♂️ How to Run the App Locally
 
 1. **Install Node.js & Dependencies**:
    Ensure you have Node.js installed. Navigate to this directory and install dependencies:
@@ -83,7 +80,7 @@ This mobile app strictly interfaces with the existing ArecaCare FastAPI Backend.
 
 2. **Start the Expo Development Server**:
    ```bash
-   npm start
+   npx expo start -c
    ```
 
 3. **View the App**:

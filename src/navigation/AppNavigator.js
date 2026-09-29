@@ -6,16 +6,13 @@ import AppButton from '../components/AppButton';
 import Screen from '../components/Screen';
 import { AuthContext } from '../context/AuthContext';
 import HomeNavigator from './HomeNavigator';
+import HistoryScreen from '../screens/HistoryScreen';
+import TipsScreen from '../screens/TipsScreen';
+import ProfileNavigator from './ProfileNavigator';
 import { Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 
 const Tab = createBottomTabNavigator();
-
-// --- Temporary Mock Screens for Tabs (Will be replaced in later phases) ---
-const DummyHistory = () => <Screen><View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><AppText variant="heading2">History</AppText></View></Screen>;
-const DummyProfile = () => <Screen><View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><AppText variant="heading2">Profile</AppText></View></Screen>;
-const DummySettings = () => <Screen><View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}><AppText variant="heading2">Settings</AppText></View></Screen>;
-// -------------------------------------------------------------------------
 
 export default function AppNavigator() {
     return (
@@ -45,18 +42,18 @@ export default function AppNavigator() {
             />
             <Tab.Screen
                 name="History"
-                component={DummyHistory}
+                component={HistoryScreen}
                 options={{ tabBarIcon: ({ color }) => <Feather name="clock" size={24} color={color} /> }}
             />
             <Tab.Screen
-                name="Profile"
-                component={DummyProfile}
-                options={{ tabBarIcon: ({ color }) => <Feather name="user" size={24} color={color} /> }}
+                name="Tips"
+                component={TipsScreen}
+                options={{ tabBarIcon: ({ color }) => <Feather name="book-open" size={24} color={color} /> }}
             />
             <Tab.Screen
-                name="Settings"
-                component={DummySettings}
-                options={{ tabBarIcon: ({ color }) => <Feather name="settings" size={24} color={color} /> }}
+                name="Profile"
+                component={ProfileNavigator}
+                options={{ tabBarIcon: ({ color }) => <Feather name="user" size={24} color={color} /> }}
             />
         </Tab.Navigator>
     );

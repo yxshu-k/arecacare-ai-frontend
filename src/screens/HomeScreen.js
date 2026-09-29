@@ -86,7 +86,7 @@ export default function HomeScreen({ navigation }) {
                     subtitle="Seasonal farming practices"
                     icon="book-open"
                     color="#F59E0B"
-                    onPress={() => { }}
+                    onPress={() => navigation.navigate('Tips')}
                 />
 
                 <ActionCard
