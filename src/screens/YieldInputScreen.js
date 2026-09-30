@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import AppTextInput from '../components/AppTextInput';
 import { colors } from '../theme/colors';
+import { yieldService } from '../services/yieldService';
 
 export default function YieldInputScreen({ navigation }) {
     const [soilType, setSoilType] = useState('Loamy');
@@ -14,12 +15,30 @@ export default function YieldInputScreen({ navigation }) {
     const [area, setArea] = useState('2');
     const [loading, setLoading] = useState(false);
 
-    const handlePredict = () => {
+    const handlePredict = async () => {
+        if (!soilType.trim() || !rainfall.trim() || !age.trim() || !area.trim()) {
+            Alert.alert('Missing Data', 'Please fill in all farm parameters before predicting.');
+            return;
+        }
+
         setLoading(true);
-        setTimeout(() => {
+        try {
+            const result = await yieldService.predictYield({
+                soilType: soilType.trim(),
+                rainfall: rainfall.trim(),
+                age: age.trim(),
+                area: area.trim(),
+            });
+
+            navigation.navigate('YieldResult', {
+                prediction: result,
+                inputs: { soilType, rainfall, age, area },
+            });
+        } catch (error) {
+            Alert.alert('Prediction Error', error.message);
+        } finally {
             setLoading(false);
-            navigation.navigate('YieldResult');
-        }, 1500);
+        }
     };
 
     return (

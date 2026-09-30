@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, Alert, ActivityIndicator } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { colors } from '../theme/colors';
-import { requestMicrophonePermission } from '../services/permissionsService';
+import { chatService } from '../services/chatService';
 
 const ChatBubble = ({ text, isAI }) => (
     <View style={[styles.bubbleWrapper, isAI ? styles.bubbleWrapperAI : styles.bubbleWrapperUser]}>
@@ -21,17 +21,106 @@ const ChatBubble = ({ text, isAI }) => (
     </View>
 );
 
+const TypingIndicator = () => (
+    <View style={[styles.bubbleWrapper, styles.bubbleWrapperAI]}>
+        <View style={styles.avatarAI}>
+            <MaterialCommunityIcons name="robot-outline" size={16} color={colors.white} />
+        </View>
+        <View style={[styles.bubble, styles.bubbleAI, { flexDirection: 'row', alignItems: 'center' }]}>
+            <ActivityIndicator size="small" color={colors.primary} />
+            <AppText variant="caption" color="textMedium" style={{ marginLeft: 8 }}>AgriBot is thinking...</AppText>
+        </View>
+    </View>
+);
+
 export default function ChatAssistantScreen({ navigation }) {
     const [inputText, setInputText] = useState('');
+    const [messages, setMessages] = useState([
+        { id: '1', text: 'Hello! I am your ArecaCare AI Assistant. How can I help you with your arecanut farm today?', isAI: true },
+    ]);
+    const [isTyping, setIsTyping] = useState(false);
+    const scrollRef = useRef(null);
 
-    const handleVoicePress = async () => {
-        const granted = await requestMicrophonePermission();
-        if (!granted) {
-            Alert.alert("Microphone Denied", "We need access to your microphone to use voice features.");
-        } else {
-            // logic to start voice recording
+    // Load chat history on mount
+    useEffect(() => {
+        loadHistory();
+    }, []);
+
+    const loadHistory = async () => {
+        try {
+            const history = await chatService.getHistory();
+            if (history && history.length > 0) {
+                const historicalMessages = [];
+                history.forEach((item, index) => {
+                    if (item.message) {
+                        historicalMessages.push({
+                            id: `hist_user_${index}`,
+                            text: item.message,
+                            isAI: false,
+                        });
+                    }
+                    if (item.response) {
+                        historicalMessages.push({
+                            id: `hist_ai_${index}`,
+                            text: item.response,
+                            isAI: true,
+                        });
+                    }
+                });
+                if (historicalMessages.length > 0) {
+                    setMessages([
+                        { id: '1', text: 'Hello! I am your ArecaCare AI Assistant. How can I help you with your arecanut farm today?', isAI: true },
+                        ...historicalMessages,
+                    ]);
+                }
+            }
+        } catch (err) {
+            // Silently fail — history is optional
         }
     };
+
+    const handleSend = async () => {
+        const trimmed = inputText.trim();
+        if (!trimmed || isTyping) return;
+
+        const userMessage = {
+            id: `user_${Date.now()}`,
+            text: trimmed,
+            isAI: false,
+        };
+
+        setMessages(prev => [...prev, userMessage]);
+        setInputText('');
+        setIsTyping(true);
+
+        // Auto-scroll down
+        setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+
+        try {
+            const response = await chatService.sendMessage(trimmed);
+
+            const aiMessage = {
+                id: `ai_${Date.now()}`,
+                text: response.response || 'Sorry, I could not generate a response.',
+                isAI: true,
+            };
+
+            setMessages(prev => [...prev, aiMessage]);
+        } catch (error) {
+            const errorMessage = {
+                id: `err_${Date.now()}`,
+                text: `⚠️ ${error.message}`,
+                isAI: true,
+            };
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setIsTyping(false);
+            setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+        }
+    };
+
+    const now = new Date();
+    const timeString = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true });
 
     return (
         <Screen style={styles.screen} noPadding>
@@ -40,8 +129,10 @@ export default function ChatAssistantScreen({ navigation }) {
                     <Feather name="chevron-left" size={28} color={colors.text} />
                 </TouchableOpacity>
                 <AppText variant="heading3">AgriBot Assistant</AppText>
-                <TouchableOpacity>
-                    <Feather name="more-vertical" size={24} color={colors.text} />
+                <TouchableOpacity onPress={() => {
+                    setMessages([{ id: '1', text: 'Hello! I am your ArecaCare AI Assistant. How can I help you with your arecanut farm today?', isAI: true }]);
+                }}>
+                    <Feather name="trash-2" size={22} color={colors.textMedium} />
                 </TouchableOpacity>
             </View>
 
@@ -49,23 +140,19 @@ export default function ChatAssistantScreen({ navigation }) {
                 style={{ flex: 1 }}
                 behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             >
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-                    <AppText variant="caption" color="textLight" style={styles.timestamp}>Today at 9:41 AM</AppText>
+                <ScrollView
+                    ref={scrollRef}
+                    showsVerticalScrollIndicator={false}
+                    contentContainerStyle={styles.scroll}
+                    onContentSizeChange={() => scrollRef.current?.scrollToEnd({ animated: true })}
+                >
+                    <AppText variant="caption" color="textLight" style={styles.timestamp}>Today at {timeString}</AppText>
 
-                    <ChatBubble
-                        isAI={true}
-                        text="Hello! I am your ArecaCare AI Assistant. How can I help you with your arecanut farm today?"
-                    />
+                    {messages.map(msg => (
+                        <ChatBubble key={msg.id} text={msg.text} isAI={msg.isAI} />
+                    ))}
 
-                    <ChatBubble
-                        isAI={false}
-                        text="When is the best time to apply Neem oil spray?"
-                    />
-
-                    <ChatBubble
-                        isAI={true}
-                        text="For optimal results, apply Neem oil early in the morning before 9 AM or late in the evening after 5 PM. Avoid spraying during harsh sunlight to prevent leaf burning."
-                    />
+                    {isTyping && <TypingIndicator />}
 
                 </ScrollView>
 
@@ -78,13 +165,16 @@ export default function ChatAssistantScreen({ navigation }) {
                             value={inputText}
                             onChangeText={setInputText}
                             multiline
+                            onSubmitEditing={handleSend}
+                            editable={!isTyping}
                         />
-                        <TouchableOpacity style={styles.voiceBtn} onPress={handleVoicePress}>
-                            <Feather name="mic" size={20} color={colors.textMedium} />
-                        </TouchableOpacity>
                     </View>
 
-                    <TouchableOpacity style={styles.sendBtn}>
+                    <TouchableOpacity
+                        style={[styles.sendBtn, (!inputText.trim() || isTyping) && { opacity: 0.5 }]}
+                        onPress={handleSend}
+                        disabled={!inputText.trim() || isTyping}
+                    >
                         <Feather name="send" size={20} color={colors.white} />
                     </TouchableOpacity>
                 </View>
@@ -173,10 +263,6 @@ const styles = StyleSheet.create({
         color: colors.text,
         fontFamily: 'sans-serif',
         maxHeight: 100,
-    },
-    voiceBtn: {
-        padding: 4,
-        marginLeft: 8,
     },
     sendBtn: {
         width: 48,

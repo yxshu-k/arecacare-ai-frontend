@@ -8,7 +8,36 @@ import { colors } from '../theme/colors';
 
 const { width } = Dimensions.get('window');
 
-export default function YieldResultScreen({ navigation }) {
+export default function YieldResultScreen({ navigation, route }) {
+    const prediction = route.params?.prediction || {};
+    const inputs = route.params?.inputs || {};
+
+    const yieldValue = prediction.estimated_yield_tonnes != null
+        ? parseFloat(prediction.estimated_yield_tonnes).toFixed(2)
+        : '—';
+
+    const yieldPerAcre = prediction.yield_per_acre != null
+        ? parseFloat(prediction.yield_per_acre).toFixed(2)
+        : '—';
+
+    const qualityRating = prediction.quality_rating || 'Moderate';
+    const statusLabel = prediction.status_label || 'Estimated Yield';
+    const insights = prediction.insights || 'No detailed insights available at the moment.';
+
+    const getStatusIcon = () => {
+        const lower = statusLabel.toLowerCase();
+        if (lower.includes('good') || lower.includes('high') || lower.includes('excellent')) return 'trending-up';
+        if (lower.includes('low') || lower.includes('poor')) return 'trending-down';
+        return 'activity';
+    };
+
+    const getStatusColor = () => {
+        const lower = statusLabel.toLowerCase();
+        if (lower.includes('good') || lower.includes('high') || lower.includes('excellent')) return colors.primary;
+        if (lower.includes('low') || lower.includes('poor')) return '#DC2626';
+        return '#F59E0B';
+    };
+
     return (
         <Screen style={styles.screen} noPadding>
             <View style={styles.header}>
@@ -27,24 +56,59 @@ export default function YieldResultScreen({ navigation }) {
                     {/* Visual Circle Gauge Wrapper */}
                     <View style={styles.outerCircle}>
                         <View style={styles.innerCircle}>
-                            <AppText style={styles.metricValue}>2.45</AppText>
-                            <AppText variant="bodyMedium" color="textMedium">Tonnes / Acre</AppText>
+                            <AppText style={styles.metricValue}>{yieldValue}</AppText>
+                            <AppText variant="bodyMedium" color="textMedium">Tonnes / {inputs.area || '1'} Acre</AppText>
                         </View>
                     </View>
 
-                    <View style={styles.statusBadge}>
-                        <Feather name="trending-up" size={16} color={colors.primary} />
-                        <AppText variant="bodyMedium" style={styles.statusText}>
-                            Good Yield Potential ✨
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '15' }]}>
+                        <Feather name={getStatusIcon()} size={16} color={getStatusColor()} />
+                        <AppText variant="bodyMedium" style={[styles.statusText, { color: getStatusColor() }]}>
+                            {statusLabel} ✨
                         </AppText>
                     </View>
                 </View>
 
+                {/* Per-Acre Metric */}
+                <View style={styles.perAcreCard}>
+                    <View style={styles.perAcreRow}>
+                        <View>
+                            <AppText variant="caption" color="textMedium">Yield Per Acre</AppText>
+                            <AppText variant="heading2">{yieldPerAcre} T</AppText>
+                        </View>
+                        <View>
+                            <AppText variant="caption" color="textMedium">Quality</AppText>
+                            <AppText variant="heading3" style={{ color: getStatusColor() }}>{qualityRating}</AppText>
+                        </View>
+                    </View>
+                </View>
+
                 <View style={styles.insightsCard}>
-                    <AppText variant="heading3" style={{ marginBottom: 12 }}>Insights</AppText>
+                    <AppText variant="heading3" style={{ marginBottom: 12 }}>AI Insights</AppText>
                     <AppText variant="body" color="textMedium" style={{ lineHeight: 24 }}>
-                        Based on your Loamy soil and strong 1200mm rainfall average, your 5-year-old arecanut palms are expected to produce an optimal harvest. Maintaining regular fertilizer schedules will ensure you hit this 2.45 tonne target.
+                        {insights}
                     </AppText>
+                </View>
+
+                {/* Input Summary */}
+                <View style={styles.inputSummaryCard}>
+                    <AppText variant="heading3" style={{ marginBottom: 12 }}>Farm Parameters</AppText>
+                    <View style={styles.paramRow}>
+                        <AppText variant="caption" color="textMedium">Soil Type</AppText>
+                        <AppText variant="bodyMedium">{inputs.soilType || '—'}</AppText>
+                    </View>
+                    <View style={styles.paramRow}>
+                        <AppText variant="caption" color="textMedium">Rainfall</AppText>
+                        <AppText variant="bodyMedium">{inputs.rainfall || '—'} mm</AppText>
+                    </View>
+                    <View style={styles.paramRow}>
+                        <AppText variant="caption" color="textMedium">Plant Age</AppText>
+                        <AppText variant="bodyMedium">{inputs.age || '—'} years</AppText>
+                    </View>
+                    <View style={styles.paramRow}>
+                        <AppText variant="caption" color="textMedium">Farm Area</AppText>
+                        <AppText variant="bodyMedium">{inputs.area || '—'} acres</AppText>
+                    </View>
                 </View>
 
             </ScrollView>
@@ -52,7 +116,7 @@ export default function YieldResultScreen({ navigation }) {
             <View style={styles.footer}>
                 <AppButton
                     title="View Recommendations"
-                    onPress={() => navigation.navigate('HomeMain')} // In reality links to Article Tips but linking to home for now 
+                    onPress={() => navigation.navigate('Tips')}
                 />
             </View>
         </Screen>
@@ -80,7 +144,7 @@ const styles = StyleSheet.create({
         height: width * 0.55,
         borderRadius: (width * 0.55) / 2,
         borderWidth: 6,
-        borderColor: '#D1FAE5', // very light green
+        borderColor: '#D1FAE5',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
@@ -98,21 +162,33 @@ const styles = StyleSheet.create({
         fontSize: 48,
         fontWeight: '800',
         color: colors.text,
-        fontFamily: 'sans-serif', // robust fallback
+        fontFamily: 'sans-serif',
         marginBottom: 4,
     },
     statusBadge: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#F0FDF4',
         paddingHorizontal: 16,
         paddingVertical: 8,
         borderRadius: 20,
     },
     statusText: {
-        color: colors.primary,
         fontWeight: '700',
         marginLeft: 8,
+    },
+    perAcreCard: {
+        width: '100%',
+        backgroundColor: colors.surface,
+        padding: 20,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: colors.border,
+        marginBottom: 16,
+    },
+    perAcreRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
     },
     insightsCard: {
         width: '100%',
@@ -126,6 +202,24 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.04,
         shadowRadius: 12,
         elevation: 2,
+        marginBottom: 16,
+    },
+    inputSummaryCard: {
+        width: '100%',
+        backgroundColor: colors.surface,
+        padding: 20,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: colors.border,
+        marginBottom: 16,
+    },
+    paramRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 8,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
     },
     footer: {
         padding: 20,
