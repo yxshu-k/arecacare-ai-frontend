@@ -3,13 +3,15 @@ import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
-import { colors } from '../theme/colors';
 import { AuthContext } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 
 export default function HomeScreen({ navigation }) {
     const { userData, logout } = useContext(AuthContext);
+    const { colors } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors), [colors]);
 
-    const userName = userData?.name || 'Ramesh';
+    const userName = userData?.name || 'Farmer';
 
     const ActionCard = ({ title, subtitle, icon, iconLib = 'Feather', color, onPress }) => (
         <TouchableOpacity style={[styles.card, { borderColor: color + '40' }]} onPress={onPress}>
@@ -110,7 +112,7 @@ export default function HomeScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     scroll: { paddingVertical: 10, paddingBottom: 40 },
     header: {

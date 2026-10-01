@@ -14,9 +14,14 @@ export const AuthProvider = ({ children }) => {
             try {
                 const token = await SecureStore.getItemAsync('auth_token');
                 if (token) {
-                    // Try to silently refresh token on boot if refresh_token logic exists, 
-                    // for now we just trust the local token until an Axios 401 proves otherwise.
                     setUserToken(token);
+                    // Must securely fetch the real profile immediately
+                    try {
+                        const userProfile = await authService.getMe();
+                        setUserData(userProfile);
+                    } catch (err) {
+                        console.log("Could not fetch user profile on boot");
+                    }
                 }
             } catch (e) {
                 console.error('Failed to load token', e);
@@ -31,8 +36,11 @@ export const AuthProvider = ({ children }) => {
         try {
             const data = await authService.login(email, password);
             setUserToken(data.token);
-            setUserData(data.user);
             await SecureStore.setItemAsync('auth_token', data.token);
+
+            // Now fetch the true profile from backend
+            const userProfile = await authService.getMe();
+            setUserData(userProfile);
         } catch (error) {
             console.error('[AuthContext] Login failed:', error.message);
             throw error; // Let UI handle it
@@ -55,8 +63,11 @@ export const AuthProvider = ({ children }) => {
         try {
             const data = await authService.googleLogin(googleToken);
             setUserToken(data.token);
-            setUserData(data.user);
             await SecureStore.setItemAsync('auth_token', data.token);
+
+            // Fetch real profile
+            const userProfile = await authService.getMe();
+            setUserData(userProfile);
         } catch (error) {
             console.error('[AuthContext] Google Auth failed:', error.message);
             throw error;
@@ -87,8 +98,28 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const updateUser = async (updateData) => {
+        try {
+            const updatedProfile = await authService.updateProfile(updateData);
+            setUserData(updatedProfile);
+        } catch (error) {
+            console.error('[AuthContext] Update Profile failed:', error.message);
+            throw error;
+        }
+    };
+
+    const uploadAvatar = async (imageUri) => {
+        try {
+            const updatedProfile = await authService.uploadProfilePicture(imageUri);
+            setUserData(updatedProfile);
+        } catch (error) {
+            console.error('[AuthContext] Avatar upload failed:', error.message);
+            throw error;
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ userToken, userData, isLoading, login, register, googleLogin, logout, deactivate }}>
+        <AuthContext.Provider value={{ userToken, userData, isLoading, login, register, googleLogin, logout, deactivate, updateUser, uploadAvatar }}>
             {children}
         </AuthContext.Provider>
     );

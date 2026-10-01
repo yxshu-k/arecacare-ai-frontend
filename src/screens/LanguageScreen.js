@@ -4,7 +4,8 @@ import { Feather } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const LANGUAGES = [
     { id: 'en', name: 'English', native: 'English' },
@@ -16,14 +17,16 @@ const LANGUAGES = [
 ];
 
 export default function LanguageScreen({ navigation }) {
-    const [selectedLang, setSelectedLang] = useState('en');
+    const { language, changeLanguage, t } = useLanguage();
+    const { colors } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors), [colors]);
 
     const LanguageRow = ({ lang }) => {
-        const isSelected = selectedLang === lang.id;
+        const isSelected = language === lang.id;
         return (
             <TouchableOpacity
                 style={[styles.langRow, isSelected && styles.langRowSelected]}
-                onPress={() => setSelectedLang(lang.id)}
+                onPress={() => changeLanguage(lang.id)}
             >
                 <View style={styles.langNameContainer}>
                     <AppText variant="heading3" style={{ color: isSelected ? colors.primary : colors.text }}>
@@ -46,7 +49,7 @@ export default function LanguageScreen({ navigation }) {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
                     <Feather name="chevron-left" size={28} color={colors.text} />
                 </TouchableOpacity>
-                <AppText variant="heading3">App Language</AppText>
+                <AppText variant="heading3">{t("app_language")}</AppText>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -77,7 +80,7 @@ export default function LanguageScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     header: {
         flexDirection: 'row',

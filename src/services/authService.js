@@ -1,6 +1,15 @@
 import api from './api';
 
 export const authService = {
+    getMe: async () => {
+        try {
+            const response = await api.get('/api/auth/me');
+            return response.data;
+        } catch (error) {
+            throw new Error('Failed to fetch profile.');
+        }
+    },
+
     login: async (email, password) => {
         try {
             const response = await api.post('/api/auth/login', { email, password });
@@ -30,6 +39,40 @@ export const authService = {
                 throw new Error(error.response.data.detail || error.response.data.message || 'Registration failed');
             }
             throw new Error('Network error. Unable to connect to server.');
+        }
+    },
+
+    // ----------------------------------------------------
+    // User Profile Actions
+    // ----------------------------------------------------
+
+    updateProfile: async (userData) => {
+        try {
+            const response = await api.put('/api/auth/me', userData);
+            return response.data;
+        } catch (error) {
+            if (error.response && error.response.data) {
+                throw new Error(error.response.data.detail || error.response.data.message || 'Profile update failed');
+            }
+            throw new Error('Network error. Unable to connect to server.');
+        }
+    },
+
+    uploadProfilePicture: async (imageUri) => {
+        try {
+            const formData = new FormData();
+            formData.append('file', {
+                uri: imageUri,
+                type: 'image/jpeg',
+                name: 'profile.jpg',
+            });
+
+            const response = await api.post('/api/auth/profile-picture', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+            return response.data;
+        } catch (error) {
+            throw new Error('Avatar upload failed.');
         }
     },
 

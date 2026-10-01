@@ -5,6 +5,7 @@ import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { colors } from '../theme/colors';
 import { weatherService } from '../services/weatherService';
+import { AuthContext } from '../context/AuthContext';
 
 const MetricCard = ({ icon, title, value, unit, color }) => (
     <View style={styles.metricCard}>
@@ -55,6 +56,7 @@ export default function WeatherScreen({ navigation }) {
     const [advisory, setAdvisory] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const { userData } = useContext(AuthContext);
 
     useEffect(() => {
         fetchWeatherData();
@@ -64,9 +66,10 @@ export default function WeatherScreen({ navigation }) {
         setLoading(true);
         setError(null);
         try {
+            const targetLocation = userData?.region || 'Shivamogga';
             const [weatherData, advisoryData] = await Promise.all([
-                weatherService.getCurrentWeather(),
-                weatherService.getAdvisory(),
+                weatherService.getCurrentWeather(targetLocation),
+                weatherService.getAdvisory(targetLocation),
             ]);
             setWeather(weatherData);
             setAdvisory(advisoryData);
@@ -148,7 +151,7 @@ export default function WeatherScreen({ navigation }) {
                         color={colors.white}
                     />
                     <AppText variant="bodyMedium" style={{ color: 'rgba(255,255,255,0.8)', marginTop: 8 }}>
-                        {dateString} • {weather?.location || 'Shivamogga'}
+                        {dateString} • {weather?.location || 'Live'}
                     </AppText>
                     <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 8 }}>
                         <AppText style={styles.tempText}>{Math.round(weather?.temperature || 0)}</AppText>

@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Switch } from 'react-native';
+import React, { useState, useContext, useMemo } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Switch, Alert } from 'react-native';
+import * as Location from 'expo-location';
+import { AuthContext } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { Feather } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
-import { colors } from '../theme/colors';
 
-const SettingToggle = ({ icon, title, description, value, onValueChange }) => (
+const SettingToggle = ({ icon, title, description, value, onValueChange, colors, styles }) => (
     <View style={styles.menuRow}>
         <View style={styles.menuRowLeft}>
             <View style={styles.iconBox}>
@@ -32,9 +34,45 @@ const SettingToggle = ({ icon, title, description, value, onValueChange }) => (
 );
 
 export default function SettingsScreen({ navigation }) {
+    const { userData, updateUser } = useContext(AuthContext);
+    const { isDarkMode, toggleTheme, colors } = useTheme();
+
+    // Memoize dynamic styles
+    const styles = useMemo(() => getStyles(colors), [colors]);
+
+    // Existing settings states
     const [pushEnabled, setPushEnabled] = useState(true);
-    const [darkMode, setDarkMode] = useState(false);
     const [dataSaver, setDataSaver] = useState(false);
+
+    // Auto-detect if location exists in user profile
+    const [locationEnabled, setLocationEnabled] = useState(!!userData?.region);
+
+    const handleLocationToggle = async (val) => {
+        if (val) {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                Alert.alert('Permission Denied', 'GPS is required for local weather advisory.');
+                setLocationEnabled(false);
+                return;
+            }
+
+            try {
+                let location = await Location.getCurrentPositionAsync({});
+                const coords = `${location.coords.latitude.toFixed(4)},${location.coords.longitude.toFixed(4)}`;
+                // Sync securely to backend profile
+                await updateUser({ region: coords });
+                setLocationEnabled(true);
+                Alert.alert("GPS Synced!", `Your farm coordinates (${coords}) have been saved for live tracking.`);
+            } catch (e) {
+                Alert.alert("Error", "Could not fetch GPS.");
+                setLocationEnabled(false);
+            }
+        } else {
+            // Un-sync location
+            await updateUser({ region: null });
+            setLocationEnabled(false);
+        }
+    };
 
     return (
         <Screen style={styles.screen} noPadding>
@@ -49,6 +87,19 @@ export default function SettingsScreen({ navigation }) {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
                 <View style={styles.section}>
+                    <AppText variant="heading3" style={styles.sectionTitle}>Precision Agriculture</AppText>
+                    <SettingToggle
+                        icon="map-pin"
+                        title="Farm GPS Sync"
+                        description={userData?.region ? `Synced at ${userData.region}` : "Enable hyper-local weather risk alerts"}
+                        value={locationEnabled}
+                        onValueChange={handleLocationToggle}
+                        colors={colors}
+                        styles={styles}
+                    />
+                </View>
+
+                <View style={styles.section}>
                     <AppText variant="heading3" style={styles.sectionTitle}>Notifications</AppText>
                     <SettingToggle
                         icon="bell"
@@ -56,6 +107,8 @@ export default function SettingsScreen({ navigation }) {
                         description="Receive alerts for weather warnings and disease outbreaks"
                         value={pushEnabled}
                         onValueChange={setPushEnabled}
+                        colors={colors}
+                        styles={styles}
                     />
                 </View>
 
@@ -65,8 +118,10 @@ export default function SettingsScreen({ navigation }) {
                         icon="moon"
                         title="Dark Mode"
                         description="Switch to a dark theme to save battery"
-                        value={darkMode}
-                        onValueChange={setDarkMode}
+                        value={isDarkMode}
+                        onValueChange={toggleTheme}
+                        colors={colors}
+                        styles={styles}
                     />
                     <SettingToggle
                         icon="wifi"
@@ -74,6 +129,8 @@ export default function SettingsScreen({ navigation }) {
                         description="Compress images before AI scanning to save cellular data"
                         value={dataSaver}
                         onValueChange={setDataSaver}
+                        colors={colors}
+                        styles={styles}
                     />
                 </View>
 
@@ -82,7 +139,7 @@ export default function SettingsScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     header: {
         flexDirection: 'row',
@@ -130,8 +187,10 @@ const styles = StyleSheet.create({
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: '#F0FDF4',
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: colors.border
     }
 });

@@ -1,5 +1,5 @@
-export const colors = {
-  primary: '#2E7D32',      // Deep agricultural green
+export const lightColors = {
+  primary: '#16A34A',      // Vibrant Green agricultural green
   secondary: '#4CAF50',    // Lighter green
   accent: '#A5D6A7',       // Soft accent green
   background: '#F8FAF8',   // Light off-white for app background
@@ -14,3 +14,23 @@ export const colors = {
   white: '#FFFFFF',
   black: '#000000',
 };
+
+export const darkColors = {
+  primary: '#22C55E',
+  secondary: '#10B981',
+  background: '#121212',
+  surface: '#1E1E1E',
+  border: '#2C2C2C',
+  text: '#F3F4F6',
+  textMedium: '#9CA3AF',
+  textLight: '#6B7280',
+  error: '#EF4444',
+  success: '#10B981',
+  warning: '#F59E0B',
+  info: '#3B82F6',
+  white: '#FFFFFF',
+  black: '#000000',
+};
+
+// Fallback for files that haven't been refactored yet
+export const colors = lightColors;

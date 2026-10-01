@@ -1,17 +1,17 @@
 import React, { useContext } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Alert, Image } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
-import AppButton from '../components/AppButton';
-import { colors } from '../theme/colors';
 import { AuthContext } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
-const MenuRow = ({ icon, title, value, isDestructive, onPress }) => (
+const MenuRow = ({ icon, title, value, onPress, isDestructive, colors, styles }) => (
     <TouchableOpacity style={styles.menuRow} onPress={onPress}>
         <View style={styles.menuRowLeft}>
             <View style={[styles.iconBox, isDestructive && { backgroundColor: '#FEF2F2' }]}>
-                <Feather name={icon} size={20} color={isDestructive ? '#DC2626' : colors.primary} />
+                <Feather name={icon} size={20} color={isDestructive ? colors.error : colors.primary} />
             </View>
             <AppText variant="bodyMedium" style={{ marginLeft: 16, color: isDestructive ? '#DC2626' : colors.text }}>
                 {title}
@@ -26,6 +26,9 @@ const MenuRow = ({ icon, title, value, isDestructive, onPress }) => (
 
 export default function ProfileScreen({ navigation }) {
     const { userData, logout, deactivate } = useContext(AuthContext);
+    const { colors } = useTheme();
+    const { t } = useLanguage();
+    const styles = React.useMemo(() => getStyles(colors), [colors]);
 
     const handleLogout = () => {
         Alert.alert(
@@ -56,37 +59,42 @@ export default function ProfileScreen({ navigation }) {
                 {/* Profile Header */}
                 <View style={styles.profileHeader}>
                     <View style={styles.avatar}>
-                        <AppText variant="heading2" style={{ color: colors.primary }}>
-                            {userData?.name?.charAt(0) || 'R'}
-                        </AppText>
+                        {userData?.avatar_url ? (
+                            <Image source={{ uri: userData.avatar_url }} style={styles.avatarImage} />
+                        ) : (
+                            <AppText variant="heading2" style={{ color: colors.primary }}>
+                                {userData?.name ? userData.name.charAt(0).toUpperCase() : 'F'}
+                            </AppText>
+                        )}
                     </View>
-                    <AppText variant="heading2" style={{ marginTop: 12 }}>{userData?.name || 'Ramesh B.'}</AppText>
-                    <AppText variant="bodyMedium" color="textMedium" style={{ marginTop: 4 }}>+91 98765 43210</AppText>
+                    <AppText variant="heading2" style={{ marginTop: 12 }}>{userData?.name || t("farmer")}</AppText>
+                    <AppText variant="bodyMedium" color="textMedium" style={{ marginTop: 4 }}>
+                        {userData?.phone || userData?.email || t("update_profile")}
+                    </AppText>
                 </View>
 
                 {/* Menu Sections */}
                 <View style={styles.section}>
-                    <AppText variant="heading3" style={styles.sectionTitle}>Account</AppText>
-                    <MenuRow icon="map" title="My Farms" />
-                    <MenuRow icon="user" title="Personal Information" />
+                    <AppText variant="heading3" style={styles.sectionTitle}>{t("account")}</AppText>
+                    <MenuRow icon="map" title={t("my_farms")} colors={colors} styles={styles} />
+                    <MenuRow icon="user" title={t("personal_info")} onPress={() => navigation.navigate('EditProfile')} colors={colors} styles={styles} />
                 </View>
 
                 <View style={styles.section}>
-                    <AppText variant="heading3" style={styles.sectionTitle}>Preferences</AppText>
-                    <MenuRow icon="bell" title="Notifications" onPress={() => navigation.navigate('Settings')} />
-                    <MenuRow icon="globe" title="App Language" value="English" onPress={() => navigation.navigate('Language')} />
+                    <AppText variant="heading3" style={styles.sectionTitle}>{t("preferences")}</AppText>
+                    <MenuRow icon="settings" title={t("settings")} onPress={() => navigation.navigate('Settings')} colors={colors} styles={styles} />
+                    <MenuRow icon="globe" title={t("language")} onPress={() => navigation.navigate('Language')} colors={colors} styles={styles} />
                 </View>
 
                 <View style={styles.section}>
-                    <AppText variant="heading3" style={styles.sectionTitle}>Support</AppText>
-                    <MenuRow icon="help-circle" title="Help & Support" />
-                    <MenuRow icon="shield" title="Privacy Policy" />
-                    <MenuRow icon="file-text" title="Terms & Conditions" />
+                    <AppText variant="heading3" style={styles.sectionTitle}>{t("support")}</AppText>
+                    <MenuRow icon="help-circle" title={t("help_center")} colors={colors} styles={styles} />
+                    <MenuRow icon="file-text" title={t("privacy_policy")} colors={colors} styles={styles} />
                 </View>
 
                 <View style={styles.section}>
-                    <MenuRow icon="log-out" title="Log Out" onPress={handleLogout} />
-                    <MenuRow icon="user-x" title="Deactivate Account" isDestructive onPress={handleDeactivate} />
+                    <MenuRow icon="log-out" title={t("logout")} onPress={handleLogout} colors={colors} styles={styles} />
+                    <MenuRow icon="trash-2" title={t("deactivate")} isDestructive onPress={handleDeactivate} colors={colors} styles={styles} />
                 </View>
 
                 <View style={styles.footerInfo}>
@@ -98,8 +106,8 @@ export default function ProfileScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
-    screen: { backgroundColor: colors.background },
+const getStyles = (colors) => StyleSheet.create({
+    screen: { backgroundColor: colors.background, flex: 1 },
     scroll: { paddingBottom: 40 },
     profileHeader: {
         alignItems: 'center',
@@ -116,6 +124,12 @@ const styles = StyleSheet.create({
         backgroundColor: '#E8F5E9',
         justifyContent: 'center',
         alignItems: 'center',
+        overflow: 'hidden',
+    },
+    avatarImage: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
     },
     section: {
         backgroundColor: colors.surface,
@@ -144,12 +158,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     iconBox: {
-        width: 36,
-        height: 36,
-        borderRadius: 18,
-        backgroundColor: '#F0FDF4',
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: colors.background,
         justifyContent: 'center',
         alignItems: 'center',
+        borderWidth: 1,
+        borderColor: colors.border
     },
     menuRowRight: {
         flexDirection: 'row',
