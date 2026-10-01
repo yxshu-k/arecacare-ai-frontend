@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "arecacare-ai-frontend",
+    "name": "ArecaCare AI",
     "slug": "arecacare-ai-frontend",
     "scheme": "arecacare",
     "version": "1.0.0",
@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.yakshitha.arecacareaifrontend"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -24,6 +25,11 @@
     "plugins": [
       "expo-secure-store",
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "98094460-70f6-4cd7-bcb3-8bde7d5cf546"
+      }
+    }
   }
 }

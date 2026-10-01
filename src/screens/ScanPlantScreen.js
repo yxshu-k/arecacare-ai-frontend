@@ -74,54 +74,60 @@ export default function ScanPlantScreen({ navigation }) {
         <View style={styles.container}>
             {/* Native Live Camera View */}
             <CameraView
-                style={styles.cameraFrame}
+                style={{ flex: 1 }}
                 facing={facing}
                 enableTorch={flash === 'on'}
                 ref={cameraRef}
+            />
+
+            {/* Scanner Overlay UI */}
+            <View
+                style={[
+                    styles.overlay,
+                    { position: 'absolute', top: 0, left: 0, width: width, height: height, zIndex: 10, flex: 0 }
+                ]}
+                pointerEvents="box-none"
             >
-                {/* Scanner Overlay UI */}
-                <View style={styles.overlay}>
-                    {/* Header */}
-                    <View style={styles.header}>
-                        <TouchableOpacity style={styles.roundBtn} onPress={() => navigation.goBack()}>
-                            <Feather name="x" size={24} color={colors.white} />
-                        </TouchableOpacity>
-                        <AppText variant="heading2" style={{ color: colors.white }}>Scan Plant</AppText>
-                        <TouchableOpacity style={[styles.roundBtn, flash === 'on' && { backgroundColor: 'rgba(255, 255, 255, 0.4)' }]} onPress={toggleFlash}>
-                            <Feather name={flash === 'on' ? "zap" : "zap-off"} size={24} color={colors.white} />
-                        </TouchableOpacity>
-                    </View>
-
-                    {/* Viewfinder Target */}
-                    <View style={styles.targetBox}>
-                        <View style={[styles.corner, styles.tl]} />
-                        <View style={[styles.corner, styles.tr]} />
-                        <View style={[styles.corner, styles.bl]} />
-                        <View style={[styles.corner, styles.br]} />
-                        <AppText variant="bodyMedium" style={styles.hintText}>
-                            Align the affected leaf within the frame
-                        </AppText>
-                    </View>
-
-                    {/* Bottom Action Bar */}
-                    <View style={styles.bottomBar}>
-                        <TouchableOpacity style={styles.secondaryBtn} onPress={pickImage}>
-                            <Feather name="image" size={24} color={colors.white} />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={styles.captureBtnOuter}
-                            onPress={takePhotoNative}
-                        >
-                            <View style={styles.captureBtnInner} />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.secondaryBtn} onPress={toggleCameraFacing}>
-                            <Ionicons name="camera-reverse-outline" size={26} color={colors.white} />
-                        </TouchableOpacity>
-                    </View>
+                {/* Header */}
+                <View style={styles.header}>
+                    <TouchableOpacity style={styles.roundBtn} onPress={() => navigation.goBack()}>
+                        <Feather name="x" size={24} color={colors.white} />
+                    </TouchableOpacity>
+                    <AppText variant="heading2" style={{ color: colors.white }}>Scan Plant</AppText>
+                    <TouchableOpacity style={[styles.roundBtn, flash === 'on' && { backgroundColor: 'rgba(255, 255, 255, 0.4)' }]} onPress={toggleFlash}>
+                        <Feather name={flash === 'on' ? "zap" : "zap-off"} size={24} color={colors.white} />
+                    </TouchableOpacity>
                 </View>
-            </CameraView>
+
+                {/* Viewfinder Target */}
+                <View style={styles.targetBox} pointerEvents="none">
+                    <View style={[styles.corner, styles.tl]} />
+                    <View style={[styles.corner, styles.tr]} />
+                    <View style={[styles.corner, styles.bl]} />
+                    <View style={[styles.corner, styles.br]} />
+                    <AppText variant="bodyMedium" style={styles.hintText}>
+                        Align the affected leaf within the frame
+                    </AppText>
+                </View>
+
+                {/* Bottom Action Bar */}
+                <View style={styles.bottomBar}>
+                    <TouchableOpacity style={styles.secondaryBtn} onPress={pickImage}>
+                        <Feather name="image" size={24} color={colors.white} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.captureBtnOuter}
+                        onPress={takePhotoNative}
+                    >
+                        <View style={styles.captureBtnInner} />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity style={styles.secondaryBtn} onPress={toggleCameraFacing}>
+                        <Ionicons name="camera-reverse-outline" size={26} color={colors.white} />
+                    </TouchableOpacity>
+                </View>
+            </View>
         </View>
     );
 }
