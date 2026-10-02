@@ -43,8 +43,17 @@ const TreatmentCard = ({ type, title, description, iconLib, icon, color }) => (
 );
 
 export default function TreatmentDetailsScreen({ route, navigation }) {
-    const { details } = route.params || {};
+    const { details, diseaseName } = route.params || {};
 
+    const isHealthy = diseaseName?.toLowerCase().includes('healthy');
+    const headerTitle = isHealthy ? "Care Guide" : "Recommended Treatment";
+    const headerIconColor = isHealthy ? "#16A34A" : colors.primary;
+    const headerBgColor = isHealthy ? "#DCFCE7" : "#F0FDF4";
+    const headerBorder = isHealthy ? "#BBF7D0" : "#DCFCE7";
+
+    const introText = isHealthy
+        ? "Your arecanut palm appears in excellent condition! To maintain this high vitality, please follow the prophylactic maintenance recommendations below."
+        : "Immediate action helps control the spread of diseases. Please follow the expert agricultural treatments recommended below.";
 
     return (
         <Screen style={styles.screen} noPadding>
@@ -52,16 +61,16 @@ export default function TreatmentDetailsScreen({ route, navigation }) {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Feather name="chevron-left" size={28} color={colors.text} />
                 </TouchableOpacity>
-                <AppText variant="heading3">Recommended Treatment</AppText>
+                <AppText variant="heading3">{headerTitle}</AppText>
                 <View style={{ width: 28 }} />
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
-                <View style={styles.summaryBox}>
-                    <Feather name="info" size={20} color={colors.primary} />
+                <View style={[styles.summaryBox, { backgroundColor: headerBgColor, borderColor: headerBorder }]}>
+                    <Feather name={isHealthy ? "check-circle" : "info"} size={20} color={headerIconColor} />
                     <AppText variant="bodyMedium" style={{ marginLeft: 10, flex: 1, color: colors.text }}>
-                        Immediate action helps control the spread of diseases. Please follow the expert agricultural treatments recommended below.
+                        {introText}
                     </AppText>
                 </View>
 
