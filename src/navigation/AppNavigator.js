@@ -10,11 +10,12 @@ import HistoryScreen from '../screens/HistoryScreen';
 import TipsScreen from '../screens/TipsScreen';
 import ProfileNavigator from './ProfileNavigator';
 import { Feather } from '@expo/vector-icons';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 
 const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
+    const { colors } = useTheme();
     return (
         <Tab.Navigator
             screenOptions={{
@@ -24,6 +25,7 @@ export default function AppNavigator() {
                 tabBarStyle: {
                     borderTopWidth: 1,
                     borderTopColor: colors.border,
+                    backgroundColor: colors.surface,
                     elevation: 10,
                     shadowColor: colors.black,
                     shadowOffset: { width: 0, height: -4 },

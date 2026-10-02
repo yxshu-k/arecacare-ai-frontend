@@ -7,6 +7,8 @@ import AppButton from '../components/AppButton';
 import AppTextInput from '../components/AppTextInput';
 import GoogleAuthButton from '../components/GoogleAuthButton';
 import { AuthContext } from '../context/AuthContext';
+import { formatPhone, formatEmail } from '../utils/formatters';
+import { isValidEmail, isValidPhone, isValidPassword, isValidName } from '../utils/validators';
 
 export default function SignupScreen({ navigation }) {
     const [name, setName] = useState('');
@@ -24,24 +26,22 @@ export default function SignupScreen({ navigation }) {
         let valid = true;
         let newErrors = {};
 
-        if (!name || name.length < 2) {
+        if (!isValidName(name)) {
             newErrors.name = 'Name must be at least 2 characters';
             valid = false;
         }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!email || !emailRegex.test(email)) {
+        if (!isValidEmail(email)) {
             newErrors.email = 'Please enter a valid email address';
             valid = false;
         }
 
-        const phoneRegex = /^[0-9]{10}$/;
-        if (phone && phone.length > 0 && !phoneRegex.test(phone.replace(/\D/g, ''))) {
+        if (phone && phone.length > 0 && !isValidPhone(phone)) {
             newErrors.phone = 'Please enter a valid 10-digit phone number';
             valid = false;
         }
 
-        if (!password || password.length < 8) {
+        if (!isValidPassword(password)) {
             newErrors.password = 'Password must be at least 8 characters long';
             valid = false;
         }
@@ -93,10 +93,10 @@ export default function SignupScreen({ navigation }) {
                         <AppTextInput label="Full Name" icon="user" placeholder="Ramesh Kumar" value={name} onChangeText={(text) => { setName(text); setErrors({ ...errors, name: '' }) }} />
                         {errors.name && <AppText style={styles.errorText}>{errors.name}</AppText>}
 
-                        <AppTextInput label="Phone Number (Optional)" icon="phone" placeholder="9876543210" keyboardType="phone-pad" value={phone} onChangeText={(text) => { setPhone(text); setErrors({ ...errors, phone: '' }) }} />
+                        <AppTextInput label="Phone Number (Optional)" icon="phone" placeholder="9876543210" keyboardType="phone-pad" value={phone} onChangeText={(text) => { setPhone(formatPhone(text)); setErrors({ ...errors, phone: '' }) }} />
                         {errors.phone && <AppText style={styles.errorText}>{errors.phone}</AppText>}
 
-                        <AppTextInput label="Email Address" icon="mail" placeholder="farmer@example.com" keyboardType="email-address" value={email} onChangeText={(text) => { setEmail(text); setErrors({ ...errors, email: '' }) }} />
+                        <AppTextInput label="Email Address" icon="mail" placeholder="farmer@example.com" keyboardType="email-address" value={email} onChangeText={(text) => { setEmail(formatEmail(text)); setErrors({ ...errors, email: '' }) }} />
                         {errors.email && <AppText style={styles.errorText}>{errors.email}</AppText>}
 
                         <AppTextInput

@@ -6,11 +6,15 @@ import AppText from '../components/AppText';
 import AppTextInput from '../components/AppTextInput';
 import AppButton from '../components/AppButton';
 import Screen from '../components/Screen';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { AuthContext } from '../context/AuthContext';
+import { formatPhone } from '../utils/formatters';
+import { isValidPhone, isValidName } from '../utils/validators';
 
 export default function EditProfileScreen({ navigation }) {
     const { userData, updateUser, uploadAvatar } = useContext(AuthContext);
+    const { colors } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors), [colors]);
     const [name, setName] = useState(userData?.name || '');
     const [phone, setPhone] = useState(userData?.phone || '');
     const [loading, setLoading] = useState(false);
@@ -43,8 +47,13 @@ export default function EditProfileScreen({ navigation }) {
     };
 
     const handleSave = async () => {
-        if (!name.trim()) {
-            Alert.alert("Error", "Name cannot be empty.");
+        if (!isValidName(name)) {
+            Alert.alert("Error", "Name must be at least 2 characters.");
+            return;
+        }
+
+        if (phone && phone.length > 0 && !isValidPhone(phone)) {
+            Alert.alert("Error", "Please enter a valid 10-digit phone number.");
             return;
         }
 
@@ -102,7 +111,7 @@ export default function EditProfileScreen({ navigation }) {
                         icon="phone"
                         placeholder="Phone Number"
                         value={phone}
-                        onChangeText={setPhone}
+                        onChangeText={(text) => setPhone(formatPhone(text))}
                         keyboardType="phone-pad"
                     />
 
@@ -130,7 +139,7 @@ export default function EditProfileScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     screen: { backgroundColor: colors.background, flex: 1 },
     header: {
         flexDirection: 'row',

@@ -5,10 +5,13 @@ import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import AppTextInput from '../components/AppTextInput';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { yieldService } from '../services/yieldService';
+import { formatNumber } from '../utils/formatters';
 
 export default function YieldInputScreen({ navigation }) {
+    const { colors } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors), [colors]);
     const [soilType, setSoilType] = useState('Loamy');
     const [rainfall, setRainfall] = useState('1200');
     const [age, setAge] = useState('5');
@@ -76,7 +79,7 @@ export default function YieldInputScreen({ navigation }) {
                             placeholder="e.g. 1200"
                             keyboardType="numeric"
                             value={rainfall}
-                            onChangeText={setRainfall}
+                            onChangeText={(text) => setRainfall(formatNumber(text))}
                         />
 
                         <AppTextInput
@@ -85,7 +88,7 @@ export default function YieldInputScreen({ navigation }) {
                             placeholder="e.g. 5"
                             keyboardType="numeric"
                             value={age}
-                            onChangeText={setAge}
+                            onChangeText={(text) => setAge(formatNumber(text))}
                         />
 
                         <AppTextInput
@@ -94,7 +97,7 @@ export default function YieldInputScreen({ navigation }) {
                             placeholder="e.g. 2"
                             keyboardType="numeric"
                             value={area}
-                            onChangeText={setArea}
+                            onChangeText={(text) => setArea(formatNumber(text))}
                         />
                     </View>
 
@@ -112,7 +115,7 @@ export default function YieldInputScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     header: {
         flexDirection: 'row',

@@ -20,7 +20,9 @@ export const AuthProvider = ({ children }) => {
                         const userProfile = await authService.getMe();
                         setUserData(userProfile);
                     } catch (err) {
-                        console.log("Could not fetch user profile on boot");
+                        console.log("Could not fetch user profile on boot. Token likely expired.");
+                        setUserToken(null);
+                        await SecureStore.deleteItemAsync('auth_token');
                     }
                 }
             } catch (e) {

@@ -8,6 +8,8 @@ import AppTextInput from '../components/AppTextInput';
 import GoogleAuthButton from '../components/GoogleAuthButton';
 import { AuthContext } from '../context/AuthContext';
 import { colors } from '../theme/colors';
+import { formatEmail } from '../utils/formatters';
+import { isValidEmail } from '../utils/validators';
 
 export default function LoginScreen({ navigation }) {
     const [email, setEmail] = useState('');
@@ -21,8 +23,7 @@ export default function LoginScreen({ navigation }) {
         let valid = true;
         let newErrors = {};
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!email || !emailRegex.test(email)) {
+        if (!isValidEmail(email)) {
             newErrors.email = 'Please enter a valid email address';
             valid = false;
         }
@@ -74,7 +75,7 @@ export default function LoginScreen({ navigation }) {
                             placeholder="farmer@example.com"
                             keyboardType="email-address"
                             value={email}
-                            onChangeText={(text) => { setEmail(text); setErrors({ ...errors, email: '' }) }}
+                            onChangeText={(text) => { setEmail(formatEmail(text)); setErrors({ ...errors, email: '' }) }}
                         />
                         {errors.email && <AppText style={styles.errorText}>{errors.email}</AppText>}
 
