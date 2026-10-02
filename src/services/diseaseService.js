@@ -86,19 +86,38 @@ export const diseaseService = {
     getHistory: async () => {
         try {
             const response = await api.get('/api/predictions/history');
-            // Cache history heavily for offline modes
             await AsyncStorage.setItem('cache_disease_history', JSON.stringify(response.data));
             return response.data;
         } catch (error) {
             console.warn('[DiseaseService] History Network Error:', error.message);
-
             // Intercept standard fail with Offline Cache Hit
             const cached = await AsyncStorage.getItem('cache_disease_history');
             if (cached) {
-                console.log('[DiseaseService] Network failed. Providing purely offline diagnosis history.');
                 return JSON.parse(cached);
             }
             throw new Error(error.response?.data?.message || 'Failed to load history and no cache active.');
+        }
+    },
+
+    deleteHistoryItem: async (id) => {
+        try {
+            const response = await api.delete(`/api/predictions/${id}`);
+            // Force refresh history cache after successful deletion
+            const historyResponse = await api.get('/api/predictions/history');
+            await AsyncStorage.setItem('cache_disease_history', JSON.stringify(historyResponse.data));
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.detail || 'Failed to delete scan.');
+        }
+    },
+
+    clearAllHistory: async () => {
+        try {
+            const response = await api.delete('/api/predictions/clear-all');
+            await AsyncStorage.removeItem('cache_disease_history');
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.detail || 'Failed to clear history.');
         }
     }
 };

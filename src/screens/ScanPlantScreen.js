@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
@@ -37,8 +37,8 @@ export default function ScanPlantScreen({ navigation }) {
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ['images'],
-            allowsEditing: true,
-            quality: 1, // Let ImageManipulator handle compression
+            allowsEditing: false, // Provide raw image directly to preview screen
+            quality: 1,
         });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {

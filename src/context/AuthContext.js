@@ -1,4 +1,5 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Location from 'expo-location';
 import { authService } from '../services/authService';
@@ -39,7 +40,11 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const switchFarm = () => {
-        // Mock arrays stripped out. In production, this would open a Modal dynamically fetching custom user-saved plots from the backend.
+        Alert.alert(
+            "Farm Management",
+            "Multi-farm tracking is currently mocked. In production, this opens your list of registered farmlands. Currently viewing: " + activeFarm.name,
+            [{ text: "OK" }]
+        );
         console.log("Farm switched dynamically.");
     };
 
