@@ -5,6 +5,7 @@ import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { colors } from '../theme/colors';
 import { chatService } from '../services/chatService';
+import { useLanguage } from '../context/LanguageContext';
 
 const ChatBubble = ({ text, isAI }) => (
     <View style={[styles.bubbleWrapper, isAI ? styles.bubbleWrapperAI : styles.bubbleWrapperUser]}>
@@ -34,12 +35,20 @@ const TypingIndicator = () => (
 );
 
 export default function ChatAssistantScreen({ navigation }) {
+    const { language } = useLanguage();
     const [inputText, setInputText] = useState('');
     const [messages, setMessages] = useState([
         { id: '1', text: 'Hello! I am your ArecaCare AI Assistant. How can I help you with your arecanut farm today?', isAI: true },
     ]);
     const [isTyping, setIsTyping] = useState(false);
+    const [recording, setRecording] = useState(null);
+    const [sound, setSound] = useState(null);
     const scrollRef = useRef(null);
+
+    // Cleanup sound on unmount (Mocked)
+    useEffect(() => {
+        return undefined;
+    }, [sound]);
 
     // Load chat history on mount
     useEffect(() => {
@@ -76,6 +85,48 @@ export default function ChatAssistantScreen({ navigation }) {
             }
         } catch (err) {
             // Silently fail — history is optional
+        }
+    };
+
+    const playVoiceResponse = async (audioUrl) => {
+        // Mocked out to prevent Expo Go native crashes
+        console.log('[Native Mock] TTS Playback requested:', audioUrl);
+    };
+
+    const startRecording = async () => {
+        Alert.alert("Voice Unsupported", "Native Microphone access requires a compiled production build. Expo Go native bindings are locked.");
+    };
+
+    const stopRecording = async () => {
+        // Mocked
+        if (recording) {
+            setRecording(null);
+        }
+    };
+
+    const processVoiceCommand = async (uri) => {
+        setIsTyping(true);
+        const placeholderMsg = { id: `user_voice_${Date.now()}`, text: '🎙️ Audio Message sent', isAI: false };
+        setMessages(prev => [...prev, placeholderMsg]);
+
+        try {
+            const response = await chatService.sendVoiceMessage(uri, 'mobile_chat', language);
+
+            const aiMessage = {
+                id: `ai_${Date.now()}`,
+                text: response.response || 'Voice analysis complete.',
+                isAI: true,
+            };
+            setMessages(prev => [...prev, aiMessage]);
+
+            if (response.audio_url) {
+                playVoiceResponse(response.audio_url);
+            }
+        } catch (error) {
+            setMessages(prev => [...prev, { id: `err_${Date.now()}`, text: `⚠️ ${error.message}`, isAI: true }]);
+        } finally {
+            setIsTyping(false);
+            setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
         }
     };
 
@@ -132,8 +183,15 @@ export default function ChatAssistantScreen({ navigation }) {
                 <TouchableOpacity onPress={() => {
                     setMessages([{ id: '1', text: 'Hello! I am your ArecaCare AI Assistant. How can I help you with your arecanut farm today?', isAI: true }]);
                 }}>
-                    <Feather name="trash-2" size={22} color={colors.textMedium} />
+                    <Feather name="trash-2" size={24} color={colors.text} />
                 </TouchableOpacity>
+            </View>
+
+            <View style={styles.disclaimerBanner}>
+                <Feather name="info" size={12} color="#854D0E" />
+                <AppText variant="bodySmall" style={styles.disclaimerText}>
+                    AI estimates may be imprecise. Always verify with human experts before using chemicals.
+                </AppText>
             </View>
 
             <KeyboardAvoidingView
@@ -166,8 +224,16 @@ export default function ChatAssistantScreen({ navigation }) {
                             onChangeText={setInputText}
                             multiline
                             onSubmitEditing={handleSend}
-                            editable={!isTyping}
+                            editable={!isTyping && !recording}
                         />
+                        <TouchableOpacity
+                            style={recording ? styles.micBtnActive : styles.micBtn}
+                            onPressIn={startRecording}
+                            onPressOut={stopRecording}
+                            disabled={isTyping || inputText.trim().length > 0}
+                        >
+                            <Feather name="mic" size={20} color={recording ? colors.white : (inputText.trim().length > 0 ? colors.textLight : colors.primary)} />
+                        </TouchableOpacity>
                     </View>
 
                     <TouchableOpacity
@@ -263,6 +329,29 @@ const styles = StyleSheet.create({
         color: colors.text,
         fontFamily: 'sans-serif',
         maxHeight: 100,
+    },
+    disclaimerBanner: {
+        backgroundColor: '#FEF9C3', // subtle yellow
+        paddingVertical: 6,
+        paddingHorizontal: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderBottomColor: '#FDF08A'
+    },
+    disclaimerText: {
+        color: '#854D0E',
+        fontSize: 10,
+        marginLeft: 6,
+        fontWeight: '600'
+    },
+    micBtn: {
+        padding: 8,
+    },
+    micBtnActive: {
+        padding: 8,
+        backgroundColor: colors.danger || '#E11D48',
+        borderRadius: 20,
     },
     sendBtn: {
         width: 48,

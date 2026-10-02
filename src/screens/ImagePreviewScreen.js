@@ -10,6 +10,7 @@ import { diseaseService } from '../services/diseaseService';
 export default function ImagePreviewScreen({ route, navigation }) {
     const { imageUri } = route.params || {};
     const [analyzing, setAnalyzing] = useState(false);
+    const [progress, setProgress] = useState(0);
 
     const handleAnalyze = async () => {
         if (!imageUri) {
@@ -18,9 +19,13 @@ export default function ImagePreviewScreen({ route, navigation }) {
         }
 
         setAnalyzing(true);
+        setProgress(0);
         try {
-            // Upload the RAW multipart image to FastAPI
-            const prediction = await diseaseService.predict(imageUri);
+            // Upload the RAW multipart image to FastAPI with real progress reporting
+            const prediction = await diseaseService.predict(
+                imageUri,
+                (val) => setProgress(val)
+            );
             setAnalyzing(false);
             // Transition to result screen with real ML payload
             navigation.replace('Result', { prediction });
@@ -59,11 +64,16 @@ export default function ImagePreviewScreen({ route, navigation }) {
                     <View style={styles.analyzingOverlay}>
                         <ActivityIndicator size="large" color={colors.white} />
                         <AppText variant="heading3" style={{ color: colors.white, marginTop: 16 }}>
-                            AI Analyzing...
+                            {progress < 100 ? 'Uploading...' : 'AI Analyzing...'}
                         </AppText>
                         <AppText variant="bodyMedium" style={{ color: 'rgba(255,255,255,0.7)', marginTop: 8 }}>
-                            Running Core-ML Deep Learning Model
+                            {progress < 100 ? `Transferring Image (${progress}%)` : 'Running Deep Learning Model'}
                         </AppText>
+
+                        {/* Progress Bar Container */}
+                        <View style={styles.progressBarContainer}>
+                            <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+                        </View>
                     </View>
                 )}
             </View>
@@ -128,5 +138,18 @@ const styles = StyleSheet.create({
     },
     analyzeBtn: {
         flex: 2,
+    },
+    progressBarContainer: {
+        width: '60%',
+        height: 6,
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        borderRadius: 3,
+        marginTop: 20,
+        overflow: 'hidden'
+    },
+    progressBarFill: {
+        height: '100%',
+        backgroundColor: colors.primary,
+        borderRadius: 3
     }
 });

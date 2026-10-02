@@ -1,10 +1,11 @@
-import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import { colors } from '../theme/colors';
+import { notificationService } from '../services/notificationService';
 
 const TreatmentCard = ({ type, title, description, iconLib, icon, color }) => (
     <View style={[styles.card, { borderColor: color + '30' }]}>
@@ -26,10 +27,25 @@ const TreatmentCard = ({ type, title, description, iconLib, icon, color }) => (
         <AppText variant="bodyMedium" color="textMedium" style={{ marginTop: 12, lineHeight: 22 }}>
             {description}
         </AppText>
+
+        <TouchableOpacity
+            style={[styles.remindBtn, { backgroundColor: color + '15' }]}
+            onPress={() => notificationService.scheduleTreatmentReminder(title, 5).then((success) => {
+                if (success) Alert.alert("Reminder Set", "You will receive a native push notification when it's time to re-apply this treatment.");
+            })}
+        >
+            <Feather name="bell" size={16} color={color} />
+            <AppText variant="bodySmall" style={{ color: color, fontWeight: '700', marginLeft: 6 }}>
+                Remind me to re-apply
+            </AppText>
+        </TouchableOpacity>
     </View>
 );
 
-export default function TreatmentDetailsScreen({ navigation }) {
+export default function TreatmentDetailsScreen({ route, navigation }) {
+    const { details } = route.params || {};
+
+
     return (
         <Screen style={styles.screen} noPadding>
             <View style={styles.header}>
@@ -45,39 +61,43 @@ export default function TreatmentDetailsScreen({ navigation }) {
                 <View style={styles.summaryBox}>
                     <Feather name="info" size={20} color={colors.primary} />
                     <AppText variant="bodyMedium" style={{ marginLeft: 10, flex: 1, color: colors.text }}>
-                        Immediate action is required to stop the spread of Leaf Spot. Apply treatments during early morning or late evening.
+                        Immediate action helps control the spread of diseases. Please follow the expert agricultural treatments recommended below.
                     </AppText>
                 </View>
 
-                <TreatmentCard
-                    type="Chemical Option"
-                    title="Fungicide Application"
-                    description="Use Mancozeb 75% WP @ 2.5g/L of water. Spray thoroughly covering both surfaces of the leaves."
-                    iconLib="MaterialCommunityIcons"
-                    icon="flask-empty-outline"
-                    color="#3B82F6"
-                />
+                {details?.chemical_treatment && (
+                    <TreatmentCard
+                        type="Chemical Option"
+                        title={details.chemical_treatment.title}
+                        description={details.chemical_treatment.desc}
+                        iconLib="MaterialCommunityIcons"
+                        icon="flask-empty-outline"
+                        color="#3B82F6"
+                    />
+                )}
 
-                <TreatmentCard
-                    type="Organic Option"
-                    title="Bordeaux Mixture"
-                    description="Apply 1% Bordeaux mixture. Best organic alternative if applied immediately upon first symptom detection."
-                    iconLib="Feather"
-                    icon="shield"
-                    color={colors.primary}
-                />
+                {details?.organic_treatment && (
+                    <TreatmentCard
+                        type="Organic Option"
+                        title={details.organic_treatment.title}
+                        description={details.organic_treatment.desc}
+                        iconLib="Feather"
+                        icon="shield"
+                        color={colors.primary}
+                    />
+                )}
 
-                <View style={styles.section}>
-                    <AppText variant="heading3" style={styles.sectionTitle}>Preventative Practices</AppText>
-                    <View style={styles.bulletRow}>
-                        <View style={styles.bullet} />
-                        <AppText variant="bodyMedium">Provide adequate spacing between palms to ensure sunlight and aeration.</AppText>
+                {details?.preventive_measures && details.preventive_measures.length > 0 && (
+                    <View style={styles.section}>
+                        <AppText variant="heading3" style={styles.sectionTitle}>Preventative Practices</AppText>
+                        {details.preventive_measures.map((measure, idx) => (
+                            <View key={idx} style={styles.bulletRow}>
+                                <View style={styles.bullet} />
+                                <AppText variant="bodyMedium">{measure}</AppText>
+                            </View>
+                        ))}
                     </View>
-                    <View style={styles.bulletRow}>
-                        <View style={styles.bullet} />
-                        <AppText variant="bodyMedium">Remove and immediately destroy infected leaves fallen on ground.</AppText>
-                    </View>
-                </View>
+                )}
 
             </ScrollView>
 
@@ -133,6 +153,15 @@ const styles = StyleSheet.create({
         borderRadius: 14,
         justifyContent: 'center',
         alignItems: 'center',
+    },
+    remindBtn: {
+        marginTop: 16,
+        paddingVertical: 8,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
+        flexDirection: 'row',
+        alignItems: 'center'
     },
     section: {
         marginTop: 10,

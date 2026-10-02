@@ -95,7 +95,7 @@ export const authService = {
             await api.post('/api/auth/logout', { refresh_token: refreshToken });
             return true;
         } catch (error) {
-            console.error("Logout API failed, proceeding with local cleanup anyway.");
+            console.warn("[AuthService] Remote logout unavailable, proceeding with native local token termination.");
             return false;
         }
     },

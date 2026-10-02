@@ -16,6 +16,7 @@ export default function SignupScreen({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [agreePrivacy, setAgreePrivacy] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [errors, setErrors] = useState({});
@@ -48,6 +49,11 @@ export default function SignupScreen({ navigation }) {
 
         if (password !== confirmPassword) {
             newErrors.confirmPassword = 'Passwords do not match';
+            valid = false;
+        }
+
+        if (!agreePrivacy) {
+            newErrors.agreePrivacy = 'You must agree to the App Privacy Policy & Data Usage Terms explicitly to create an account.';
             valid = false;
         }
 
@@ -123,6 +129,19 @@ export default function SignupScreen({ navigation }) {
                         />
                         {errors.confirmPassword && <AppText style={styles.errorText}>{errors.confirmPassword}</AppText>}
 
+                        <TouchableOpacity
+                            style={styles.checkboxContainer}
+                            onPress={() => { setAgreePrivacy(!agreePrivacy); setErrors({ ...errors, agreePrivacy: '' }); }}
+                        >
+                            <View style={[styles.checkbox, agreePrivacy && styles.checkboxActive]}>
+                                {agreePrivacy && <Feather name="check" size={14} color={colors.white} />}
+                            </View>
+                            <AppText variant="bodySmall" color="textMedium" style={styles.checkboxText}>
+                                By registering, I explicitly consent to the processing of agricultural and minimal location data by AI systems.
+                            </AppText>
+                        </TouchableOpacity>
+                        {errors.agreePrivacy && <AppText style={styles.errorText}>{errors.agreePrivacy}</AppText>}
+
                         <AppButton title="Create Account" onPress={handleSignup} loading={loading} style={styles.signupBtn} />
                     </View>
 
@@ -147,5 +166,29 @@ const styles = StyleSheet.create({
     signupBtn: { marginBottom: 16, marginTop: 10 },
     errorText: { color: '#DC2626', fontSize: 12, marginBottom: 16, marginTop: -8, marginLeft: 4 },
     footer: { flexDirection: 'row', justifyContent: 'center', paddingBottom: 40, marginTop: 10 },
-    loginText: { fontWeight: '700' }
+    loginText: { fontWeight: '700' },
+    checkboxContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 12,
+        paddingHorizontal: 4,
+    },
+    checkbox: {
+        width: 20,
+        height: 20,
+        borderRadius: 6,
+        borderWidth: 1.5,
+        borderColor: colors.textMedium,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    checkboxActive: {
+        backgroundColor: colors.primary,
+        borderColor: colors.primary,
+    },
+    checkboxText: {
+        flex: 1,
+        lineHeight: 18,
+    }
 });

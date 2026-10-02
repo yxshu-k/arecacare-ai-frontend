@@ -56,29 +56,29 @@ export default function ResultScreen({ route, navigation }) {
                 <View style={styles.section}>
                     <AppText variant="heading3" style={styles.sectionTitle}>Description</AppText>
                     <AppText variant="body" color="textMedium" style={{ lineHeight: 24 }}>
-                        Leaf Spot is a fungal disease that rapidly deteriorates the arecanut foliage. It starts as small brown circular spots surrounded by a yellow halo. As the disease progresses, these spots merge, causing the entire leaf to dry out and die, significantly impacting overall nut yield.
+                        {prediction?.details?.description || 'Detailed agricultural description is currently unavailable for this condition.'}
                     </AppText>
                 </View>
 
                 {/* Quick Symptoms List */}
-                <View style={styles.section}>
-                    <AppText variant="heading3" style={styles.sectionTitle}>Identified Symptoms</AppText>
-                    <View style={styles.symptomRow}>
-                        <Feather name="alert-circle" size={20} color="#F59E0B" />
-                        <AppText variant="body" style={styles.symptomText}>Small circular spots on leaves</AppText>
+                {prediction?.details?.symptoms && prediction.details.symptoms.length > 0 && (
+                    <View style={styles.section}>
+                        <AppText variant="heading3" style={styles.sectionTitle}>Identified Symptoms</AppText>
+                        {prediction.details.symptoms.map((symp, index) => (
+                            <View key={index} style={styles.symptomRow}>
+                                <Feather name="alert-circle" size={20} color="#F59E0B" />
+                                <AppText variant="body" style={styles.symptomText}>{symp}</AppText>
+                            </View>
+                        ))}
                     </View>
-                    <View style={styles.symptomRow}>
-                        <Feather name="alert-circle" size={20} color="#F59E0B" />
-                        <AppText variant="body" style={styles.symptomText}>Yellow halo around the primary infection</AppText>
-                    </View>
-                </View>
+                )}
 
             </ScrollView>
 
             <View style={styles.footer}>
                 <AppButton
                     title="View Treatment"
-                    onPress={() => navigation.navigate('TreatmentDetails')}
+                    onPress={() => navigation.navigate('TreatmentDetails', { details: prediction?.details })}
                     style={{ marginBottom: 12 }}
                 />
                 <AppButton
