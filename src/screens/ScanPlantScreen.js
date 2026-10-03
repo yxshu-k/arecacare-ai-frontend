@@ -36,8 +36,8 @@ export default function ScanPlantScreen({ navigation }) {
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: false, // Provide raw image directly to preview screen
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: false,
             quality: 1,
         });
 
