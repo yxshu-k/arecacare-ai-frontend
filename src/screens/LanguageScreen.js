@@ -14,6 +14,8 @@ const LANGUAGES = [
     { id: 'ta', name: 'Tamil', native: 'தமிழ்' },
     { id: 'te', name: 'Telugu', native: 'తెలుగు' },
     { id: 'ml', name: 'Malayalam', native: 'മലയാളം' },
+    { id: 'tu', name: 'Tulu', native: 'ತುಳು' },
+    { id: 'ar', name: 'Arebhashe', native: 'ಅರೆಭಾಷೆ' },
 ];
 
 export default function LanguageScreen({ navigation }) {

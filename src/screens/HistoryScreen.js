@@ -5,6 +5,7 @@ import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { colors } from '../theme/colors';
 import { diseaseService } from '../services/diseaseService';
+import { useLanguage } from '../context/LanguageContext';
 
 const SkeletonItem = () => (
     <View style={styles.card}>
@@ -21,6 +22,7 @@ export default function HistoryScreen({ navigation }) {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
+    const { t } = useLanguage();
 
     // Filtering State
     const [filterMenuVisible, setFilterMenuVisible] = useState(false);
@@ -143,7 +145,7 @@ export default function HistoryScreen({ navigation }) {
 
                 <View style={styles.cardContent}>
                     <AppText variant="heading3" style={{ color: style.color, fontSize: 16 }}>
-                        {item.disease_name || 'Unknown'}
+                        {t(item.disease_name || 'Unknown')}
                     </AppText>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
                         <AppText variant="caption" color="textMedium">Conf: {item.confidence}%</AppText>
@@ -163,10 +165,10 @@ export default function HistoryScreen({ navigation }) {
         <Screen style={styles.screen} noPadding>
             <View style={styles.header}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <AppText variant="heading2">Scan History</AppText>
+                    <AppText variant="heading2">{t("scan_history")}</AppText>
                     {history.length > 0 && (
                         <TouchableOpacity onPress={handleClearAll} style={{ marginLeft: 16 }}>
-                            <AppText variant="bodySmall" style={{ color: '#DC2626', fontWeight: '700' }}>CLEAR</AppText>
+                            <AppText variant="bodySmall" style={{ color: '#DC2626', fontWeight: '700' }}>{t("clear_all")}</AppText>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -220,7 +222,7 @@ export default function HistoryScreen({ navigation }) {
                 <View style={styles.modalOverlay}>
                     <View style={styles.bottomSheet}>
                         <View style={styles.sheetHeader}>
-                            <AppText variant="heading3">Filter Scans</AppText>
+                            <AppText variant="heading3">{t("filter_scans")}</AppText>
                             <TouchableOpacity onPress={() => setFilterMenuVisible(false)}>
                                 <Feather name="x" size={24} color={colors.textMedium} />
                             </TouchableOpacity>

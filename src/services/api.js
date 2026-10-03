@@ -24,6 +24,11 @@ api.interceptors.request.use(
             if (token) {
                 config.headers.Authorization = `Bearer ${token}`;
             }
+            // Automatically sync UI dialect selections to backend API calls
+            const lang = await SecureStore.getItemAsync('app_language');
+            if (lang) {
+                config.headers['Accept-Language'] = lang;
+            }
         } catch (error) {
             console.error("[Axios API] Token intercept error:", error);
         }
