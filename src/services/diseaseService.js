@@ -2,6 +2,22 @@ import api from './api';
 
 export const diseaseService = {
     /**
+     * Fetch the authenticated user's disease scan history.
+     * @returns {Promise<Array>} - Array of previous disease scans
+     */
+    getHistory: async () => {
+        try {
+            const response = await api.get('/api/predictions/history', {
+                timeout: 15000,
+            });
+            return response.data;
+        } catch (error) {
+            console.error('[DiseaseService] History Error:', error);
+            throw error;
+        }
+    },
+
+    /**
      * Upload an image to the backend for disease prediction.
      * @param {string} imageUri - The local URI of the image from expo-image-picker
      * @returns {Promise<Object>} - The backend prediction response
