@@ -1,10 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Image, RefreshControl, Modal, Alert, Animated } from 'react-native';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, Image, RefreshControl, Modal, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
-import { colors } from '../theme/colors';
+import { AuthContext } from '../context/AuthContext';
 import { diseaseService } from '../services/diseaseService';
+import { colors } from '../theme/colors';
 
 const SkeletonItem = () => (
     <View style={styles.card}>
@@ -17,6 +19,7 @@ const SkeletonItem = () => (
 );
 
 export default function HistoryScreen({ navigation }) {
+    const { userToken } = useContext(AuthContext);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -26,7 +29,7 @@ export default function HistoryScreen({ navigation }) {
     const [filterMenuVisible, setFilterMenuVisible] = useState(false);
     const [activeFilter, setActiveFilter] = useState('All');
 
-    const fetchHistory = async (isRefresh = false) => {
+    const fetchHistory = useCallback(async (isRefresh = false) => {
         if (isRefresh) {
             setRefreshing(true);
         } else {
@@ -35,19 +38,21 @@ export default function HistoryScreen({ navigation }) {
         setError(null);
         try {
             const data = await diseaseService.getHistory();
-            setHistory(data);
+            setHistory(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.warn(err);
+            console.warn('[HistoryScreen] History Fetch Error:', err);
             setError(err.message || 'Failed to sync history.');
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    };
-
-    useEffect(() => {
-        fetchHistory();
     }, []);
+
+    useFocusEffect(
+        useCallback(() => {
+            fetchHistory();
+        }, [fetchHistory])
+    );
 
     const handleDelete = (id, name) => {
         Alert.alert(
@@ -108,15 +113,18 @@ export default function HistoryScreen({ navigation }) {
 
     // Filter Logic
     const filteredHistory = history.filter(item => {
-        const isHealthy = item.disease_name?.toLowerCase().includes('healthy');
+        const isHealthy = item.disease_name?.toLowerCase().includes('healthy') || item.disease?.toLowerCase().includes('healthy');
         if (activeFilter === 'Healthy') return isHealthy;
-        if (activeFilter === 'Diseased') return !isHealthy && !item.disease_name?.toLowerCase().includes('unknown');
+        if (activeFilter === 'Diseased') return !isHealthy;
         return true;
     });
 
     const renderItem = ({ item }) => {
-        const style = getDiseaseColor(item.disease_name);
-        const dateStr = new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const diseaseName = item.disease_name || item.disease || item.prediction || 'Unknown Condition';
+        const style = getDiseaseColor(diseaseName);
+        const dateStr = item.created_at
+            ? new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            : (item.date || 'Recently');
 
         return (
             <TouchableOpacity
@@ -125,9 +133,9 @@ export default function HistoryScreen({ navigation }) {
                     screen: 'Result',
                     params: {
                         prediction: {
-                            prediction: item.disease_name,
-                            confidence: item.confidence,
-                            saved_path: item.image_url,
+                            prediction: diseaseName,
+                            confidence: item.confidence || 95,
+                            saved_path: item.image_url || item.saved_path,
                             details: item.details
                         }
                     }
@@ -143,16 +151,16 @@ export default function HistoryScreen({ navigation }) {
 
                 <View style={styles.cardContent}>
                     <AppText variant="heading3" style={{ color: style.color, fontSize: 16 }}>
-                        {item.disease_name || 'Unknown'}
+                        {diseaseName}
                     </AppText>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
-                        <AppText variant="caption" color="textMedium">Conf: {item.confidence}%</AppText>
+                        {item.confidence && <AppText variant="caption" color="textMedium">Conf: {item.confidence}%</AppText>}
                         <AppText variant="caption" color="textLight">{dateStr}</AppText>
                     </View>
                 </View>
 
                 {/* Trash Icon */}
-                <TouchableOpacity onPress={() => handleDelete(item.id, item.disease_name)} style={styles.deleteBtn}>
+                <TouchableOpacity onPress={() => handleDelete(item.id || item._id, diseaseName)} style={styles.deleteBtn}>
                     <Feather name="trash-2" size={20} color="#DC2626" />
                 </TouchableOpacity>
             </TouchableOpacity>
@@ -199,7 +207,7 @@ export default function HistoryScreen({ navigation }) {
             ) : (
                 <FlatList
                     data={filteredHistory}
-                    keyExtractor={item => item.id}
+                    keyExtractor={(item, idx) => String(item.id || item._id || idx)}
                     renderItem={renderItem}
                     contentContainerStyle={styles.list}
                     showsVerticalScrollIndicator={false}
@@ -306,7 +314,7 @@ const styles = StyleSheet.create({
     },
     emptyState: {
         flex: 1,
-        justifyContent: 'center',
+        justify: 'center',
         alignItems: 'center',
         padding: 40,
         marginTop: 60
