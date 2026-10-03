@@ -1,8 +1,10 @@
 import React from 'react';
 import { View, StyleSheet } from 'react-native';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 
 const Card = ({ children, style }) => {
+    const { colors } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors), [colors]);
     return (
         <View style={[styles.card, style]}>
             {children}
@@ -10,7 +12,7 @@ const Card = ({ children, style }) => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     card: {
         backgroundColor: colors.surface,
         borderRadius: 16,

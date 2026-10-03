@@ -14,10 +14,14 @@ const translations = {
         language: "Language",
         support: "Support",
         help_center: "Help Center",
-        privacy_policy: "Privacy Policy",
         logout: "Logout",
         deactivate: "Deactivate Account",
-        app_language: "App Language"
+        app_language: "App Language",
+        scan_plant: "Scan Plant",
+        weather_analysis: "Weather Analysis",
+        yield_prediction: "Yield Prediction",
+        tips_advisory: "Tips & Advisory",
+        ai_chat: "AI Chat Assistant"
     },
     kn: {
         hello: "ನಮಸ್ಕಾರ",
@@ -31,10 +35,14 @@ const translations = {
         language: "ಭಾಷೆ",
         support: "ಬೆಂಬಲ",
         help_center: "ಸಹಾಯ ಕೇಂದ್ರ",
-        privacy_policy: "ಗೌಪ್ಯತಾ ನೀತಿ",
         logout: "ಲಾಗ್ ಔಟ್",
         deactivate: "ಖಾತೆ ರದ್ದು",
-        app_language: "ಅಪ್ಲಿಕೇಶನ್ ಭಾಷೆ"
+        app_language: "ಅಪ್ಲಿಕೇಶನ್ ಭಾಷೆ",
+        scan_plant: "ಸಸ್ಯವನ್ನು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ",
+        weather_analysis: "ಹವಾಮಾನ ವಿಶ್ಲೇಷಣೆ",
+        yield_prediction: "ಇಳುವರಿ ಭವಿಷ್ಯ",
+        tips_advisory: "ಸಲಹೆಗಳು ಮತ್ತು ಮಾರ್ಗದರ್ಶನ",
+        ai_chat: "ಮಾಹಿತಿ ಸಹಾಯಕ (AI)"
     },
     ml: {
         hello: "നമസ്കാരം",
@@ -48,10 +56,14 @@ const translations = {
         language: "ഭാഷ",
         support: "പിന്തുണ",
         help_center: "സഹായ കേന്ദ്രം",
-        privacy_policy: "സ്വകാര്യതാ നയം",
         logout: "ലോഗ് ഔട്ട്",
         deactivate: "അക്കൗണ്ട് നിർജ്ജീവമാക്കുക",
-        app_language: "ആപ്പ് ഭാഷ"
+        app_language: "ആപ്പ് ഭാഷ",
+        scan_plant: "സസ്യം സ്കാൻ ചെയ്യുക",
+        weather_analysis: "കാലാവസ്ഥാ വിശകലനം",
+        yield_prediction: "വിളവ് പ്രവചനം",
+        tips_advisory: "നുറുങ്ങുകളും ഉപദേശങ്ങളും",
+        ai_chat: "AI ചാറ്റ് സഹായി"
     }
 };
 

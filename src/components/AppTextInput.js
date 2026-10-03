@@ -1,11 +1,13 @@
 import React from 'react';
 import { View, TextInput, StyleSheet, TouchableOpacity } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors } from '../theme/colors';
 import { typography } from '../theme/typography';
 import AppText from './AppText';
+import { useTheme } from '../context/ThemeContext';
 
 const AppTextInput = ({ icon, rightIcon, onRightIconPress, label, ...otherProps }) => {
+    const { colors } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors), [colors]);
     return (
         <View style={styles.container}>
             {label && <AppText variant="bodyMedium" style={styles.label}>{label}</AppText>}
@@ -27,7 +29,7 @@ const AppTextInput = ({ icon, rightIcon, onRightIconPress, label, ...otherProps 
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     container: {
         marginVertical: 10,
     },

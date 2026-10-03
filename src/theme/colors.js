@@ -1,16 +1,17 @@
 export const lightColors = {
-  primary: '#16A34A',      // Vibrant Green agricultural green
-  secondary: '#4CAF50',    // Lighter green
-  accent: '#A5D6A7',       // Soft accent green
-  background: '#F8FAF8',   // Light off-white for app background
-  surface: '#FFFFFF',      // White for cards and containers
-  text: '#1A1A1A',         // Near black for dark text
-  textMedium: '#666666',   // Gray for subtext
-  textLight: '#999999',    // Lighter gray
-  border: '#E0E0E0',
-  error: '#D32F2F',
-  success: '#388E3C',
-  warning: '#F57C00',
+  primary: '#16A34A',      // Vibrant Green (Brand)
+  secondary: '#10B981',
+  accent: '#86EFAC',
+  background: '#FAFAFA',   // Instagram-style very light gray
+  surface: '#FFFFFF',      // Pure white cards
+  border: '#E5E7EB',       // Subtle border
+  text: '#171717',         // Near black (readable)
+  textMedium: '#737373',
+  textLight: '#A3A3A3',
+  error: '#EF4444',
+  success: '#22C55E',
+  warning: '#F59E0B',
+  info: '#3B82F6',
   white: '#FFFFFF',
   black: '#000000',
 };
@@ -18,12 +19,13 @@ export const lightColors = {
 export const darkColors = {
   primary: '#22C55E',
   secondary: '#10B981',
-  background: '#121212',
-  surface: '#1E1E1E',
-  border: '#2C2C2C',
-  text: '#F3F4F6',
-  textMedium: '#9CA3AF',
-  textLight: '#6B7280',
+  accent: '#064E3B',
+  background: '#000000',   // OLED Pure Black (Instagram/LinkedIn Dark)
+  surface: '#121212',      // Elevated surface
+  border: '#262626',       // Deep gray border
+  text: '#F5F5F5',         // Soft white
+  textMedium: '#A3A3A3',
+  textLight: '#737373',
   error: '#EF4444',
   success: '#10B981',
   warning: '#F59E0B',

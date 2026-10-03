@@ -13,6 +13,15 @@ export default function ResultScreen({ route, navigation }) {
     const confidence = prediction?.confidence || 0;
     const imageUrl = prediction?.saved_path || null;
 
+    const isHealthy = diseaseName.toLowerCase().includes('healthy');
+    const isUnknown = diseaseName.toLowerCase().includes('unknown');
+
+    // Dynamic color theming based on prediction state
+    const themeBg = isHealthy ? '#DCFCE7' : (isUnknown ? '#F3F4F6' : '#FEF2F2');
+    const themeBorder = isHealthy ? '#BBF7D0' : (isUnknown ? '#E5E7EB' : '#FECACA');
+    const themeText = isHealthy ? '#16A34A' : (isUnknown ? '#4B5563' : '#DC2626');
+    const themeIcon = isHealthy ? 'check-circle' : (isUnknown ? 'help-circle' : 'alert-triangle');
+
     return (
         <Screen style={styles.screen} noPadding>
             <View style={styles.header}>
@@ -28,25 +37,32 @@ export default function ResultScreen({ route, navigation }) {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
 
                 {/* Result Highlight Card */}
-                <View style={[styles.resultCard, { backgroundColor: diseaseName === 'Healthy' ? '#DCFCE7' : '#FEF2F2', borderColor: diseaseName === 'Healthy' ? '#BBF7D0' : '#FECACA' }]}>
+                <View style={[styles.resultCard, { backgroundColor: themeBg, borderColor: themeBorder }]}>
                     {imageUrl ? (
                         <Image source={{ uri: imageUrl }} style={styles.mockImageMini} />
                     ) : (
-                        <View style={styles.mockImageMini}>
-                            <MaterialCommunityIcons name="leaf" size={40} color={colors.white} />
+                        <View style={[styles.mockImageMini, { backgroundColor: themeBorder }]}>
+                            <MaterialCommunityIcons name="leaf" size={40} color={themeText} />
                         </View>
                     )}
                     <View style={styles.resultContent}>
-                        <AppText variant="heading2" style={{ color: diseaseName === 'Healthy' ? '#16A34A' : '#DC2626' }}>{diseaseName}</AppText>
+                        <AppText variant="heading2" style={{ color: themeText, fontSize: 22 }}>
+                            {diseaseName}
+                        </AppText>
                         <View style={styles.confidenceBadge}>
-                            <Feather name={diseaseName === 'Healthy' ? "check-circle" : "alert-triangle"} size={14} color={diseaseName === 'Healthy' ? '#16A34A' : colors.primary} />
-                            <AppText variant="caption" style={{ color: diseaseName === 'Healthy' ? '#16A34A' : colors.primary, marginLeft: 4, fontWeight: '700' }}>
+                            <Feather name={themeIcon} size={14} color={themeText} />
+                            <AppText variant="caption" style={{ color: themeText, marginLeft: 4, fontWeight: '700' }}>
                                 Confidence: {confidence.toFixed(1)}%
                             </AppText>
                         </View>
-                        {diseaseName !== 'Healthy' && (
+                        {!isHealthy && !isUnknown && (
                             <View style={styles.severityTag}>
                                 <AppText variant="caption" style={{ color: '#DC2626', fontWeight: '700' }}>High Severity</AppText>
+                            </View>
+                        )}
+                        {isHealthy && (
+                            <View style={[styles.severityTag, { backgroundColor: '#BBF7D0' }]}>
+                                <AppText variant="caption" style={{ color: '#16A34A', fontWeight: '700' }}>Plant Healthy</AppText>
                             </View>
                         )}
                     </View>
@@ -56,35 +72,35 @@ export default function ResultScreen({ route, navigation }) {
                 <View style={styles.section}>
                     <AppText variant="heading3" style={styles.sectionTitle}>Description</AppText>
                     <AppText variant="body" color="textMedium" style={{ lineHeight: 24 }}>
-                        Leaf Spot is a fungal disease that rapidly deteriorates the arecanut foliage. It starts as small brown circular spots surrounded by a yellow halo. As the disease progresses, these spots merge, causing the entire leaf to dry out and die, significantly impacting overall nut yield.
+                        {prediction?.details?.description || 'Detailed agricultural description is currently unavailable for this condition.'}
                     </AppText>
                 </View>
 
                 {/* Quick Symptoms List */}
-                <View style={styles.section}>
-                    <AppText variant="heading3" style={styles.sectionTitle}>Identified Symptoms</AppText>
-                    <View style={styles.symptomRow}>
-                        <Feather name="alert-circle" size={20} color="#F59E0B" />
-                        <AppText variant="body" style={styles.symptomText}>Small circular spots on leaves</AppText>
+                {prediction?.details?.symptoms && prediction.details.symptoms.length > 0 && (
+                    <View style={styles.section}>
+                        <AppText variant="heading3" style={styles.sectionTitle}>Identified Symptoms</AppText>
+                        {prediction.details.symptoms.map((symp, index) => (
+                            <View key={index} style={styles.symptomRow}>
+                                <Feather name="alert-circle" size={20} color="#F59E0B" />
+                                <AppText variant="body" style={styles.symptomText}>{symp}</AppText>
+                            </View>
+                        ))}
                     </View>
-                    <View style={styles.symptomRow}>
-                        <Feather name="alert-circle" size={20} color="#F59E0B" />
-                        <AppText variant="body" style={styles.symptomText}>Yellow halo around the primary infection</AppText>
-                    </View>
-                </View>
+                )}
 
             </ScrollView>
 
             <View style={styles.footer}>
                 <AppButton
-                    title="View Treatment"
-                    onPress={() => navigation.navigate('TreatmentDetails')}
+                    title={isHealthy ? "View Care Guide" : "View Treatment"}
+                    onPress={() => navigation.navigate('TreatmentDetails', { details: prediction?.details, diseaseName })}
                     style={{ marginBottom: 12 }}
                 />
                 <AppButton
                     title="View Disease Info"
                     variant="outline"
-                    onPress={() => navigation.navigate('DiseaseInfo')}
+                    onPress={() => navigation.navigate('DiseaseInfo', { details: prediction?.details, diseaseName })}
                 />
             </View>
         </Screen>

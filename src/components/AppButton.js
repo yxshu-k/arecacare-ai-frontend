@@ -1,7 +1,7 @@
 import React from 'react';
 import { TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { colors } from '../theme/colors';
 import AppText from './AppText';
+import { useTheme } from '../context/ThemeContext';
 
 const AppButton = ({
     title,
@@ -12,6 +12,9 @@ const AppButton = ({
     loading = false,
     style
 }) => {
+    const { colors } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors), [colors]);
+
     const getBackgroundColor = () => {
         if (disabled) return colors.border;
         if (variant === 'primary') return colors.primary;
@@ -53,7 +56,7 @@ const AppButton = ({
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     button: {
         justifyContent: 'center',
         alignItems: 'center',

@@ -42,9 +42,9 @@ api.interceptors.response.use(
         return response;
     },
     (error) => {
-        // Global error logging for debugging
+        // Global error logging for debugging (Demoted to warn to prevent Expo red screens)
         if (error.response) {
-            console.error(`[Axios Error ${error.response.status}] =>`, error.response.data);
+            console.warn(`[Axios Error ${error.response.status}] =>`, error.response.data);
 
             // If the user's token expired on the backend server
             if (error.response.status === 401) {
@@ -54,7 +54,7 @@ api.interceptors.response.use(
                 console.warn("[Axios API] Unauthorized access detected. Session likely expired.");
             }
         } else if (error.request) {
-            console.error("[Axios Error] Network Error / No Response (Is the Backend Server running API_URL?)");
+            console.warn("[Axios API] Network Error / No Response (Is the Backend Server running API_URL?)");
         }
         return Promise.reject(error);
     }

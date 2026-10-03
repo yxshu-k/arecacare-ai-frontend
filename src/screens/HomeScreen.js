@@ -1,17 +1,70 @@
-import React, { useContext } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useContext, useState, useEffect, useCallback } from 'react';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Image } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+import { weatherService } from '../services/weatherService';
+import { diseaseService } from '../services/diseaseService';
+import { syncService } from '../services/syncService';
 
 export default function HomeScreen({ navigation }) {
-    const { userData, logout } = useContext(AuthContext);
+    const { userData, logout, activeFarm, switchFarm } = useContext(AuthContext);
     const { colors } = useTheme();
+    const { t } = useLanguage();
     const styles = React.useMemo(() => getStyles(colors), [colors]);
 
     const userName = userData?.name || 'Farmer';
+    const targetLocation = activeFarm?.region || 'Shivamogga';
+
+    const [weather, setWeather] = useState(null);
+    const [recentScans, setRecentScans] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    const fetchDashboardData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const [weatherData, historyData] = await Promise.all([
+                weatherService.getCurrentWeather(targetLocation),
+                diseaseService.getHistory()
+            ]);
+
+            setWeather(weatherData);
+            // Get exactly the last 3 scans
+            setRecentScans((historyData || []).slice(0, 3));
+        } catch (err) {
+            console.warn("Dashboard fetch error:", err.message);
+            setError(err.message || "Network Error");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchDashboardData();
+    }, [activeFarm]);
+
+    useFocusEffect(
+        useCallback(() => {
+            // Attempt an imperceptible background queue flush every time we view the Dashboard
+            syncService.processQueue();
+        }, [])
+    );
+
+    const getHealthStatus = () => {
+        if (!recentScans || recentScans.length === 0) return { status: 'Unknown', color: colors.textMedium, icon: 'help-circle' };
+        const diseases = recentScans.filter(scan => scan.disease_name.toLowerCase() !== 'healthy');
+        if (diseases.length === 0) return { status: 'Optimal (All Clear)', color: '#22C55E', icon: 'check-circle' };
+        if (diseases.length === 1) return { status: 'Minor Risk Detected', color: '#F59E0B', icon: 'alert-circle' };
+        return { status: 'Critical Action Needed', color: '#DC2626', icon: 'alert-triangle' };
+    };
+
+    const health = getHealthStatus();
 
     const ActionCard = ({ title, subtitle, icon, iconLib = 'Feather', color, onPress }) => (
         <TouchableOpacity style={[styles.card, { borderColor: color + '40' }]} onPress={onPress}>
@@ -37,10 +90,38 @@ export default function HomeScreen({ navigation }) {
                 {/* Header Section */}
                 <View style={styles.header}>
                     <View>
-                        <AppText variant="heading2">Hello, {userName} 👋</AppText>
-                        <AppText variant="bodyMedium" color="textMedium" style={{ marginTop: 4 }}>
-                            Areca Farm Dashboard
-                        </AppText>
+                        <TouchableOpacity onPress={switchFarm} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <AppText variant="heading2">Hello, {userName} 👋</AppText>
+                            <View style={[styles.farmBadge, { backgroundColor: colors.primary + '15', marginLeft: 8 }]}>
+                                <Feather name="map-pin" size={12} color={colors.primary} />
+                                <AppText variant="caption" style={{ marginLeft: 4, color: colors.primary, fontWeight: '700' }}>{activeFarm.name}</AppText>
+                            </View>
+                        </TouchableOpacity>
+                        {loading ? (
+                            <ActivityIndicator size="small" color={colors.primary} style={{ alignSelf: 'flex-start', marginTop: 4 }} />
+                        ) : weather ? (
+                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                                <Feather name="cloud" size={16} color={colors.textMedium} />
+                                <AppText variant="bodyMedium" color="textMedium" style={{ marginLeft: 6 }}>
+                                    {Math.round(weather.temperature)}°C • {weather.weather_condition}
+                                </AppText>
+                            </View>
+                        ) : error ? (
+                            <View>
+                                <TouchableOpacity onPress={fetchDashboardData} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                                    <Feather name="refresh-cw" size={16} color={colors.error} />
+                                    <AppText variant="bodyMedium" color="error" style={{ marginLeft: 6 }}>{error}. Tap to retry</AppText>
+                                </TouchableOpacity>
+                                <TouchableOpacity onPress={logout} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
+                                    <Feather name="log-out" size={14} color={colors.textMedium} />
+                                    <AppText variant="caption" color="textMedium" style={{ marginLeft: 6, textDecorationLine: 'underline' }}>Or tap here to Force Logout and refresh token</AppText>
+                                </TouchableOpacity>
+                            </View>
+                        ) : (
+                            <AppText variant="bodyMedium" color="textMedium" style={{ marginTop: 4 }}>
+                                Areca Farm Dashboard
+                            </AppText>
+                        )}
                     </View>
                     <TouchableOpacity onPress={logout} style={styles.profileBtn}>
                         <Feather name="log-out" size={20} color={colors.textMedium} />
@@ -54,7 +135,7 @@ export default function HomeScreen({ navigation }) {
                 >
                     <View style={styles.primaryActionHeader}>
                         <View>
-                            <AppText variant="heading2" style={{ color: colors.white }}>Scan Plant</AppText>
+                            <AppText variant="heading2" style={{ color: colors.white }}>{t('scan_plant')}</AppText>
                             <AppText variant="bodyMedium" style={{ color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>
                                 Detect disease instantly with AI
                             </AppText>
@@ -72,11 +153,45 @@ export default function HomeScreen({ navigation }) {
                     </View>
                 </TouchableOpacity>
 
+                {/* Crop Health Widget */}
+                {recentScans.length > 0 && (
+                    <View style={[styles.healthWidget, { borderColor: health.color + '40', backgroundColor: health.color + '10' }]}>
+                        <Feather name={health.icon} size={24} color={health.color} />
+                        <View style={{ marginLeft: 12, flex: 1 }}>
+                            <AppText variant="bodyMedium" style={{ fontWeight: '700', color: colors.text }}>Farm Health: {health.status}</AppText>
+                            <AppText variant="caption" color="textMedium" style={{ marginTop: 2 }}>Based on your recent AI scans</AppText>
+                        </View>
+                    </View>
+                )}
+
+                {/* Recent Scans Carousel */}
+                {!loading && recentScans.length > 0 && (
+                    <View style={styles.recentSection}>
+                        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                            <AppText variant="heading3">Recent Scans</AppText>
+                            <TouchableOpacity onPress={() => navigation.navigate('History')}>
+                                <AppText variant="body" color="primary">View All</AppText>
+                            </TouchableOpacity>
+                        </View>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
+                            {recentScans.map((scan, index) => (
+                                <View key={index} style={styles.recentCard}>
+                                    <Image source={{ uri: scan.image_url }} style={styles.recentImage} />
+                                    <View style={styles.recentTextWrap}>
+                                        <AppText variant="bodyMedium" style={{ fontWeight: '600' }} numberOfLines={1}>{scan.disease_name}</AppText>
+                                        <AppText variant="caption" color="textMedium">{new Date(scan.created_at).toLocaleDateString()}</AppText>
+                                    </View>
+                                </View>
+                            ))}
+                        </ScrollView>
+                    </View>
+                )}
+
                 <AppText variant="heading3" style={styles.sectionTitle}>Quick Tools</AppText>
 
                 {/* Secondary Actions */}
                 <ActionCard
-                    title="Yield Prediction"
+                    title={t("yield_prediction")}
                     subtitle="Calculate arecanut output per acre"
                     icon="bar-chart-2"
                     color={colors.primary}
@@ -84,7 +199,7 @@ export default function HomeScreen({ navigation }) {
                 />
 
                 <ActionCard
-                    title="Tips & Advisory"
+                    title={t("tips_advisory")}
                     subtitle="Seasonal farming practices"
                     icon="book-open"
                     color="#F59E0B"
@@ -92,7 +207,7 @@ export default function HomeScreen({ navigation }) {
                 />
 
                 <ActionCard
-                    title="Weather Analysis"
+                    title={t("weather_analysis")}
                     subtitle="Rainfall and humidity insights"
                     icon="cloud-rain"
                     color="#3B82F6"
@@ -100,7 +215,7 @@ export default function HomeScreen({ navigation }) {
                 />
 
                 <ActionCard
-                    title="AI Chat Assistant"
+                    title={t("ai_chat")}
                     subtitle="Ask AgriBot any farming question"
                     icon="message-circle"
                     color="#E11D48"
@@ -190,13 +305,53 @@ const getStyles = (colors) => StyleSheet.create({
     },
     cardIconContainer: {
         width: 50,
-        height: 50,
+        height: 60,
         borderRadius: 12,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16,
     },
+    farmBadge: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 8,
+        paddingVertical: 4,
+        borderRadius: 12,
+    },
     cardTextContainer: {
         flex: 1,
+    },
+    healthWidget: {
+        flexDirection: 'row',
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 24,
+        alignItems: 'center',
+        borderWidth: 1,
+    },
+    recentSection: {
+        marginBottom: 24,
+    },
+    recentCard: {
+        width: 140,
+        backgroundColor: colors.surface,
+        borderRadius: 16,
+        marginRight: 16,
+        overflow: 'hidden',
+        borderWidth: 1,
+        borderColor: colors.border,
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 6,
+        elevation: 2,
+    },
+    recentImage: {
+        width: '100%',
+        height: 90,
+        backgroundColor: '#E8F5E9'
+    },
+    recentTextWrap: {
+        padding: 12,
     }
 });

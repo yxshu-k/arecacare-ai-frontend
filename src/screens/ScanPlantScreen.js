@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import { colors } from '../theme/colors';
 import { requestCameraPermission } from '../services/permissionsService';
 import * as ImagePicker from 'expo-image-picker';
+import * as ImageManipulator from 'expo-image-manipulator';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 
 const { width, height } = Dimensions.get('window');
@@ -19,15 +20,29 @@ export default function ScanPlantScreen({ navigation }) {
     const [flash, setFlash] = useState('off');
     const cameraRef = React.useRef(null);
 
+    const processImage = async (uri) => {
+        try {
+            const manipResult = await ImageManipulator.manipulateAsync(
+                uri,
+                [{ resize: { width: 1080 } }], // Compress the image wildly down to 1080px to save rural bandwidth
+                { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+            );
+            navigation.navigate('ImagePreview', { imageUri: manipResult.uri });
+        } catch (e) {
+            console.error("Compression failed, reverting to original", e);
+            navigation.navigate('ImagePreview', { imageUri: uri }); // Fallback
+        }
+    };
+
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ['images'],
-            allowsEditing: true,
-            quality: 0.8,
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: false,
+            quality: 1,
         });
 
         if (!result.canceled && result.assets && result.assets.length > 0) {
-            navigation.navigate('ImagePreview', { imageUri: result.assets[0].uri });
+            await processImage(result.assets[0].uri);
         }
     };
 
@@ -43,9 +58,9 @@ export default function ScanPlantScreen({ navigation }) {
         if (cameraRef.current) {
             try {
                 const photo = await cameraRef.current.takePictureAsync({
-                    quality: 0.8,
+                    quality: 1, // Let ImageManipulator handle compression heavily
                 });
-                navigation.navigate('ImagePreview', { imageUri: photo.uri });
+                await processImage(photo.uri);
             } catch (err) {
                 console.error("Camera capture failed", err);
             }

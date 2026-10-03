@@ -1,5 +1,7 @@
 import React, { createContext, useState, useEffect } from 'react';
+import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
+import * as Location from 'expo-location';
 import { authService } from '../services/authService';
 
 export const AuthContext = createContext();
@@ -8,6 +10,43 @@ export const AuthProvider = ({ children }) => {
     const [userToken, setUserToken] = useState(null);
     const [userData, setUserData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
+
+    const [defaultFarms, setDefaultFarms] = useState([
+        { id: 1, name: 'My Location', region: 'Loading...' }
+    ]);
+    const [activeFarm, setActiveFarm] = useState(defaultFarms[0]);
+
+    useEffect(() => {
+        (async () => {
+            try {
+                let { status } = await Location.requestForegroundPermissionsAsync();
+                if (status !== 'granted') {
+                    const fallback = { id: 1, name: 'My Location (Offline)', region: 'Shivamogga' };
+                    setDefaultFarms([fallback]);
+                    setActiveFarm(fallback);
+                    return;
+                }
+
+                let location = await Location.getCurrentPositionAsync({});
+                const coords = `${location.coords.latitude},${location.coords.longitude}`;
+                const liveProfile = { id: 1, name: 'Live GPS', region: coords };
+
+                setDefaultFarms([liveProfile]);
+                setActiveFarm(liveProfile);
+            } catch (err) {
+                console.warn("[Location Hook] Failed to fetch GPS:", err);
+            }
+        })();
+    }, []);
+
+    const switchFarm = () => {
+        Alert.alert(
+            "Farm Management",
+            "Multi-farm tracking is currently mocked. In production, this opens your list of registered farmlands. Currently viewing: " + activeFarm.name,
+            [{ text: "OK" }]
+        );
+        console.log("Farm switched dynamically.");
+    };
 
     useEffect(() => {
         const loadToken = async () => {
@@ -20,7 +59,9 @@ export const AuthProvider = ({ children }) => {
                         const userProfile = await authService.getMe();
                         setUserData(userProfile);
                     } catch (err) {
-                        console.log("Could not fetch user profile on boot");
+                        console.log("Could not fetch user profile on boot. Token likely expired.");
+                        setUserToken(null);
+                        await SecureStore.deleteItemAsync('auth_token');
                     }
                 }
             } catch (e) {
@@ -119,7 +160,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ userToken, userData, isLoading, login, register, googleLogin, logout, deactivate, updateUser, uploadAvatar }}>
+        <AuthContext.Provider value={{ userToken, userData, isLoading, login, register, googleLogin, logout, deactivate, updateUser, uploadAvatar, activeFarm, switchFarm }}>
             {children}
         </AuthContext.Provider>
     );
