@@ -4,6 +4,7 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { colors } from '../theme/colors';
+import { useLanguage } from '../context/LanguageContext';
 
 const MOCK_TIPS = [
     { id: '1', title: 'How to Identify Leaf Spot Disease', category: 'Disease Guide', readTime: '5 min read', icon: 'magnify-scan' },
@@ -13,6 +14,8 @@ const MOCK_TIPS = [
 ];
 
 export default function TipsScreen({ navigation }) {
+    const { t } = useLanguage();
+
     const renderItem = ({ item }) => (
         <TouchableOpacity style={styles.card}>
             <View style={styles.imageMock}>
@@ -20,13 +23,13 @@ export default function TipsScreen({ navigation }) {
             </View>
             <View style={styles.cardContent}>
                 <AppText variant="heading3" numberOfLines={2} style={styles.titleText}>
-                    {item.title}
+                    {t(item.title)}
                 </AppText>
                 <AppText variant="caption" color="primary" style={styles.categoryBadge}>
-                    {item.category}
+                    {t(item.category)}
                 </AppText>
                 <AppText variant="caption" color="textLight" style={styles.readTime}>
-                    {item.readTime}
+                    {t(item.readTime)}
                 </AppText>
             </View>
             <Feather name="bookmark" size={22} color={colors.textLight} style={styles.bookmark} />
@@ -36,7 +39,7 @@ export default function TipsScreen({ navigation }) {
     return (
         <Screen style={styles.screen} noPadding>
             <View style={styles.header}>
-                <AppText variant="heading2">Farming Tips</AppText>
+                <AppText variant="heading2">{t("farming_tips")}</AppText>
                 <TouchableOpacity>
                     <Feather name="search" size={24} color={colors.text} />
                 </TouchableOpacity>

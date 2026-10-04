@@ -56,17 +56,17 @@ export default function WeatherScreen({ navigation }) {
     const [advisory, setAdvisory] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const { userData } = useContext(AuthContext);
+    const { userData, activeFarm } = useContext(AuthContext);
 
     useEffect(() => {
         fetchWeatherData();
-    }, []);
+    }, [activeFarm]);
 
     const fetchWeatherData = async () => {
         setLoading(true);
         setError(null);
         try {
-            const targetLocation = userData?.region || 'Shivamogga';
+            const targetLocation = activeFarm?.region || '13.9299,75.5681';
             const [weatherData, advisoryData] = await Promise.all([
                 weatherService.getCurrentWeather(targetLocation),
                 weatherService.getAdvisory(targetLocation),

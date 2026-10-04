@@ -103,6 +103,36 @@ export default function ImagePreviewScreen({ route, navigation }) {
                         onPress={async () => {
                             if (!currentUri) return;
                             try {
+                                const { width, height } = await new Promise((res, rej) => {
+                                    import('react-native').then(RN => {
+                                        RN.Image.getSize(currentUri, (w, h) => res({ width: w, height: h }), rej);
+                                    });
+                                });
+                                // Smart Trim: Hack away 15% edges for a tight diagnostic crop
+                                const trimX = Math.round(width * 0.15);
+                                const trimY = Math.round(height * 0.15);
+                                const cropWidth = width - (trimX * 2);
+                                const cropHeight = height - (trimY * 2);
+
+                                const res = await ImageManipulator.manipulateAsync(
+                                    currentUri,
+                                    [{ crop: { originX: trimX, originY: trimY, width: cropWidth, height: cropHeight } }],
+                                    { format: ImageManipulator.SaveFormat.JPEG }
+                                );
+                                setCurrentUri(res.uri);
+                            } catch (e) {
+                                console.error("Crop failure:", e);
+                            }
+                        }}>
+                        <MaterialCommunityIcons name="crop" size={24} color={colors.text} />
+                        <AppText variant="small" style={{ marginTop: 4 }}>Crop</AppText>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.toolbarBtn}
+                        onPress={async () => {
+                            if (!currentUri) return;
+                            try {
                                 const res = await ImageManipulator.manipulateAsync(currentUri, [{ flip: ImageManipulator.FlipType.Horizontal }], { format: ImageManipulator.SaveFormat.JPEG });
                                 setCurrentUri(res.uri);
                             } catch (e) {

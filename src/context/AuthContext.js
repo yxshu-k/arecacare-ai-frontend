@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     const [defaultFarms, setDefaultFarms] = useState([
-        { id: 1, name: 'My Location', region: 'Loading...' }
+        { id: 1, name: 'My Location', region: '13.9299,75.5681' }
     ]);
     const [activeFarm, setActiveFarm] = useState(defaultFarms[0]);
 
@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
             try {
                 let { status } = await Location.requestForegroundPermissionsAsync();
                 if (status !== 'granted') {
-                    const fallback = { id: 1, name: 'My Location (Offline)', region: 'Shivamogga' };
+                    const fallback = { id: 1, name: 'My Location (Offline)', region: '13.9299,75.5681' };
                     setDefaultFarms([fallback]);
                     setActiveFarm(fallback);
                     return;

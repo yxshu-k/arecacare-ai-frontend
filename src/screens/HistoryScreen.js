@@ -5,6 +5,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { AuthContext } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { diseaseService } from '../services/diseaseService';
 import { colors } from '../theme/colors';
 
@@ -20,6 +21,7 @@ const SkeletonItem = () => (
 
 export default function HistoryScreen({ navigation }) {
     const { userToken } = useContext(AuthContext);
+    const { t } = useLanguage();
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -120,8 +122,9 @@ export default function HistoryScreen({ navigation }) {
     });
 
     const renderItem = ({ item }) => {
-        const diseaseName = item.disease_name || item.disease || item.prediction || 'Unknown Condition';
-        const style = getDiseaseColor(diseaseName);
+        const rawDiseaseName = item.disease_name || item.disease || item.prediction || 'Unknown Condition';
+        const diseaseName = t ? t(rawDiseaseName) : rawDiseaseName;
+        const style = getDiseaseColor(rawDiseaseName);
         const dateStr = item.created_at
             ? new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
             : (item.date || 'Recently');
@@ -133,7 +136,7 @@ export default function HistoryScreen({ navigation }) {
                     screen: 'Result',
                     params: {
                         prediction: {
-                            prediction: diseaseName,
+                            prediction: rawDiseaseName,
                             confidence: item.confidence || 95,
                             saved_path: item.image_url || item.saved_path,
                             details: item.details
@@ -160,7 +163,7 @@ export default function HistoryScreen({ navigation }) {
                 </View>
 
                 {/* Trash Icon */}
-                <TouchableOpacity onPress={() => handleDelete(item.id || item._id, diseaseName)} style={styles.deleteBtn}>
+                <TouchableOpacity onPress={() => handleDelete(item.id || item._id, rawDiseaseName)} style={styles.deleteBtn}>
                     <Feather name="trash-2" size={20} color="#DC2626" />
                 </TouchableOpacity>
             </TouchableOpacity>
@@ -171,10 +174,10 @@ export default function HistoryScreen({ navigation }) {
         <Screen style={styles.screen} noPadding>
             <View style={styles.header}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <AppText variant="heading2">Scan History</AppText>
+                    <AppText variant="heading2">{t ? t("scan_history") : "Scan History"}</AppText>
                     {history.length > 0 && (
                         <TouchableOpacity onPress={handleClearAll} style={{ marginLeft: 16 }}>
-                            <AppText variant="bodySmall" style={{ color: '#DC2626', fontWeight: '700' }}>CLEAR</AppText>
+                            <AppText variant="bodySmall" style={{ color: '#DC2626', fontWeight: '700' }}>{t ? t("clear_all") : "CLEAR"}</AppText>
                         </TouchableOpacity>
                     )}
                 </View>

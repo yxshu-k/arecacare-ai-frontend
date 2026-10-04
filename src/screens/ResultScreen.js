@@ -164,6 +164,7 @@ const styles = StyleSheet.create({
     symptomText: {
         marginLeft: 12,
         color: colors.text,
+        flex: 1,
     },
     footer: {
         padding: 20,

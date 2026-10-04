@@ -18,7 +18,7 @@ export default function HomeScreen({ navigation }) {
     const styles = React.useMemo(() => getStyles(colors), [colors]);
 
     const userName = userData?.name || 'Farmer';
-    const targetLocation = activeFarm?.region || 'Shivamogga';
+    const targetLocation = activeFarm?.region || '13.9299,75.5681';
 
     const [weather, setWeather] = useState(null);
     const [recentScans, setRecentScans] = useState([]);
@@ -45,15 +45,12 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
-    useEffect(() => {
-        fetchDashboardData();
-    }, [activeFarm]);
-
     useFocusEffect(
         useCallback(() => {
+            fetchDashboardData();
             // Attempt an imperceptible background queue flush every time we view the Dashboard
             syncService.processQueue();
-        }, [])
+        }, [activeFarm])
     );
 
     const getHealthStatus = () => {
@@ -65,6 +62,13 @@ export default function HomeScreen({ navigation }) {
     };
 
     const health = getHealthStatus();
+
+    const statusMap = {
+        'Unknown': t("status_unknown"),
+        'Optimal (All Clear)': t("status_optimal"),
+        'Minor Risk Detected': t("status_minor"),
+        'Critical Action Needed': t("status_critical")
+    };
 
     const ActionCard = ({ title, subtitle, icon, iconLib = 'Feather', color, onPress }) => (
         <TouchableOpacity style={[styles.card, { borderColor: color + '40' }]} onPress={onPress}>
@@ -91,7 +95,7 @@ export default function HomeScreen({ navigation }) {
                 <View style={styles.header}>
                     <View>
                         <TouchableOpacity onPress={switchFarm} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <AppText variant="heading2">Hello, {userName} 👋</AppText>
+                            <AppText variant="heading2">{t("hello")}, {userName} 👋</AppText>
                             <View style={[styles.farmBadge, { backgroundColor: colors.primary + '15', marginLeft: 8 }]}>
                                 <Feather name="map-pin" size={12} color={colors.primary} />
                                 <AppText variant="caption" style={{ marginLeft: 4, color: colors.primary, fontWeight: '700' }}>{activeFarm.name}</AppText>
@@ -110,16 +114,16 @@ export default function HomeScreen({ navigation }) {
                             <View>
                                 <TouchableOpacity onPress={fetchDashboardData} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
                                     <Feather name="refresh-cw" size={16} color={colors.error} />
-                                    <AppText variant="bodyMedium" color="error" style={{ marginLeft: 6 }}>{error}. Tap to retry</AppText>
+                                    <AppText variant="bodyMedium" color="error" style={{ marginLeft: 6 }}>{error}. {t("retry_sync")}</AppText>
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={logout} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6 }}>
                                     <Feather name="log-out" size={14} color={colors.textMedium} />
-                                    <AppText variant="caption" color="textMedium" style={{ marginLeft: 6, textDecorationLine: 'underline' }}>Or tap here to Force Logout and refresh token</AppText>
+                                    <AppText variant="caption" color="textMedium" style={{ marginLeft: 6, textDecorationLine: 'underline' }}>{t("force_logout")}</AppText>
                                 </TouchableOpacity>
                             </View>
                         ) : (
                             <AppText variant="bodyMedium" color="textMedium" style={{ marginTop: 4 }}>
-                                Areca Farm Dashboard
+                                {t("dashboard_title")}
                             </AppText>
                         )}
                     </View>
@@ -137,7 +141,7 @@ export default function HomeScreen({ navigation }) {
                         <View>
                             <AppText variant="heading2" style={{ color: colors.white }}>{t('scan_plant')}</AppText>
                             <AppText variant="bodyMedium" style={{ color: 'rgba(255,255,255,0.8)', marginTop: 4 }}>
-                                Detect disease instantly with AI
+                                {t("detect_disease")}
                             </AppText>
                         </View>
                         <View style={styles.cameraIconWrap}>
@@ -147,7 +151,7 @@ export default function HomeScreen({ navigation }) {
                     <View style={styles.primaryActionFooter}>
                         <MaterialCommunityIcons name="leaf" size={60} color="rgba(255,255,255,0.2)" style={styles.bgIcon} />
                         <AppText variant="bodyMedium" style={{ color: colors.white, fontWeight: '600' }}>
-                            Tap to open camera
+                            {t("tap_camera")}
                         </AppText>
                         <Feather name="arrow-right" size={20} color={colors.white} />
                     </View>
@@ -158,8 +162,8 @@ export default function HomeScreen({ navigation }) {
                     <View style={[styles.healthWidget, { borderColor: health.color + '40', backgroundColor: health.color + '10' }]}>
                         <Feather name={health.icon} size={24} color={health.color} />
                         <View style={{ marginLeft: 12, flex: 1 }}>
-                            <AppText variant="bodyMedium" style={{ fontWeight: '700', color: colors.text }}>Farm Health: {health.status}</AppText>
-                            <AppText variant="caption" color="textMedium" style={{ marginTop: 2 }}>Based on your recent AI scans</AppText>
+                            <AppText variant="bodyMedium" style={{ fontWeight: '700', color: colors.text }}>{t("farm_health")}: {statusMap[health.status] || health.status}</AppText>
+                            <AppText variant="caption" color="textMedium" style={{ marginTop: 2 }}>{t("based_on_scans")}</AppText>
                         </View>
                     </View>
                 )}
@@ -168,9 +172,9 @@ export default function HomeScreen({ navigation }) {
                 {!loading && recentScans.length > 0 && (
                     <View style={styles.recentSection}>
                         <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                            <AppText variant="heading3">Recent Scans</AppText>
+                            <AppText variant="heading3">{t("recent_scans")}</AppText>
                             <TouchableOpacity onPress={() => navigation.navigate('History')}>
-                                <AppText variant="body" color="primary">View All</AppText>
+                                <AppText variant="body" color="primary">{t("view_all")}</AppText>
                             </TouchableOpacity>
                         </View>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingRight: 20 }}>
@@ -178,7 +182,7 @@ export default function HomeScreen({ navigation }) {
                                 <View key={index} style={styles.recentCard}>
                                     <Image source={{ uri: scan.image_url }} style={styles.recentImage} />
                                     <View style={styles.recentTextWrap}>
-                                        <AppText variant="bodyMedium" style={{ fontWeight: '600' }} numberOfLines={1}>{scan.disease_name}</AppText>
+                                        <AppText variant="bodyMedium" style={{ fontWeight: '600' }} numberOfLines={1}>{t(scan.disease_name)}</AppText>
                                         <AppText variant="caption" color="textMedium">{new Date(scan.created_at).toLocaleDateString()}</AppText>
                                     </View>
                                 </View>
@@ -187,12 +191,12 @@ export default function HomeScreen({ navigation }) {
                     </View>
                 )}
 
-                <AppText variant="heading3" style={styles.sectionTitle}>Quick Tools</AppText>
+                <AppText variant="heading3" style={styles.sectionTitle}>{t("quick_tools")}</AppText>
 
                 {/* Secondary Actions */}
                 <ActionCard
                     title={t("yield_prediction")}
-                    subtitle="Calculate arecanut output per acre"
+                    subtitle={t("calc_yield")}
                     icon="bar-chart-2"
                     color={colors.primary}
                     onPress={() => navigation.navigate('YieldInput')}
@@ -200,7 +204,7 @@ export default function HomeScreen({ navigation }) {
 
                 <ActionCard
                     title={t("tips_advisory")}
-                    subtitle="Seasonal farming practices"
+                    subtitle={t("seasonal_practices")}
                     icon="book-open"
                     color="#F59E0B"
                     onPress={() => navigation.navigate('Tips')}
@@ -208,7 +212,7 @@ export default function HomeScreen({ navigation }) {
 
                 <ActionCard
                     title={t("weather_analysis")}
-                    subtitle="Rainfall and humidity insights"
+                    subtitle={t("weather_insights")}
                     icon="cloud-rain"
                     color="#3B82F6"
                     onPress={() => navigation.navigate('Weather')}
@@ -216,7 +220,7 @@ export default function HomeScreen({ navigation }) {
 
                 <ActionCard
                     title={t("ai_chat")}
-                    subtitle="Ask AgriBot any farming question"
+                    subtitle={t("ask_agribot")}
                     icon="message-circle"
                     color="#E11D48"
                     onPress={() => navigation.navigate('ChatAssistant')}
