@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
 import { View, StyleSheet, FlatList, TouchableOpacity, Image, RefreshControl, Modal, Alert, Animated } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
@@ -47,9 +48,11 @@ export default function HistoryScreen({ navigation }) {
         }
     };
 
-    useEffect(() => {
-        fetchHistory();
-    }, []);
+    useFocusEffect(
+        useCallback(() => {
+            fetchHistory();
+        }, [])
+    );
 
     const handleDelete = (id, name) => {
         Alert.alert(

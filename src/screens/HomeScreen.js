@@ -45,15 +45,12 @@ export default function HomeScreen({ navigation }) {
         }
     };
 
-    useEffect(() => {
-        fetchDashboardData();
-    }, [activeFarm]);
-
     useFocusEffect(
         useCallback(() => {
+            fetchDashboardData();
             // Attempt an imperceptible background queue flush every time we view the Dashboard
             syncService.processQueue();
-        }, [])
+        }, [activeFarm])
     );
 
     const getHealthStatus = () => {

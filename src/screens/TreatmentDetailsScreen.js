@@ -17,7 +17,7 @@ const TreatmentCard = ({ type, title, description, iconLib, icon, color }) => (
                     <MaterialCommunityIcons name={icon} size={24} color={color} />
                 )}
             </View>
-            <View style={{ marginLeft: 12 }}>
+            <View style={{ marginLeft: 12, flex: 1 }}>
                 <AppText variant="caption" style={{ color: color, fontWeight: '700', textTransform: 'uppercase' }}>
                     {type}
                 </AppText>
