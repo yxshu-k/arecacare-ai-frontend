@@ -12,10 +12,10 @@ import { formatNumber } from '../utils/formatters';
 export default function YieldInputScreen({ navigation }) {
     const { colors } = useTheme();
     const styles = React.useMemo(() => getStyles(colors), [colors]);
-    const [soilType, setSoilType] = useState('Loamy');
-    const [rainfall, setRainfall] = useState('1200');
-    const [age, setAge] = useState('5');
-    const [area, setArea] = useState('2');
+    const [soilType, setSoilType] = useState('');
+    const [rainfall, setRainfall] = useState('');
+    const [age, setAge] = useState('');
+    const [area, setArea] = useState('');
     const [loading, setLoading] = useState(false);
 
     const handlePredict = async () => {

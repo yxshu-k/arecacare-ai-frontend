@@ -2,8 +2,11 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 // We pull the API URL dynamically from our .env file.
-// If the .env is missing, it falls back to a development IP safely.
-const API_URL = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.5:8000';
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+if (!API_URL) {
+    console.warn("[PRODUCTION WARNING] EXPO_PUBLIC_API_URL is not defined in the environment variables!");
+}
 
 const api = axios.create({
     baseURL: API_URL,

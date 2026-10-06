@@ -116,3 +116,5 @@ This mobile app strictly interfaces with the existing ArecaCare FastAPI Backend.
    - **On Mobile**: Download **Expo Go** from the Google Play Store (Android) or App Store (iOS) and scan the QR code in the terminal.
    - **On Web**: Press `w` in the terminal to view in your browser.
    - **On Emulator**: Press `a` (for Android Studio) or `i` (for iOS Simulator) in the terminal.
+
+run backend - uvicorn main:app --host 0.0.0.0 --port 8000 --reload
