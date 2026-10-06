@@ -55,7 +55,10 @@ export default function HomeScreen({ navigation }) {
 
     const getHealthStatus = () => {
         if (!recentScans || recentScans.length === 0) return { status: 'Unknown', color: colors.textMedium, icon: 'help-circle' };
-        const diseases = recentScans.filter(scan => scan.disease_name.toLowerCase() !== 'healthy');
+
+        // Ensure "Healthy Arecanut" is not flagged as a disease
+        const diseases = recentScans.filter(scan => !scan.disease_name.toLowerCase().includes('healthy'));
+
         if (diseases.length === 0) return { status: 'Optimal (All Clear)', color: '#22C55E', icon: 'check-circle' };
         if (diseases.length === 1) return { status: 'Minor Risk Detected', color: '#F59E0B', icon: 'alert-circle' };
         return { status: 'Critical Action Needed', color: '#DC2626', icon: 'alert-triangle' };
@@ -95,7 +98,7 @@ export default function HomeScreen({ navigation }) {
                 <View style={styles.header}>
                     <View>
                         <TouchableOpacity onPress={switchFarm} style={{ flexDirection: 'row', alignItems: 'center' }}>
-                            <AppText variant="heading2">{t("hello")}, {userName} 👋</AppText>
+                            <AppText variant="heading2">{t("hello")}, {userName} </AppText>
                             <View style={[styles.farmBadge, { backgroundColor: colors.primary + '15', marginLeft: 8 }]}>
                                 <Feather name="map-pin" size={12} color={colors.primary} />
                                 <AppText variant="caption" style={{ marginLeft: 4, color: colors.primary, fontWeight: '700' }}>{activeFarm.name}</AppText>

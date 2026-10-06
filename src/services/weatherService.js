@@ -1,7 +1,7 @@
 import api from './api';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const DEFAULT_CITY = 'Shivamogga';
+const DEFAULT_CITY = process.env.EXPO_PUBLIC_DEFAULT_CITY || '';
 
 export const weatherService = {
     /**

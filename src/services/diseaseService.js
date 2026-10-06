@@ -29,11 +29,24 @@ export const diseaseService = {
                 type: type,
             });
 
+            // Pre-fetch cached weather dynamically to provide Gemini with real-world weather context
+            let weatherContext = "Climate unverified.";
+            try {
+                const cachedWeather = await AsyncStorage.getItem('cache_weather');
+                if (cachedWeather) {
+                    const wData = JSON.parse(cachedWeather);
+                    weatherContext = `Temperature is ${Math.round(wData.temperature)}°C with ${wData.weather_condition}.`;
+                }
+            } catch (e) {
+                console.warn('Failed to parse weather cache for prediction context.');
+            }
+
             // The 'api.js' Axios instance handles Authorization Bearer headers automatically,
             // but we MUST override the Content-Type manually for THIS request!
             const response = await api.post('/predict', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
+                    'X-Location-Weather': weatherContext
                 },
                 // Extending timeout for ML Inference which might take 10+ seconds sometimes
                 timeout: 30000,

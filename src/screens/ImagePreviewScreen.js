@@ -121,8 +121,21 @@ export default function ImagePreviewScreen({ route, navigation }) {
                                 );
                                 setCurrentUri(res.uri);
                             } catch (e) {
-                                console.error("Crop failure:", e);
+                                console.error("Zoom failure:", e);
                             }
+                        }}>
+                        <MaterialCommunityIcons name="magnify-plus-outline" size={24} color={colors.text} />
+                        <AppText variant="small" style={{ marginTop: 4 }}>Zoom In</AppText>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.toolbarBtn}
+                        onPress={() => {
+                            // Expo Go does not have a native manual crop UI built-in for post-capture images.
+                            Alert.alert(
+                                "Manual Crop Unavailable",
+                                "React Native Expo Go requires a custom native module (like react-native-image-crop-picker) to manually draw crop boxes, which isn't supported in the basic Expo Go app."
+                            );
                         }}>
                         <MaterialCommunityIcons name="crop" size={24} color={colors.text} />
                         <AppText variant="small" style={{ marginTop: 4 }}>Crop</AppText>
