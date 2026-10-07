@@ -1,116 +1,268 @@
-import React from 'react';
-import { View, StyleSheet, FlatList, TouchableOpacity, Image } from 'react-native';
+import React, { useState, useEffect, useContext } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, Alert, Dimensions, ImageBackground } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { colors } from '../theme/colors';
 import { useLanguage } from '../context/LanguageContext';
+import { AuthContext } from '../context/AuthContext';
+import { tipsService } from '../services/tipsService';
+import { weatherService } from '../services/weatherService';
 
-const MOCK_TIPS = [
-    { id: '1', title: 'How to Identify Leaf Spot Disease', category: 'Disease Guide', readTime: '5 min read', icon: 'magnify-scan' },
-    { id: '2', title: 'Best Fertilizers for Arecanut', category: 'Nutrients', readTime: '3 min read', icon: 'flask-outline' },
-    { id: '3', title: 'Irrigation Techniques for Better Yield', category: 'Water Management', readTime: '4 min read', icon: 'water-outline' },
-    { id: '4', title: 'Seasonal Care for Arecanut Palms', category: 'Maintenance', readTime: '6 min read', icon: 'calendar-clock' },
-];
+const { width } = Dimensions.get('window');
 
 export default function TipsScreen({ navigation }) {
     const { t } = useLanguage();
+    const { activeFarm } = useContext(AuthContext);
+
+    const [tips, setTips] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
+    const [weatherLabel, setWeatherLabel] = useState("Syncing Weather...");
+
+    const loadTips = async (forceRefresh = false) => {
+        try {
+            if (!forceRefresh) setLoading(true);
+
+            let weatherCondition = "Standard Tropics";
+            try {
+                const targetLocation = activeFarm?.region || '13.9299,75.5681';
+                const weatherData = await weatherService.getCurrentWeather(targetLocation);
+                if (weatherData) {
+                    weatherCondition = `${weatherData.temperature}°C, ${weatherData.weather_condition}`;
+                    setWeatherLabel(weatherCondition);
+                }
+            } catch (e) {
+                console.warn("Weather fetch failed, falling back to standard condition for tips.");
+                setWeatherLabel("Offline Mode");
+            }
+
+            const data = forceRefresh
+                ? await tipsService.refreshTips(weatherCondition)
+                : await tipsService.getSeasonalTips(weatherCondition);
+
+            setTips(data);
+        } catch (error) {
+            console.error(error);
+            Alert.alert("Error", error.message || "Failed to load advisory tips.");
+        } finally {
+            setLoading(false);
+            setRefreshing(false);
+        }
+    };
+
+    useEffect(() => {
+        loadTips();
+    }, [activeFarm]);
+
+    const handleRefresh = () => {
+        setRefreshing(true);
+        loadTips(true);
+    };
 
     const renderItem = ({ item }) => (
-        <TouchableOpacity style={styles.card}>
-            <View style={styles.imageMock}>
-                <MaterialCommunityIcons name={item.icon} size={32} color={colors.primary} />
-            </View>
-            <View style={styles.cardContent}>
+        <TouchableOpacity
+            activeOpacity={0.9}
+            style={styles.cardWrapper}
+            onPress={() => navigation.navigate('TipDetail', { tip: item })}
+        >
+            <LinearGradient
+                colors={['#ffffff', '#f8fbf8']}
+                style={styles.card}
+            >
+                <View style={styles.cardHeader}>
+                    <View style={styles.iconBox}>
+                        <MaterialCommunityIcons name={item.icon || 'leaf'} size={28} color={colors.primary} />
+                    </View>
+                    <View style={styles.badge}>
+                        <AppText variant="overline" style={styles.badgeText}>{item.category?.toUpperCase()}</AppText>
+                    </View>
+                </View>
+
                 <AppText variant="heading3" numberOfLines={2} style={styles.titleText}>
-                    {t(item.title)}
+                    {item.title}
                 </AppText>
-                <AppText variant="caption" color="primary" style={styles.categoryBadge}>
-                    {t(item.category)}
-                </AppText>
-                <AppText variant="caption" color="textLight" style={styles.readTime}>
-                    {t(item.readTime)}
-                </AppText>
-            </View>
-            <Feather name="bookmark" size={22} color={colors.textLight} style={styles.bookmark} />
+
+                <View style={styles.cardFooter}>
+                    <View style={styles.footerRow}>
+                        <Feather name="clock" size={14} color={colors.textLight} />
+                        <AppText variant="caption" style={styles.readTimeText}>{item.readTime}</AppText>
+                    </View>
+                    <Feather name="arrow-right" size={20} color={colors.primary} />
+                </View>
+            </LinearGradient>
         </TouchableOpacity>
     );
 
     return (
         <Screen style={styles.screen} noPadding>
-            <View style={styles.header}>
-                <AppText variant="heading2">{t("farming_tips")}</AppText>
-                <TouchableOpacity>
-                    <Feather name="search" size={24} color={colors.text} />
-                </TouchableOpacity>
-            </View>
+            <LinearGradient colors={['#10B981', '#059669']} style={styles.header}>
+                <View style={styles.headerTop}>
+                    <View>
+                        <AppText variant="heading2" color="white" style={styles.headerTitle}>
+                            {t("farming_tips")}
+                        </AppText>
+                        <AppText variant="bodyMedium" color="white" style={styles.headerSubtitle}>
+                            Dynamic Advisory for {weatherLabel}
+                        </AppText>
+                    </View>
+                    <TouchableOpacity onPress={handleRefresh} style={styles.refreshBtn}>
+                        <Feather name="refresh-cw" size={22} color="white" />
+                    </TouchableOpacity>
+                </View>
+            </LinearGradient>
 
-            <FlatList
-                data={MOCK_TIPS}
-                keyExtractor={item => item.id}
-                renderItem={renderItem}
-                contentContainerStyle={styles.list}
-                showsVerticalScrollIndicator={false}
-            />
+            <View style={styles.container}>
+                {loading ? (
+                    <View style={styles.center}>
+                        <ActivityIndicator size="large" color={colors.primary} />
+                        <AppText variant="bodyMedium" style={{ marginTop: 20, color: colors.textMedium }}>
+                            AI is analyzing current weather...
+                        </AppText>
+                    </View>
+                ) : (
+                    <FlatList
+                        data={tips}
+                        keyExtractor={item => item.id}
+                        renderItem={renderItem}
+                        contentContainerStyle={styles.listContent}
+                        showsVerticalScrollIndicator={false}
+                        refreshing={refreshing}
+                        onRefresh={handleRefresh}
+                        ListEmptyComponent={
+                            <View style={styles.center}>
+                                <Feather name="inbox" size={50} color={colors.textLight} />
+                                <AppText variant="bodyMedium" style={{ marginTop: 20, color: colors.textMedium, textAlign: 'center' }}>
+                                    No advisory tips immediately available.
+                                </AppText>
+                            </View>
+                        }
+                    />
+                )}
+            </View>
         </Screen>
     );
 }
 
 const styles = StyleSheet.create({
-    screen: { backgroundColor: colors.background },
+    screen: {
+        flex: 1, // CRITICAL FIX: Forces full screen scroll bonds
+        backgroundColor: colors.background
+    },
+    container: {
+        flex: 1, // CRITICAL FIX: Ensures FlatList inherits remaining scroll height
+    },
     header: {
+        paddingTop: 20,
+        paddingBottom: 30,
+        paddingHorizontal: 24,
+        borderBottomLeftRadius: 30,
+        borderBottomRightRadius: 30,
+        shadowColor: colors.primary,
+        shadowOffset: { width: 0, height: 6 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        elevation: 8,
+        zIndex: 10,
+    },
+    headerTop: {
         flexDirection: 'row',
-        alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: colors.border,
-        backgroundColor: colors.surface,
-    },
-    list: { padding: 20 },
-    card: {
-        flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: colors.surface,
-        padding: 16,
-        borderRadius: 16,
-        marginBottom: 16,
-        borderWidth: 1,
-        borderColor: colors.border,
-        shadowColor: colors.black,
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.04,
-        shadowRadius: 8,
-        elevation: 2,
     },
-    imageMock: {
-        width: 80,
-        height: 80,
-        borderRadius: 12,
-        backgroundColor: '#E8F5E9',
+    headerTitle: {
+        fontWeight: '800',
+        fontSize: 28,
+        letterSpacing: -0.5,
+    },
+    headerSubtitle: {
+        opacity: 0.9,
+        marginTop: 4,
+    },
+    refreshBtn: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: 'rgba(255,255,255,0.2)',
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 16,
     },
-    cardContent: {
+    listContent: {
+        padding: 20,
+        paddingTop: 24,
+        paddingBottom: 100, // Padding for Tab Bar breathing room
+    },
+    center: {
         flex: 1,
-        height: '100%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 40,
+    },
+    cardWrapper: {
+        marginBottom: 20,
+        borderRadius: 24,
+        shadowColor: colors.black,
+        shadowOffset: { width: 0, height: 8 },
+        shadowOpacity: 0.06,
+        shadowRadius: 15,
+        elevation: 4,
+    },
+    card: {
+        borderRadius: 24,
+        padding: 20,
+        borderWidth: 1,
+        borderColor: 'rgba(0,0,0,0.03)',
+    },
+    cardHeader: {
+        flexDirection: 'row',
         justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 16,
+    },
+    iconBox: {
+        width: 54,
+        height: 54,
+        borderRadius: 18,
+        backgroundColor: '#ECFDF5',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    badge: {
+        backgroundColor: colors.surface,
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 20,
+        borderWidth: 1,
+        borderColor: colors.border,
+    },
+    badgeText: {
+        color: colors.textMedium,
+        fontWeight: '700',
+        letterSpacing: 0.5,
     },
     titleText: {
-        lineHeight: 22,
-        marginBottom: 6,
+        fontSize: 19,
+        fontWeight: '700',
+        lineHeight: 26,
+        color: colors.text,
+        marginBottom: 16,
     },
-    categoryBadge: {
-        fontWeight: '600',
-        marginBottom: 4,
+    cardFooter: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingTop: 16,
+        borderTopWidth: 1,
+        borderTopColor: 'rgba(0,0,0,0.04)',
     },
-    readTime: {
-        marginTop: 2,
+    footerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
     },
-    bookmark: {
-        padding: 10,
-        alignSelf: 'flex-start',
+    readTimeText: {
+        marginLeft: 6,
+        color: colors.textMedium,
+        fontWeight: '500',
     }
 });
