@@ -7,7 +7,7 @@ import Screen from '../components/Screen';
 import { AuthContext } from '../context/AuthContext';
 import HomeNavigator from './HomeNavigator';
 import HistoryScreen from '../screens/HistoryScreen';
-import TipsScreen from '../screens/TipsScreen';
+import TipsNavigator from './TipsNavigator';
 import ProfileNavigator from './ProfileNavigator';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
@@ -49,7 +49,7 @@ export default function AppNavigator() {
             />
             <Tab.Screen
                 name="Tips"
-                component={TipsScreen}
+                component={TipsNavigator}
                 options={{ tabBarIcon: ({ color }) => <Feather name="book-open" size={24} color={color} /> }}
             />
             <Tab.Screen

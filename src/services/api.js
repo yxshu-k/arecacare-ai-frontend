@@ -13,7 +13,7 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 10000, // 10 second timeout threshold to prevent hanging requests
+    timeout: 30000, // Increased from 10s to 30s to allow heavy AI Generation & API Fallback sequences
 });
 
 // --- REQUEST INTERCEPTOR ---
