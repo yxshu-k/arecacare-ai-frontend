@@ -80,4 +80,45 @@ export const chatService = {
             return [];
         }
     },
+
+    /**
+     * Fetch all aggregated chat sessions.
+     */
+    getSessions: async () => {
+        try {
+            const response = await api.get('/api/assistant/chat/sessions', {
+                timeout: 10000,
+            });
+            return response.data; // returns { sessions: [...] }
+        } catch (error) {
+            console.error('[ChatService] Fetch Sessions Error:', error);
+            return { sessions: [] };
+        }
+    },
+
+    /**
+     * Delete a specific chat session by ID.
+     */
+    deleteSession: async (sessionId) => {
+        try {
+            const response = await api.delete(`/api/assistant/chat/sessions/${sessionId}`);
+            return response.data;
+        } catch (error) {
+            console.error('[ChatService] Delete Session Error:', error);
+            throw new Error('Failed to delete session');
+        }
+    },
+
+    /**
+     * Wipes the entire history database for the user.
+     */
+    deleteAllSessions: async () => {
+        try {
+            const response = await api.delete('/api/assistant/chat/sessions');
+            return response.data;
+        } catch (error) {
+            console.error('[ChatService] Clear History Error:', error);
+            throw new Error('Failed to clear diagnostic history');
+        }
+    },
 };
