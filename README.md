@@ -118,3 +118,4 @@ This mobile app strictly interfaces with the existing ArecaCare FastAPI Backend.
    - **On Emulator**: Press `a` (for Android Studio) or `i` (for iOS Simulator) in the terminal.
 
 run backend - uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+npx expo start -c

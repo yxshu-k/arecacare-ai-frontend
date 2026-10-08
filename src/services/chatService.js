@@ -1,4 +1,5 @@
 import api from './api';
+import { Platform } from 'react-native';
 
 export const chatService = {
     /**
@@ -50,17 +51,61 @@ export const chatService = {
             formData.append('language', language);
 
             console.log(`[ChatService] Sending voice upload to backend: `, filename);
-            const response = await api.post('/api/assistant/chat/voice', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                timeout: 30000,
+            const token = Platform.OS === 'web'
+                ? localStorage.getItem('auth_token')
+                : await require('expo-secure-store').getItemAsync('auth_token');
+            const res = await fetch(`${api.defaults.baseURL}/api/assistant/chat/voice`, {
+                method: 'POST',
+                headers: {
+                    ...(token && { Authorization: `Bearer ${token}` }),
+                },
+                body: formData,
             });
-            return response.data;
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.detail || 'Failed to process voice command.');
+            }
+            return await res.json();
         } catch (error) {
             console.error('[ChatService] Voice Upload Error:', error);
-            if (error.response && error.response.data) {
-                throw new Error(error.response.data.detail || 'Failed to process voice command.');
-            }
             throw new Error(error.message || 'Network error while contacting AI Assistant.');
+        }
+    },
+
+    /**
+     * Fetch RAW Speech-to-Text transcription without triggering Gemini.
+     */
+    sendSpeechToText: async (audioUri, language = 'en') => {
+        try {
+            const formData = new FormData();
+            const filename = audioUri.split('/').pop() || 'voice.m4a';
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `audio/${match[1]}` : `audio/mp4`;
+
+            formData.append('file', { uri: audioUri, name: filename, type: type });
+            formData.append('language', language);
+
+            console.log(`[ChatService] Sending STT audio...`);
+            const token = Platform.OS === 'web'
+                ? localStorage.getItem('auth_token')
+                : await require('expo-secure-store').getItemAsync('auth_token');
+            const res = await fetch(`${api.defaults.baseURL}/api/assistant/chat/speech-to-text`, {
+                method: 'POST',
+                headers: {
+                    ...(token && { Authorization: `Bearer ${token}` }),
+                },
+                body: formData,
+            });
+
+            if (!res.ok) {
+                const errorData = await res.json();
+                throw new Error(errorData.detail || 'Audio transcription failed.');
+            }
+            return await res.json(); // { text: "...", language: "..." }
+        } catch (error) {
+            console.error('[ChatService] STT Error:', error);
+            throw new Error('Audio transcription failed.');
         }
     },
 

@@ -1,29 +1,23 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, TextInput, KeyboardAvoidingView, Platform, ActivityIndicator, Animated, Dimensions, Alert, TouchableWithoutFeedback, SafeAreaView, FlatList, LogBox } from 'react-native';
 
-LogBox.ignoreLogs(['Cannot record touch end without a touch start']);
+LogBox.ignoreLogs(['Cannot record touch end without a touch start', 'Ended a touch event']);
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Speech from 'expo-speech';
-
-let Clipboard = null;
-try {
-    Clipboard = require('expo-clipboard');
-} catch (e) {
-    console.warn("Native Clipboard drivers missing.");
-}
-
-let Audio = null;
-try {
-    Audio = require('expo-av').Audio;
-} catch (e) {
-    console.warn("[ArecaCare] Native Audio drivers missing. Voice functions will degrade gracefully.");
-}
 
 import AppText from '../components/AppText';
 import { chatService } from '../services/chatService';
 import { AuthContext } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import * as Clipboard from 'expo-clipboard';
+
+let Audio = null;
+try {
+    Audio = require('expo-av').Audio;
+} catch (e) {
+    console.warn("[ArecaCare] Native Audio drivers missing.");
+}
 
 const { width, height } = Dimensions.get('window');
 
@@ -34,6 +28,7 @@ const ChatLineAI = ({ text }) => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const translateY = useRef(new Animated.Value(10)).current;
     const [copied, setCopied] = useState(false);
+    const [isSpeaking, setIsSpeaking] = useState(false);
 
     useEffect(() => {
         Animated.parallel([
@@ -49,6 +44,28 @@ const ChatLineAI = ({ text }) => {
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const handleSpeak = async () => {
+        try {
+            const isSpeakingState = await Speech.isSpeakingAsync();
+            if (isSpeakingState) {
+                await Speech.stop();
+                setIsSpeaking(false);
+            } else {
+                setIsSpeaking(true);
+                Speech.speak(text.replace(/[*#]/g, ''), {
+                    language: 'en-US',
+                    rate: 0.9,
+                    onDone: () => setIsSpeaking(false),
+                    onStopped: () => setIsSpeaking(false),
+                    onError: () => setIsSpeaking(false)
+                });
+            }
+        } catch (e) {
+            console.log("Speech toggle error", e);
+            setIsSpeaking(false);
+        }
+    };
+
     return (
         <Animated.View style={[styles.chatRowAI, { opacity: fadeAnim, transform: [{ translateY }] }]}>
             <View style={styles.avatarAIContainer}>
@@ -62,9 +79,11 @@ const ChatLineAI = ({ text }) => {
                         {text.replace(/[*#]/g, '')}
                     </AppText>
                     <View style={styles.aiActionBar}>
-                        <TouchableOpacity onPress={() => Speech.speak(text.replace(/[*#]/g, ''), { language: 'en-US', rate: 0.9 })} style={styles.actionIconBtn}>
-                            <Feather name="volume-2" size={14} color="#9CA3AF" />
-                            <AppText variant="caption" style={{ color: '#9CA3AF', marginLeft: 6, fontSize: 10 }}>Listen</AppText>
+                        <TouchableOpacity onPress={handleSpeak} style={styles.actionIconBtn}>
+                            <Feather name={isSpeaking ? "volume-x" : "volume-2"} size={14} color={isSpeaking ? "#EF4444" : "#9CA3AF"} />
+                            <AppText variant="caption" style={{ color: isSpeaking ? '#EF4444' : '#9CA3AF', marginLeft: 6, fontSize: 10 }}>
+                                {isSpeaking ? "Stop" : "Listen"}
+                            </AppText>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleCopy} style={styles.actionIconBtn} disabled={copied}>
                             <Feather name={copied ? "check" : "copy"} size={14} color={copied ? "#10B981" : "#9CA3AF"} />
@@ -125,6 +144,7 @@ export default function ChatAssistantScreen({ navigation }) {
     // Audio engine
     const [recording, setRecording] = useState(null);
     const [isRecording, setIsRecording] = useState(false);
+    const [isRecordingSTT, setIsRecordingSTT] = useState(false);
     const pulseAnim = useRef(new Animated.Value(1)).current;
 
     // Drawer/Sidebar state
@@ -153,7 +173,7 @@ export default function ChatAssistantScreen({ navigation }) {
     }, []);
 
     useEffect(() => {
-        if (isRecording) {
+        if (isRecording || isRecordingSTT) {
             Animated.loop(
                 Animated.sequence([
                     Animated.timing(pulseAnim, { toValue: 1.25, duration: 600, useNativeDriver: true }),
@@ -163,7 +183,7 @@ export default function ChatAssistantScreen({ navigation }) {
         } else {
             pulseAnim.setValue(1);
         }
-    }, [isRecording]);
+    }, [isRecording, isRecordingSTT]);
 
     const fetchSidebarSessions = async () => {
         try {
@@ -292,7 +312,13 @@ export default function ChatAssistantScreen({ navigation }) {
     };
 
     const startAudioRecording = async () => {
-        if (!Audio) return;
+        if (!Audio) {
+            Alert.alert(
+                "Microphone Disabled",
+                "Your mobile app binary (APK) is physically missing the native C++ 'expo-av' hardware drivers. You MUST rebuild the app exactly as stated below to fix this:\n\nnpx expo run:android\n\nRun that in your PC terminal to install the new drivers to your phone."
+            );
+            return;
+        }
         try {
             const perm = await Audio.requestPermissionsAsync();
             if (perm.status !== 'granted') return;
@@ -332,6 +358,45 @@ export default function ChatAssistantScreen({ navigation }) {
         } finally {
             setIsTyping(false);
             setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
+        }
+    };
+
+    const startSTTRecording = async () => {
+        if (!Audio) {
+            Alert.alert(
+                "Microphone Disabled",
+                "Your mobile app binary (APK) is physically missing the native C++ 'expo-av' hardware drivers. You MUST rebuild the app exactly as stated below to fix this:\n\nnpx expo run:android\n\nRun that in your PC terminal to install the new drivers to your phone."
+            );
+            return;
+        }
+        try {
+            const perm = await Audio.requestPermissionsAsync();
+            if (perm.status !== 'granted') return;
+            setIsRecordingSTT(true);
+            const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
+            setRecording(recording);
+        } catch (err) {
+            setIsRecordingSTT(false);
+        }
+    };
+
+    const stopSTTRecording = async () => {
+        if (!recording) return;
+        setIsRecordingSTT(false);
+        setIsTyping(true);
+        try {
+            await recording.stopAndUnloadAsync();
+            const uri = recording.getURI();
+            setRecording(null);
+
+            const response = await chatService.sendSpeechToText(uri, language);
+            if (response && response.text) {
+                setInputText(prev => (prev ? prev + ' ' + response.text : response.text));
+            }
+        } catch (err) {
+            Alert.alert("Transcription Error", err.message);
+        } finally {
+            setIsTyping(false);
         }
     };
 
@@ -440,8 +505,8 @@ export default function ChatAssistantScreen({ navigation }) {
 
                 <KeyboardAvoidingView
                     style={{ flex: 1 }}
-                    behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                    keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 20}
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    keyboardVerticalOffset={Platform.OS === 'ios' ? 90 : 0}
                 >
                     <ScrollView
                         style={{ flex: 1 }}
@@ -477,14 +542,23 @@ export default function ChatAssistantScreen({ navigation }) {
                                     <Feather name="send" size={18} color="white" />
                                 </TouchableOpacity>
                             ) : (
-                                <Animated.View style={[{ transform: [{ scale: pulseAnim }] }]}>
+                                <Animated.View style={[{ transform: [{ scale: pulseAnim }], flexDirection: 'row', alignItems: 'center' }]}>
                                     <TouchableOpacity
-                                        style={isRecording ? styles.creativeMicBtnActive : styles.creativeMicBtnIdle}
+                                        style={[styles.creativeMicBtnIdle, { backgroundColor: 'transparent' }]}
+                                        onPressIn={startSTTRecording}
+                                        onPressOut={stopSTTRecording}
+                                        disabled={isTyping || isRecording}
+                                    >
+                                        <Feather name="mic" size={20} color={isRecordingSTT ? '#EF4444' : '#4B5563'} />
+                                    </TouchableOpacity>
+
+                                    <TouchableOpacity
+                                        style={isRecording ? styles.creativeMicBtnActive : [styles.creativeMicBtnIdle, { backgroundColor: '#3B82F6' }]}
                                         onPressIn={startAudioRecording}
                                         onPressOut={stopAudioRecording}
-                                        disabled={isTyping}
+                                        disabled={isTyping || isRecordingSTT}
                                     >
-                                        <MaterialCommunityIcons name={isRecording ? "microphone" : "microphone-outline"} size={22} color={isRecording ? 'white' : '#10B981'} />
+                                        <MaterialCommunityIcons name="waveform" size={20} color="white" />
                                     </TouchableOpacity>
                                 </Animated.View>
                             )}
