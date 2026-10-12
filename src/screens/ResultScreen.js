@@ -15,12 +15,16 @@ export default function ResultScreen({ route, navigation }) {
 
     const isHealthy = diseaseName.toLowerCase().includes('healthy');
     const isUnknown = diseaseName.toLowerCase().includes('unknown');
+    const isNonArecanut = diseaseName.toLowerCase().includes('non-arecanut');
+
+    // Remove prefix for display
+    const displayDiseaseName = diseaseName.replace(/Non-Arecanut:\s*/i, '');
 
     // Dynamic color theming based on prediction state
-    const themeBg = isHealthy ? '#DCFCE7' : (isUnknown ? '#F3F4F6' : '#FEF2F2');
-    const themeBorder = isHealthy ? '#BBF7D0' : (isUnknown ? '#E5E7EB' : '#FECACA');
-    const themeText = isHealthy ? '#16A34A' : (isUnknown ? '#4B5563' : '#DC2626');
-    const themeIcon = isHealthy ? 'check-circle' : (isUnknown ? 'help-circle' : 'alert-triangle');
+    const themeBg = isHealthy ? '#DCFCE7' : ((isUnknown || isNonArecanut) ? '#F3F4F6' : '#FEF2F2');
+    const themeBorder = isHealthy ? '#BBF7D0' : ((isUnknown || isNonArecanut) ? '#E5E7EB' : '#FECACA');
+    const themeText = isHealthy ? '#16A34A' : ((isUnknown || isNonArecanut) ? '#4B5563' : '#DC2626');
+    const themeIcon = isHealthy ? 'check-circle' : ((isUnknown || isNonArecanut) ? 'info' : 'alert-triangle');
 
     return (
         <Screen style={styles.screen} noPadding>
@@ -47,7 +51,7 @@ export default function ResultScreen({ route, navigation }) {
                     )}
                     <View style={styles.resultContent}>
                         <AppText variant="heading2" style={{ color: themeText, fontSize: 22 }}>
-                            {diseaseName}
+                            {displayDiseaseName}
                         </AppText>
                         <View style={styles.confidenceBadge}>
                             <Feather name={themeIcon} size={14} color={themeText} />
@@ -55,7 +59,7 @@ export default function ResultScreen({ route, navigation }) {
                                 Confidence: {confidence.toFixed(1)}%
                             </AppText>
                         </View>
-                        {!isHealthy && !isUnknown && (
+                        {!isHealthy && !isUnknown && !isNonArecanut && (
                             <View style={styles.severityTag}>
                                 <AppText variant="caption" style={{ color: '#DC2626', fontWeight: '700' }}>High Severity</AppText>
                             </View>
@@ -63,6 +67,11 @@ export default function ResultScreen({ route, navigation }) {
                         {isHealthy && (
                             <View style={[styles.severityTag, { backgroundColor: '#BBF7D0' }]}>
                                 <AppText variant="caption" style={{ color: '#16A34A', fontWeight: '700' }}>Plant Healthy</AppText>
+                            </View>
+                        )}
+                        {isNonArecanut && (
+                            <View style={[styles.severityTag, { backgroundColor: '#E5E7EB' }]}>
+                                <AppText variant="caption" style={{ color: '#4B5563', fontWeight: '700' }}>Subject Identified</AppText>
                             </View>
                         )}
                     </View>
