@@ -107,7 +107,7 @@ export default function HistoryScreen({ navigation }) {
         if (!name) return { color: colors.primary, bg: '#F0FDF4' };
         const lower = name.toLowerCase();
         if (lower.includes('healthy')) return { color: '#16A34A', bg: '#DCFCE7' };
-        if (lower.includes('unknown')) return { color: '#6B7280', bg: '#F3F4F6' };
+        if (lower.includes('unknown') || lower.includes('non-arecanut')) return { color: '#6B7280', bg: '#F3F4F6' };
         return { color: '#DC2626', bg: '#FEF2F2' };
     };
 
@@ -115,7 +115,7 @@ export default function HistoryScreen({ navigation }) {
     const filteredHistory = history.filter(item => {
         const isHealthy = item.disease_name?.toLowerCase().includes('healthy');
         if (activeFilter === 'Healthy') return isHealthy;
-        if (activeFilter === 'Diseased') return !isHealthy && !item.disease_name?.toLowerCase().includes('unknown');
+        if (activeFilter === 'Diseased') return !isHealthy && !item.disease_name?.toLowerCase().includes('unknown') && !item.disease_name?.toLowerCase().includes('non-arecanut');
         return true;
     });
 
@@ -148,7 +148,7 @@ export default function HistoryScreen({ navigation }) {
 
                 <View style={styles.cardContent}>
                     <AppText variant="heading3" style={{ color: style.color, fontSize: 16 }}>
-                        {t(item.disease_name || 'Unknown')}
+                        {t((item.disease_name || 'Unknown').replace(/Non-Arecanut:\s*/i, ''))}
                     </AppText>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
                         <AppText variant="caption" color="textMedium">Conf: {item.confidence}%</AppText>
