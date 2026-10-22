@@ -72,7 +72,7 @@ export default function WeatherScreen({ navigation }) {
     const [weather, setWeather] = useState(null);
     const [advisory, setAdvisory] = useState(null);
     const [loading, setLoading] = useState(true);
-    const { activeFarm } = useContext(AuthContext);
+    const { activeFarm, refreshLocation } = useContext(AuthContext);
 
     useEffect(() => {
         fetchWeatherData();
@@ -93,6 +93,13 @@ export default function WeatherScreen({ navigation }) {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleRefresh = async () => {
+        if (refreshLocation) {
+            await refreshLocation();
+        }
+        await fetchWeatherData();
     };
 
     const gradientColors = getWeatherGradient(weather?.weather_condition);
@@ -122,7 +129,7 @@ export default function WeatherScreen({ navigation }) {
                         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
                             <Feather name="chevron-left" size={28} color="white" />
                         </TouchableOpacity>
-                        <TouchableOpacity onPress={fetchWeatherData} style={styles.iconBtn}>
+                        <TouchableOpacity onPress={handleRefresh} style={styles.iconBtn}>
                             <Feather name="refresh-cw" size={22} color="white" />
                         </TouchableOpacity>
                     </View>

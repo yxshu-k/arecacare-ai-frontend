@@ -8,6 +8,7 @@ import { requestCameraPermission } from '../services/permissionsService';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as SecureStore from 'expo-secure-store';
 
 const { width, height } = Dimensions.get('window');
 
@@ -22,10 +23,19 @@ export default function ScanPlantScreen({ navigation }) {
 
     const processImage = async (uri) => {
         try {
+            let isDataSaver = false;
+            try {
+                const saved = await SecureStore.getItemAsync('pref_data_saver');
+                isDataSaver = saved === 'true';
+            } catch (err) {}
+
+            const resizeWidth = isDataSaver ? 640 : 1080;
+            const compressQuality = isDataSaver ? 0.6 : 0.8;
+
             const manipResult = await ImageManipulator.manipulateAsync(
                 uri,
-                [{ resize: { width: 1080 } }], // Compress the image wildly down to 1080px to save rural bandwidth
-                { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+                [{ resize: { width: resizeWidth } }],
+                { compress: compressQuality, format: ImageManipulator.SaveFormat.JPEG }
             );
             navigation.navigate('ImagePreview', { imageUri: manipResult.uri });
         } catch (e) {

@@ -12,7 +12,7 @@ import { diseaseService } from '../services/diseaseService';
 import { syncService } from '../services/syncService';
 
 export default function HomeScreen({ navigation }) {
-    const { userData, logout, activeFarm, switchFarm } = useContext(AuthContext);
+    const { userData, logout, activeFarm } = useContext(AuthContext);
     const { colors } = useTheme();
     const { t } = useLanguage();
     const styles = React.useMemo(() => getStyles(colors), [colors]);
@@ -97,22 +97,35 @@ export default function HomeScreen({ navigation }) {
                 {/* Header Section */}
                 <View style={styles.header}>
                     <View>
-                        <TouchableOpacity onPress={switchFarm} style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <AppText variant="heading2">{t("hello")}, {userName} </AppText>
-                            <View style={[styles.farmBadge, { backgroundColor: colors.primary + '15', marginLeft: 8 }]}>
+                            <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={() => navigation.navigate('Weather')}
+                                style={[styles.farmBadge, { backgroundColor: colors.primary + '15', marginLeft: 8 }]}
+                                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                            >
                                 <Feather name="map-pin" size={12} color={colors.primary} />
-                                <AppText variant="caption" style={{ marginLeft: 4, color: colors.primary, fontWeight: '700' }}>{activeFarm.name}</AppText>
-                            </View>
-                        </TouchableOpacity>
+                                <AppText variant="caption" style={{ marginLeft: 4, color: colors.primary, fontWeight: '700' }}>
+                                    {activeFarm.name}
+                                </AppText>
+                            </TouchableOpacity>
+                        </View>
                         {loading ? (
                             <ActivityIndicator size="small" color={colors.primary} style={{ alignSelf: 'flex-start', marginTop: 4 }} />
                         ) : weather ? (
-                            <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>
+                            <TouchableOpacity
+                                activeOpacity={0.7}
+                                onPress={() => navigation.navigate('Weather')}
+                                style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}
+                                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                            >
                                 <Feather name="cloud" size={16} color={colors.textMedium} />
                                 <AppText variant="bodyMedium" color="textMedium" style={{ marginLeft: 6 }}>
                                     {Math.round(weather.temperature)}°C • {weather.weather_condition}
                                 </AppText>
-                            </View>
+                                <Feather name="chevron-right" size={14} color={colors.textMedium} style={{ marginLeft: 2 }} />
+                            </TouchableOpacity>
                         ) : error ? (
                             <View>
                                 <TouchableOpacity onPress={fetchDashboardData} style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4 }}>

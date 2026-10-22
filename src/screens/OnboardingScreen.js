@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import { Feather } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
@@ -29,10 +30,13 @@ const ONBOARDING_DATA = [
 export default function OnboardingScreen({ navigation }) {
     const [step, setStep] = useState(0);
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (step < ONBOARDING_DATA.length - 1) {
             setStep(step + 1);
         } else {
+            try {
+                await SecureStore.setItemAsync('has_onboarded', 'true');
+            } catch (e) {}
             navigation.replace('Login');
         }
     };

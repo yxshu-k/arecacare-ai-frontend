@@ -6,39 +6,46 @@ export const authService = {
             const response = await api.get('/api/auth/me');
             return response.data;
         } catch (error) {
-            throw new Error('Failed to fetch profile.');
+            // Re-throw so caller can check error.response?.status (e.g. 401 vs network drop)
+            throw error;
         }
     },
 
     login: async (email, password) => {
         try {
-            const response = await api.post('/api/auth/login', { email, password });
+            const cleanEmail = (email || '').trim().toLowerCase();
+            const response = await api.post('/api/auth/login', { email: cleanEmail, password });
             const token = response.data.token || response.data.access_token;
             if (!token) throw new Error("No token returned from server");
 
             return {
                 token: token,
-                user: response.data.user || { email }
+                user: response.data.user || { email: cleanEmail }
             };
         } catch (error) {
             if (error.response && error.response.data) {
                 // FastAPI natively uses "detail" for its error strings
                 throw new Error(error.response.data.detail || error.response.data.message || 'Invalid credentials');
             }
-            throw new Error('Network error. Unable to connect to server.');
+            throw new Error('Network error. Unable to connect to server. Please check your internet connection.');
         }
     },
 
     register: async (userData) => {
         try {
-            const response = await api.post('/api/auth/register', userData);
+            const sanitized = {
+                ...userData,
+                email: (userData.email || '').trim().toLowerCase(),
+                name: (userData.name || '').trim(),
+            };
+            const response = await api.post('/api/auth/register', sanitized);
             return response.data;
         } catch (error) {
             if (error.response && error.response.data) {
                 // FastAPI natively uses "detail" for its error strings
                 throw new Error(error.response.data.detail || error.response.data.message || 'Registration failed');
             }
-            throw new Error('Network error. Unable to connect to server.');
+            throw new Error('Network error. Unable to connect to server. Please check your internet connection.');
         }
     },
 
@@ -73,6 +80,18 @@ export const authService = {
             return response.data;
         } catch (error) {
             throw new Error('Avatar upload failed.');
+        }
+    },
+
+    deleteProfilePicture: async () => {
+        try {
+            const response = await api.delete('/api/auth/avatar');
+            return response.data;
+        } catch (error) {
+            if (error.response && error.response.data) {
+                throw new Error(error.response.data.detail || error.response.data.message || 'Failed to remove avatar.');
+            }
+            throw new Error('Network error. Unable to connect to server.');
         }
     },
 

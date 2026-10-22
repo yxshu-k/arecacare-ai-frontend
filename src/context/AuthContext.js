@@ -17,6 +17,38 @@ export const AuthProvider = ({ children }) => {
     ]);
     const [activeFarm, setActiveFarm] = useState(defaultFarms[0]);
 
+    const applyLocationCoords = async (coords) => {
+        if (!coords) return;
+        const { latitude, longitude } = coords;
+        const coordStr = `${latitude},${longitude}`;
+
+        let normalized = {
+            placeName: 'Live GPS',
+            district: '',
+            localityStr: coordStr,
+            coordinates: coordStr,
+        };
+
+        try {
+            const addresses = await Location.reverseGeocodeAsync({ latitude, longitude });
+            normalized = normalizeAddress(addresses, { latitude, longitude });
+        } catch (geoErr) {
+            console.warn("[Location Hook] Reverse geocode error:", geoErr);
+        }
+
+        const liveProfile = {
+            id: 1,
+            name: normalized.placeName,
+            district: normalized.district,
+            locality: normalized.localityStr,
+            region: coordStr,
+            coordinates: { latitude, longitude }
+        };
+
+        setDefaultFarms([liveProfile]);
+        setActiveFarm(liveProfile);
+    };
+
     useEffect(() => {
         (async () => {
             try {
@@ -28,80 +60,75 @@ export const AuthProvider = ({ children }) => {
                     return;
                 }
 
-                // 1. First get last known position for instant responsiveness (especially indoors)
-                let location = await Location.getLastKnownPositionAsync({});
-                
-                // 2. Then get fresh position with balanced accuracy
-                if (!location) {
-                    location = await Location.getCurrentPositionAsync({
-                        accuracy: Location.Accuracy.Balanced,
-                    });
+                // 1. Instant responsiveness from cached position
+                const cachedLocation = await Location.getLastKnownPositionAsync({});
+                if (cachedLocation && cachedLocation.coords) {
+                    await applyLocationCoords(cachedLocation.coords);
                 }
 
-                if (location && location.coords) {
-                    const { latitude, longitude } = location.coords;
-                    const coords = `${latitude},${longitude}`;
-
-                    // 3. Reverse geocode to find user's exact village/town/district name
-                    let normalized = {
-                        placeName: 'Live GPS',
-                        district: '',
-                        localityStr: coords,
-                        coordinates: coords,
-                    };
-
-                    try {
-                        const addresses = await Location.reverseGeocodeAsync({ latitude, longitude });
-                        normalized = normalizeAddress(addresses, { latitude, longitude });
-                    } catch (geoErr) {
-                        console.warn("[Location Hook] Reverse geocode error:", geoErr);
-                    }
-
-                    const liveProfile = {
-                        id: 1,
-                        name: normalized.placeName,
-                        district: normalized.district,
-                        locality: normalized.localityStr,
-                        region: coords,
-                        coordinates: { latitude, longitude }
-                    };
-
-                    setDefaultFarms([liveProfile]);
-                    setActiveFarm(liveProfile);
-                }
+                // 2. Always acquire fresh satellite fix in parallel to track travel / relocation
+                Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced })
+                    .then(freshLoc => {
+                        if (freshLoc && freshLoc.coords) {
+                            applyLocationCoords(freshLoc.coords);
+                        }
+                    })
+                    .catch(e => console.log("[Location Hook] Fresh GPS update:", e.message));
             } catch (err) {
                 console.warn("[Location Hook] Failed to fetch GPS:", err);
             }
         })();
     }, []);
 
-    const switchFarm = () => {
-        Alert.alert(
-            "Farm Management",
-            "Multi-farm tracking is currently mocked. In production, this opens your list of registered farmlands. Currently viewing: " + activeFarm.name,
-            [{ text: "OK" }]
-        );
-        console.log("Farm switched dynamically.");
+    const refreshLocation = async () => {
+        try {
+            const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.Balanced });
+            if (location && location.coords) {
+                await applyLocationCoords(location.coords);
+            }
+        } catch (e) {
+            console.warn("[AuthContext] Location refresh error:", e);
+        }
     };
 
     useEffect(() => {
         const loadToken = async () => {
             try {
                 const token = await SecureStore.getItemAsync('auth_token');
+                const cachedUserStr = await SecureStore.getItemAsync('user_data');
+
                 if (token) {
                     setUserToken(token);
-                    // Must securely fetch the real profile immediately
+
+                    // Restore cached user profile immediately for instant UI responsiveness
+                    if (cachedUserStr) {
+                        try {
+                            setUserData(JSON.parse(cachedUserStr));
+                        } catch (parseErr) {
+                            console.warn('[AuthContext] Could not parse cached user profile:', parseErr);
+                        }
+                    }
+
+                    // Background sync of fresh profile
                     try {
                         const userProfile = await authService.getMe();
                         setUserData(userProfile);
+                        await SecureStore.setItemAsync('user_data', JSON.stringify(userProfile));
                     } catch (err) {
-                        console.log("Could not fetch user profile on boot. Token likely expired.");
-                        setUserToken(null);
-                        await SecureStore.deleteItemAsync('auth_token');
+                        // ONLY log out if backend explicitly rejected credentials with 401 Unauthorized
+                        if (err?.response?.status === 401) {
+                            console.log("[AuthContext] Session expired (401). Clearing credentials.");
+                            setUserToken(null);
+                            setUserData(null);
+                            await SecureStore.deleteItemAsync('auth_token');
+                            await SecureStore.deleteItemAsync('user_data');
+                        } else {
+                            console.log("[AuthContext] Network or backend sync delay on boot. Retaining cached login session.");
+                        }
                     }
                 }
             } catch (e) {
-                console.error('Failed to load token', e);
+                console.error('[AuthContext] Failed to load token from secure storage:', e);
             } finally {
                 setIsLoading(false);
             }
@@ -114,10 +141,18 @@ export const AuthProvider = ({ children }) => {
             const data = await authService.login(email, password);
             setUserToken(data.token);
             await SecureStore.setItemAsync('auth_token', data.token);
+            await SecureStore.setItemAsync('has_onboarded', 'true');
 
-            // Now fetch the true profile from backend
-            const userProfile = await authService.getMe();
-            setUserData(userProfile);
+            // Fetch profile and cache locally
+            try {
+                const userProfile = await authService.getMe();
+                setUserData(userProfile);
+                await SecureStore.setItemAsync('user_data', JSON.stringify(userProfile));
+            } catch (pErr) {
+                const fallbackUser = data.user || { email };
+                setUserData(fallbackUser);
+                await SecureStore.setItemAsync('user_data', JSON.stringify(fallbackUser));
+            }
         } catch (error) {
             console.error('[AuthContext] Login failed:', error.message);
             throw error; // Let UI handle it
@@ -126,10 +161,11 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (registerData) => {
         try {
-            // Register user in database
+            // Register user in MongoDB database
             await authService.register(registerData);
-            // Immediately log them in if backend doesn't auto-send a token on register
+            // Immediately log them in to obtain JWT and establish session
             await login(registerData.email, registerData.password);
+            await SecureStore.setItemAsync('has_onboarded', 'true');
         } catch (error) {
             console.error('[AuthContext] Signup failed:', error.message);
             throw error;
@@ -141,10 +177,18 @@ export const AuthProvider = ({ children }) => {
             const data = await authService.googleLogin(googleToken);
             setUserToken(data.token);
             await SecureStore.setItemAsync('auth_token', data.token);
+            await SecureStore.setItemAsync('has_onboarded', 'true');
 
-            // Fetch real profile
-            const userProfile = await authService.getMe();
-            setUserData(userProfile);
+            // Fetch and cache real profile
+            try {
+                const userProfile = await authService.getMe();
+                setUserData(userProfile);
+                await SecureStore.setItemAsync('user_data', JSON.stringify(userProfile));
+            } catch (pErr) {
+                const fallbackUser = data.user || {};
+                setUserData(fallbackUser);
+                await SecureStore.setItemAsync('user_data', JSON.stringify(fallbackUser));
+            }
         } catch (error) {
             console.error('[AuthContext] Google Auth failed:', error.message);
             throw error;
@@ -160,6 +204,7 @@ export const AuthProvider = ({ children }) => {
             setUserToken(null);
             setUserData(null);
             await SecureStore.deleteItemAsync('auth_token');
+            await SecureStore.deleteItemAsync('user_data');
         }
     };
 
@@ -172,6 +217,7 @@ export const AuthProvider = ({ children }) => {
             setUserToken(null);
             setUserData(null);
             await SecureStore.deleteItemAsync('auth_token');
+            await SecureStore.deleteItemAsync('user_data');
         }
     };
 
@@ -179,6 +225,8 @@ export const AuthProvider = ({ children }) => {
         try {
             const updatedProfile = await authService.updateProfile(updateData);
             setUserData(updatedProfile);
+            await SecureStore.setItemAsync('user_data', JSON.stringify(updatedProfile));
+            return updatedProfile;
         } catch (error) {
             console.error('[AuthContext] Update Profile failed:', error.message);
             throw error;
@@ -189,14 +237,28 @@ export const AuthProvider = ({ children }) => {
         try {
             const updatedProfile = await authService.uploadProfilePicture(imageUri);
             setUserData(updatedProfile);
+            await SecureStore.setItemAsync('user_data', JSON.stringify(updatedProfile));
+            return updatedProfile;
         } catch (error) {
             console.error('[AuthContext] Avatar upload failed:', error.message);
             throw error;
         }
     };
 
+    const deleteAvatar = async () => {
+        try {
+            const updatedProfile = await authService.deleteProfilePicture();
+            setUserData(updatedProfile);
+            await SecureStore.setItemAsync('user_data', JSON.stringify(updatedProfile));
+            return updatedProfile;
+        } catch (error) {
+            console.error('[AuthContext] Avatar delete failed:', error.message);
+            throw error;
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ userToken, userData, isLoading, login, register, googleLogin, logout, deactivate, updateUser, uploadAvatar, activeFarm, switchFarm }}>
+        <AuthContext.Provider value={{ userToken, userData, isLoading, login, register, googleLogin, logout, deactivate, updateUser, uploadAvatar, deleteAvatar, activeFarm, refreshLocation }}>
             {children}
         </AuthContext.Provider>
     );
