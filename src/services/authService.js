@@ -113,7 +113,10 @@ export const authService = {
     googleLogin: async (googleToken) => {
         try {
             // Send the token received from Expo Google Auth to our FastAPI backend for verification
-            const response = await api.post('/api/auth/google', { token: googleToken });
+            const response = await api.post('/api/auth/google', {
+                id_token: googleToken,
+                token: googleToken,
+            });
             const token = response.data.token || response.data.access_token;
 
             if (!token) throw new Error("No token returned from server");

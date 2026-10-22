@@ -8,13 +8,20 @@ export const chatService = {
      * @param {string} sessionId - Session ID for conversation memory
      * @returns {Promise<Object>} - AI response with message, response, session_id
      */
-    sendMessage: async (message, sessionId = 'mobile_chat') => {
+    sendMessage: async (message, sessionId = 'mobile_chat', language = 'en', location = null) => {
         try {
-            const response = await api.post('/api/assistant/chat', {
+            const payload = {
                 message: message,
                 session_id: sessionId,
-                language: 'en',
-            }, {
+                language: language || 'en',
+            };
+            if (location) {
+                payload.location = location;
+            }
+            const response = await api.post('/api/assistant/chat', payload, {
+                headers: {
+                    ...(location ? { 'X-Location-Query': location } : {})
+                },
                 timeout: 30000,
             });
             return response.data;
@@ -32,8 +39,9 @@ export const chatService = {
      * @param {string} audioUri - Audio file URI
      * @param {string} sessionId - Chat session ID
      * @param {string} language - Target language code
+     * @param {string} location - Optional location hint or coordinates
      */
-    sendVoiceMessage: async (audioUri, sessionId = 'mobile_chat', language = 'en') => {
+    sendVoiceMessage: async (audioUri, sessionId = 'mobile_chat', language = 'en', location = null) => {
         try {
             const formData = new FormData();
 
@@ -48,7 +56,7 @@ export const chatService = {
                 type: type,
             });
             formData.append('session_id', sessionId);
-            formData.append('language', language);
+            formData.append('language', language || 'en');
 
             console.log(`[ChatService] Sending voice upload to backend: `, filename);
             const token = Platform.OS === 'web'
@@ -58,6 +66,7 @@ export const chatService = {
                 method: 'POST',
                 headers: {
                     ...(token && { Authorization: `Bearer ${token}` }),
+                    ...(location ? { 'X-Location-Query': location } : {})
                 },
                 body: formData,
             });

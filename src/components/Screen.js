@@ -19,9 +19,6 @@ const getStyles = (colors) => StyleSheet.create({
     screen: {
         flex: 1,
         backgroundColor: colors.background,
-        // With react-native-safe-area-context we usually don't need manual pt, 
-        // but just in case for strict consistency on Android:
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
     view: {
         flex: 1,

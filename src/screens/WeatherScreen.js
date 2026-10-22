@@ -127,9 +127,18 @@ export default function WeatherScreen({ navigation }) {
                         </TouchableOpacity>
                     </View>
 
-                    <AppText variant="bodyMedium" style={styles.locationText}>
-                        {weather?.location || 'Plantation Region'}
-                    </AppText>
+                    <View style={{ alignItems: 'center' }}>
+                        <AppText variant="bodyMedium" style={styles.locationText}>
+                            {activeFarm?.name && activeFarm.name !== 'Current Location'
+                                ? activeFarm.name
+                                : (weather?.location || 'Plantation Region')}
+                        </AppText>
+                        {weather?.location && activeFarm?.name && activeFarm.name !== weather.location && activeFarm.name !== 'Current Location' ? (
+                            <AppText variant="caption" style={{ color: 'rgba(255,255,255,0.75)', marginTop: 2, fontSize: 12 }}>
+                                Radar Station: {weather.location}
+                            </AppText>
+                        ) : null}
+                    </View>
 
                     <MaterialCommunityIcons
                         name={getWeatherIcon(weather?.weather_condition)}
