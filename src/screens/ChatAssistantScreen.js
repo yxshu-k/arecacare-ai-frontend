@@ -303,7 +303,7 @@ export default function ChatAssistantScreen({ navigation }) {
         setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 
         try {
-            const locationHint = activeFarm?.location || activeFarm?.name || null;
+            const locationHint = activeFarm?.region || activeFarm?.locality || activeFarm?.name || null;
             const response = await chatService.sendMessage(trimmed, sessionId, language || 'en', locationHint);
             fetchSidebarSessions();
             setMessages(prev => [...prev, { id: `ai_${Date.now()}`, text: response.response || 'System Error.', isAI: true }]);
@@ -346,7 +346,7 @@ export default function ChatAssistantScreen({ navigation }) {
             setMessages(prev => [...prev, { id: `voice_${Date.now()}`, text: '🎙️ Processing voice packet...', isAI: false }]);
             setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 
-            const locationHint = activeFarm?.location || activeFarm?.name || null;
+            const locationHint = activeFarm?.region || activeFarm?.locality || activeFarm?.name || null;
             const response = await chatService.sendVoiceMessage(uri, sessionId, language || 'en', locationHint);
             fetchSidebarSessions();
 
