@@ -43,9 +43,9 @@ export default function LoginScreen({ navigation }) {
 
         setLoading(true);
         try {
-            await login(email.trim(), password);
+            await login(email.trim().toLowerCase(), password);
         } catch (e) {
-            console.error(e);
+            Alert.alert("Login Failed", e.message || "Invalid email or password. Please verify your credentials and internet connection.");
         } finally {
             setLoading(false);
         }

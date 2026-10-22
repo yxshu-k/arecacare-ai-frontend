@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
@@ -8,9 +9,18 @@ import { colors } from '../theme/colors';
 export default function SplashScreen({ navigation }) {
     useEffect(() => {
         if (navigation) {
-            const timer = setTimeout(() => {
-                navigation.replace('Onboarding');
-            }, 2000);
+            const timer = setTimeout(async () => {
+                try {
+                    const hasOnboarded = await SecureStore.getItemAsync('has_onboarded');
+                    if (hasOnboarded === 'true') {
+                        navigation.replace('Login');
+                    } else {
+                        navigation.replace('Onboarding');
+                    }
+                } catch (e) {
+                    navigation.replace('Login');
+                }
+            }, 1200);
             return () => clearTimeout(timer);
         }
     }, [navigation]);

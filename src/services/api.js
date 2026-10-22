@@ -2,18 +2,15 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 
 // We pull the API URL dynamically from our .env file.
-const API_URL = process.env.EXPO_PUBLIC_API_URL;
-
-if (!API_URL) {
-    console.warn("[PRODUCTION WARNING] EXPO_PUBLIC_API_URL is not defined in the environment variables!");
-}
+const rawApiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.108:8000';
+const API_URL = rawApiUrl.replace(/\/+$/, '');
 
 const api = axios.create({
     baseURL: API_URL,
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 30000, // Increased from 10s to 30s to allow heavy AI Generation & API Fallback sequences
+    timeout: 30000,
 });
 
 // --- REQUEST INTERCEPTOR ---
