@@ -69,24 +69,27 @@ const ChatLineAI = ({ text }) => {
     return (
         <Animated.View style={[styles.chatRowAI, { opacity: fadeAnim, transform: [{ translateY }] }]}>
             <View style={styles.avatarAIContainer}>
-                <LinearGradient colors={['#10B981', '#047857']} style={styles.avatarAIGradient}>
-                    <MaterialCommunityIcons name="robot-outline" size={16} color="white" />
-                </LinearGradient>
+                <View style={styles.avatarAIBox}>
+                    <MaterialCommunityIcons name="robot-outline" size={18} color="#059669" />
+                </View>
             </View>
             <View style={styles.aiBubbleContainer}>
                 <View style={styles.aiBubbleStyle}>
-                    <AppText variant="bodyMedium" style={{ color: '#1F2937', lineHeight: 22 }}>
+                    <AppText variant="bodyMedium" style={{ color: '#1F2937', lineHeight: 22, fontSize: 15 }}>
                         {text.replace(/[*#]/g, '')}
                     </AppText>
                     <View style={styles.aiActionBar}>
                         <TouchableOpacity onPress={handleSpeak} style={styles.actionIconBtn}>
-                            <Feather name={isSpeaking ? "volume-x" : "volume-2"} size={14} color={isSpeaking ? "#EF4444" : "#9CA3AF"} />
-                            <AppText variant="caption" style={{ color: isSpeaking ? '#EF4444' : '#9CA3AF', marginLeft: 6, fontSize: 10 }}>
+                            <Feather name={isSpeaking ? "volume-x" : "volume-2"} size={14} color={isSpeaking ? "#EF4444" : "#6B7280"} />
+                            <AppText variant="caption" style={{ color: isSpeaking ? '#EF4444' : '#6B7280', marginLeft: 6, fontSize: 11, fontWeight: '500' }}>
                                 {isSpeaking ? "Stop" : "Listen"}
                             </AppText>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleCopy} style={styles.actionIconBtn} disabled={copied}>
-                            <Feather name={copied ? "check" : "copy"} size={14} color={copied ? "#10B981" : "#9CA3AF"} />
+                            <Feather name={copied ? "check" : "copy"} size={14} color={copied ? "#059669" : "#6B7280"} />
+                            <AppText variant="caption" style={{ color: copied ? '#059669' : '#6B7280', marginLeft: 6, fontSize: 11, fontWeight: '500' }}>
+                                {copied ? "Copied" : "Copy"}
+                            </AppText>
                         </TouchableOpacity>
                     </View>
                 </View>
@@ -99,17 +102,17 @@ const ChatLineUser = ({ text }) => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
 
     useEffect(() => {
-        Animated.timing(fadeAnim, { toValue: 1, duration: 250, useNativeDriver: true }).start();
+        Animated.timing(fadeAnim, { toValue: 1, duration: 200, useNativeDriver: true }).start();
     }, [text]);
 
     return (
         <Animated.View style={[styles.chatRowUser, { opacity: fadeAnim }]}>
             <View style={styles.userBubbleWrapper}>
-                <LinearGradient colors={['#0F766E', '#064E3B']} style={styles.bubbleUserPill}>
-                    <AppText variant="bodyMedium" style={{ color: 'white', lineHeight: 22, fontWeight: '500' }}>
+                <View style={styles.bubbleUserPill}>
+                    <AppText variant="bodyMedium" style={styles.userBubbleText}>
                         {text}
                     </AppText>
-                </LinearGradient>
+                </View>
             </View>
         </Animated.View>
     );
@@ -118,12 +121,12 @@ const ChatLineUser = ({ text }) => {
 const TypingIndicator = () => (
     <View style={styles.chatRowAI}>
         <View style={styles.avatarAIContainer}>
-            <LinearGradient colors={['#10B981', '#047857']} style={styles.avatarAIGradient}>
-                <MaterialCommunityIcons name="robot-outline" size={16} color="white" />
-            </LinearGradient>
+            <View style={styles.avatarAIBox}>
+                <MaterialCommunityIcons name="robot-outline" size={18} color="#059669" />
+            </View>
         </View>
-        <View style={[styles.aiBubbleStyle, { flexDirection: 'row', alignItems: 'center', height: 40, width: 80, justifyContent: 'center' }]}>
-            <ActivityIndicator size="small" color="#10B981" />
+        <View style={[styles.aiBubbleStyle, { flexDirection: 'row', alignItems: 'center', height: 42, width: 72, justifyContent: 'center' }]}>
+            <ActivityIndicator size="small" color="#059669" />
         </View>
     </View>
 );
@@ -409,12 +412,20 @@ export default function ChatAssistantScreen({ navigation }) {
             onLongPress={() => confirmDeleteSession(item.session_id)}
         >
             <View style={{ flex: 1, paddingRight: 10 }}>
-                <AppText variant="bodyMedium" numberOfLines={1} style={{ color: sessionId === item.session_id ? 'white' : '#1F2937', fontWeight: sessionId === item.session_id ? '600' : '400' }}>
+                <AppText
+                    variant="bodyMedium"
+                    numberOfLines={1}
+                    style={[styles.sessionText, sessionId === item.session_id && styles.sessionTextActive]}
+                >
                     {item.preview}
                 </AppText>
             </View>
             <TouchableOpacity onPress={() => confirmDeleteSession(item.session_id)}>
-                <Feather name="trash-2" size={14} color={sessionId === item.session_id ? 'rgba(255,255,255,0.7)' : '#9CA3AF'} />
+                <Feather
+                    name="trash-2"
+                    size={14}
+                    color={sessionId === item.session_id ? '#059669' : '#9CA3AF'}
+                />
             </TouchableOpacity>
         </TouchableOpacity>
     );
@@ -443,10 +454,10 @@ export default function ChatAssistantScreen({ navigation }) {
                 </View>
 
                 <TouchableOpacity style={styles.newChatBtnFlat} onPress={startNewChat}>
-                    <LinearGradient colors={['#10B981', '#047857']} style={styles.newChatBtnGradient}>
+                    <View style={styles.newChatBtnSolid}>
                         <Feather name="plus-circle" size={18} color="white" style={{ marginRight: 8 }} />
                         <AppText variant="bodyMedium" style={{ color: 'white', fontWeight: '700' }}>New Diagnosis</AppText>
-                    </LinearGradient>
+                    </View>
                 </TouchableOpacity>
 
                 <AppText variant="caption" style={styles.sidebarSectionTitle}>Previous Sessions</AppText>
@@ -480,24 +491,23 @@ export default function ChatAssistantScreen({ navigation }) {
             {/* ---------------------------------------------------- */}
 
             <View style={styles.chatCanvas}>
-                {/* ArecaCare Vibrant Header */}
-                <LinearGradient colors={['#0F766E', '#064E3B']} style={styles.header}>
-                    <View style={styles.headerContent}>
-                        <TouchableOpacity onPress={openDrawer} style={styles.iconBtn}>
-                            <Feather name="menu" size={24} color="white" />
-                        </TouchableOpacity>
-                        <View style={styles.headerTitleBox}>
-                            <AppText variant="heading3" style={{ color: 'white', fontSize: 18 }}>AgriBot AI</AppText>
-                            <AppText variant="caption" style={{ color: '#A7F3D0', marginTop: 2 }}>
-                                {activeFarm?.name ? `Context: ${activeFarm.name}` : `System Online`}
-                            </AppText>
-                        </View>
-                        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.iconBtn}>
-                            <Feather name="x" size={24} color="white" />
-                        </TouchableOpacity>
+                {/* Clean Yield Prediction Style Header */}
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={openDrawer} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={styles.headerIconBtn}>
+                        <Feather name="menu" size={24} color="#111827" />
+                    </TouchableOpacity>
+                    <View style={styles.headerTitleBox}>
+                        <AppText variant="heading3" style={styles.headerTitleText}>AgriBot AI</AppText>
+                        <AppText variant="caption" style={styles.headerSubText}>
+                            {activeFarm?.name ? `Context: ${activeFarm.name}` : `System Online`}
+                        </AppText>
                     </View>
-                </LinearGradient>
+                    <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={styles.headerIconBtn}>
+                        <Feather name="x" size={24} color="#111827" />
+                    </TouchableOpacity>
+                </View>
 
+                {/* Subtle Advisory Banner */}
                 <View style={styles.disclaimerBanner}>
                     <Feather name="shield" size={14} color="#059669" style={{ marginRight: 6 }} />
                     <AppText variant="caption" style={styles.disclaimerText}>
@@ -546,16 +556,16 @@ export default function ChatAssistantScreen({ navigation }) {
                             ) : (
                                 <Animated.View style={[{ transform: [{ scale: pulseAnim }], flexDirection: 'row', alignItems: 'center' }]}>
                                     <TouchableOpacity
-                                        style={[styles.creativeMicBtnIdle, { backgroundColor: 'transparent' }]}
+                                        style={styles.micBtnSTT}
                                         onPressIn={startSTTRecording}
                                         onPressOut={stopSTTRecording}
                                         disabled={isTyping || isRecording}
                                     >
-                                        <Feather name="mic" size={20} color={isRecordingSTT ? '#EF4444' : '#4B5563'} />
+                                        <Feather name="mic" size={20} color={isRecordingSTT ? '#EF4444' : '#6B7280'} />
                                     </TouchableOpacity>
 
                                     <TouchableOpacity
-                                        style={isRecording ? styles.creativeMicBtnActive : [styles.creativeMicBtnIdle, { backgroundColor: '#3B82F6' }]}
+                                        style={isRecording ? styles.creativeMicBtnActive : styles.creativeMicBtnIdle}
                                         onPressIn={startAudioRecording}
                                         onPressOut={stopAudioRecording}
                                         disabled={isTyping || isRecordingSTT}
@@ -573,116 +583,116 @@ export default function ChatAssistantScreen({ navigation }) {
 }
 
 // ----------------------------------------------------------------------
-// ArecaCare Premium Styling
+// ArecaCare Yield-Consistent Clean Styling
 // ----------------------------------------------------------------------
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#111827' },
+    safeArea: { flex: 1, backgroundColor: '#FFFFFF' },
     chatCanvas: { flex: 1, backgroundColor: '#F9FAFB' },
 
     // Header
     header: {
-        paddingTop: Platform.OS === 'ios' ? 10 : 20,
-        paddingBottom: 20,
-        paddingHorizontal: 20,
-        borderBottomLeftRadius: 36,
-        borderBottomRightRadius: 36,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 6 },
-        shadowOpacity: 0.15,
-        shadowRadius: 10,
-        elevation: 8,
-        zIndex: 5,
-    },
-    headerContent: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginTop: 10,
+        paddingHorizontal: 20,
+        paddingTop: Platform.OS === 'ios' ? 10 : 16,
+        paddingBottom: 12,
+        backgroundColor: '#FFFFFF',
     },
     headerTitleBox: {
         flex: 1,
         alignItems: 'center',
     },
-    iconBtn: {
-        width: 44,
-        height: 44,
+    headerTitleText: {
+        color: '#111827',
+        fontSize: 18,
+        fontWeight: '700',
+    },
+    headerSubText: {
+        color: '#6B7280',
+        marginTop: 2,
+        fontSize: 12,
+    },
+    headerIconBtn: {
+        width: 38,
+        height: 38,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.15)',
-        borderRadius: 22,
     },
 
     // Disclaimer
     disclaimerBanner: {
-        backgroundColor: '#ECFDF5',
+        backgroundColor: '#F0FDF4',
+        marginHorizontal: 20,
+        marginTop: 4,
+        marginBottom: 6,
         paddingVertical: 8,
-        paddingHorizontal: 24,
+        paddingHorizontal: 14,
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: '#DCFCE7',
         flexDirection: 'row',
         alignItems: 'center',
-        borderBottomWidth: 1,
-        borderBottomColor: '#D1FAE5'
     },
     disclaimerText: {
-        color: '#065F46',
+        color: '#166534',
         flex: 1,
+        fontSize: 12,
+        fontWeight: '500',
         lineHeight: 16,
     },
 
     // Scroll Canvas
     scrollContent: {
         paddingHorizontal: 20,
-        paddingTop: 24,
-        paddingBottom: 40,
+        paddingTop: 16,
+        paddingBottom: 30,
     },
 
     // Creative Bubble Architectures
     chatRowAI: {
         flexDirection: 'row',
-        marginBottom: 20,
-        alignItems: 'flex-end',
+        marginBottom: 18,
+        alignItems: 'flex-start',
     },
     chatRowUser: {
         flexDirection: 'row',
         justifyContent: 'flex-end',
-        marginBottom: 20,
+        marginBottom: 18,
         alignItems: 'flex-end',
     },
     avatarAIContainer: {
         marginRight: 10,
+        marginTop: 2,
     },
-    avatarAIGradient: {
+    avatarAIBox: {
         width: 36,
         height: 36,
-        borderRadius: 18,
+        borderRadius: 12,
+        backgroundColor: '#ECFDF5',
+        borderWidth: 1,
+        borderColor: '#D1FAE5',
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#10B981',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.3,
-        shadowRadius: 5,
-        elevation: 4,
     },
     aiBubbleContainer: {
         flex: 1,
     },
     aiBubbleStyle: {
-        backgroundColor: 'white',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        borderBottomRightRadius: 20,
-        borderBottomLeftRadius: 6,
+        backgroundColor: '#FFFFFF',
+        borderRadius: 16,
         padding: 16,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
-        shadowRadius: 5,
-        elevation: 2,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: '#E5E7EB',
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 3,
+        elevation: 1,
     },
     aiActionBar: {
         flexDirection: 'row',
-        marginTop: 14,
+        marginTop: 12,
         paddingTop: 10,
         borderTopWidth: 1,
         borderTopColor: '#F3F4F6',
@@ -692,46 +702,49 @@ const styles = StyleSheet.create({
     actionIconBtn: {
         flexDirection: 'row',
         alignItems: 'center',
-        paddingHorizontal: 6,
-        paddingVertical: 4,
+        paddingHorizontal: 4,
+        paddingVertical: 2,
     },
     userBubbleWrapper: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.1,
-        shadowRadius: 6,
-        elevation: 4,
+        shadowColor: '#16A34A',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.12,
+        shadowRadius: 4,
+        elevation: 2,
     },
     bubbleUserPill: {
-        paddingHorizontal: 20,
-        paddingVertical: 14,
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
-        borderBottomLeftRadius: 20,
-        borderBottomRightRadius: 6,
-        maxWidth: width * 0.75,
+        paddingHorizontal: 18,
+        paddingVertical: 12,
+        borderRadius: 16,
+        backgroundColor: '#16A34A', // Matches Screenshot 3 Predict Yield CTA
+        maxWidth: width * 0.78,
+    },
+    userBubbleText: {
+        color: '#FFFFFF',
+        fontSize: 15,
+        lineHeight: 22,
     },
 
-    // New Floating Dock
+    // Floating Input Dock
     inputDockLayout: {
-        paddingHorizontal: 20,
-        paddingBottom: Platform.OS === 'ios' ? 24 : 16,
+        paddingHorizontal: 16,
+        paddingBottom: Platform.OS === 'ios' ? 24 : 14,
         paddingTop: 8,
         backgroundColor: 'transparent',
     },
     inputPillElevated: {
         flexDirection: 'row',
-        alignItems: 'flex-end',
-        backgroundColor: 'white',
-        borderRadius: 30,
-        paddingHorizontal: 6,
+        alignItems: 'center',
+        backgroundColor: '#FFFFFF',
+        borderRadius: 24,
+        paddingHorizontal: 10,
         paddingVertical: 6,
-        minHeight: 60,
+        minHeight: 52,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: -2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 15,
-        elevation: 10,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.08,
+        shadowRadius: 8,
+        elevation: 4,
         borderWidth: 1,
         borderColor: '#E5E7EB',
     },
@@ -741,58 +754,64 @@ const styles = StyleSheet.create({
     },
     textInputCreative: {
         flex: 1,
-        fontSize: 16,
+        fontSize: 15,
         color: '#1F2937',
-        maxHeight: 120,
-        paddingHorizontal: 16,
-        paddingBottom: 14,
-        paddingTop: 14,
+        maxHeight: 100,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
     },
-    creativeMicBtnIdle: {
-        width: 46,
-        height: 46,
-        borderRadius: 23,
-        backgroundColor: '#ECFDF5',
+    micBtnSTT: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 2,
-        marginBottom: 2,
+        marginRight: 4,
+    },
+    creativeMicBtnIdle: {
+        width: 42,
+        height: 42,
+        borderRadius: 21,
+        backgroundColor: '#16A34A', // Vibrant Green matching Predict Yield button
+        justifyContent: 'center',
+        alignItems: 'center',
+        shadowColor: '#16A34A',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 3,
     },
     creativeMicBtnActive: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        width: 44,
+        height: 44,
+        borderRadius: 22,
         backgroundColor: '#EF4444',
         justifyContent: 'center',
         alignItems: 'center',
         shadowColor: '#EF4444',
-        shadowOffset: { width: 0, height: 4 },
+        shadowOffset: { width: 0, height: 3 },
         shadowOpacity: 0.4,
-        shadowRadius: 8,
-        elevation: 6,
-        marginRight: 2,
-        marginBottom: 2,
+        shadowRadius: 6,
+        elevation: 5,
     },
     creativeSendBtn: {
-        width: 46,
-        height: 46,
-        borderRadius: 23,
-        backgroundColor: '#0F766E', // Vibrant Teal Match
+        width: 42,
+        height: 42,
+        borderRadius: 21,
+        backgroundColor: '#16A34A', // Matching Predict Yield CTA
         justifyContent: 'center',
         alignItems: 'center',
-        marginRight: 2,
-        marginBottom: 2,
-        shadowColor: '#0F766E',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
+        shadowColor: '#16A34A',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 3,
     },
 
     // Sidebar Slide Over
     drawerBackdrop: {
         ...StyleSheet.absoluteFillObject,
-        backgroundColor: 'rgba(0,0,0,0.6)',
+        backgroundColor: 'rgba(0,0,0,0.5)',
         zIndex: 100,
     },
     drawerContainer: {
@@ -800,80 +819,88 @@ const styles = StyleSheet.create({
         top: 0,
         bottom: 0,
         left: 0,
-        width: width * 0.85,
-        backgroundColor: '#F9FAFB',
+        width: width * 0.82,
+        backgroundColor: '#FFFFFF',
         zIndex: 110,
         shadowColor: '#000',
-        shadowOffset: { width: 5, height: 0 },
-        shadowOpacity: 0.3,
-        shadowRadius: 20,
-        elevation: 15,
-        borderTopRightRadius: 36,
-        borderBottomRightRadius: 36,
+        shadowOffset: { width: 4, height: 0 },
+        shadowOpacity: 0.15,
+        shadowRadius: 16,
+        elevation: 12,
     },
     drawerHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         paddingTop: Platform.OS === 'ios' ? 60 : 40,
-        paddingHorizontal: 24,
-        paddingBottom: 24,
+        paddingHorizontal: 20,
+        paddingBottom: 20,
     },
     iconBtnDark: {
-        width: 40,
-        height: 40,
+        width: 36,
+        height: 36,
         justifyContent: 'center',
         alignItems: 'center',
         backgroundColor: '#F3F4F6',
-        borderRadius: 20,
+        borderRadius: 18,
     },
     newChatBtnFlat: {
         marginHorizontal: 16,
         marginBottom: 20,
-        shadowColor: '#10B981',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 4,
     },
-    newChatBtnGradient: {
+    newChatBtnSolid: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
         paddingVertical: 14,
-        borderRadius: 16,
+        borderRadius: 14,
+        backgroundColor: '#16A34A',
+        shadowColor: '#16A34A',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 2,
     },
     sidebarSectionTitle: {
         color: '#9CA3AF',
         fontWeight: '700',
         textTransform: 'uppercase',
         letterSpacing: 1,
-        paddingHorizontal: 24,
+        paddingHorizontal: 20,
         marginBottom: 12,
+        fontSize: 11,
     },
     sidebarItem: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingVertical: 14,
+        paddingVertical: 12,
         paddingHorizontal: 16,
-        borderRadius: 14,
+        borderRadius: 12,
         marginBottom: 8,
-        backgroundColor: 'white',
+        backgroundColor: '#FFFFFF',
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: '#E5E7EB',
     },
     sidebarItemActive: {
-        backgroundColor: '#0F766E',
-        borderColor: '#0F766E',
+        backgroundColor: '#ECFDF5',
+        borderColor: '#059669',
+    },
+    sessionText: {
+        color: '#1F2937',
+        fontSize: 14,
+    },
+    sessionTextActive: {
+        color: '#065F46',
+        fontWeight: '600',
     },
     clearHistoryBtn: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingVertical: 18,
+        paddingVertical: 16,
         borderTopWidth: 1,
         borderTopColor: '#E5E7EB',
-        backgroundColor: '#F9FAFB',
+        backgroundColor: '#FFFFFF',
     }
 });

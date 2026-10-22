@@ -81,27 +81,38 @@ export default function TipDetailScreen({ route, navigation }) {
 
     return (
         <Screen style={styles.screen} noPadding>
-            <ScrollView style={styles.scrollRoot} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+                    <Feather name="chevron-left" size={28} color={colors.text} />
+                </TouchableOpacity>
+                <AppText variant="heading3">Farming Tip</AppText>
+                <View style={styles.rightActions}>
+                    <TouchableOpacity
+                        onPress={toggleSpeech}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                        style={[styles.headerIconBtn, isSpeaking && styles.activeSpeechBtn]}
+                    >
+                        <Feather name={isSpeaking ? "volume-x" : "volume-2"} size={22} color={isSpeaking ? "#FFFFFF" : colors.text} />
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={handleShare} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }} style={styles.headerIconBtn}>
+                        <Feather name="share-2" size={22} color={colors.text} />
+                    </TouchableOpacity>
+                </View>
+            </View>
 
-                {/* Visual Header Graphic */}
-                <LinearGradient colors={['#A7F3D0', '#34D399']} style={styles.heroBlock}>
-                    <SafeAreaHeader
-                        navigation={navigation}
-                        isSpeaking={isSpeaking}
-                        onSpeech={toggleSpeech}
-                        onShare={handleShare}
-                    />
-                    <View style={styles.heroIconWrapper}>
-                        <MaterialCommunityIcons name={tip.icon} size={80} color="#065F46" />
+            <ScrollView style={styles.scrollRoot} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
+                <View style={styles.iconHeroCard}>
+                    <View style={styles.iconBadge}>
+                        <MaterialCommunityIcons name={tip.icon || 'leaf'} size={48} color="#059669" />
                     </View>
-                </LinearGradient>
+                </View>
 
                 {/* Content Body */}
                 <View style={styles.articleBody}>
                     <View style={styles.metaRow}>
                         <View style={styles.pill}>
-                            <AppText variant="caption" color="primary" style={styles.pillText}>
-                                {tip.category}
+                            <AppText variant="caption" style={styles.pillText}>
+                                {tip.category ? tip.category.toUpperCase() : 'ADVISORY'}
                             </AppText>
                         </View>
                         <View style={styles.timeWrapper}>
@@ -112,7 +123,7 @@ export default function TipDetailScreen({ route, navigation }) {
                         </View>
                     </View>
 
-                    <AppText variant="heading1" style={styles.title}>
+                    <AppText variant="heading2" style={styles.title}>
                         {tip.title}
                     </AppText>
 
@@ -131,29 +142,33 @@ export default function TipDetailScreen({ route, navigation }) {
     );
 }
 
-// Sub-component to float over the hero graphic
-const SafeAreaHeader = ({ navigation, isSpeaking, onSpeech, onShare }) => (
-    <View style={styles.floatHeader}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.actionBtn}>
-            <Feather name="arrow-left" size={24} color="#064E3B" />
-        </TouchableOpacity>
-
-        <View style={styles.rightActions}>
-            <TouchableOpacity onPress={onSpeech} style={[styles.actionBtn, isSpeaking && styles.activeBtn]}>
-                <Feather name={isSpeaking ? "volume-x" : "volume-2"} size={22} color={isSpeaking ? "white" : "#064E3B"} />
-            </TouchableOpacity>
-
-            <TouchableOpacity onPress={onShare} style={styles.actionBtn}>
-                <Feather name="share-2" size={22} color="#064E3B" />
-            </TouchableOpacity>
-        </View>
-    </View>
-);
-
 const styles = StyleSheet.create({
     screen: {
         flex: 1,
-        backgroundColor: colors.background
+        backgroundColor: colors.background,
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 20,
+        paddingVertical: 16,
+        backgroundColor: colors.background,
+    },
+    rightActions: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    headerIconBtn: {
+        width: 38,
+        height: 38,
+        borderRadius: 19,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 8,
+    },
+    activeSpeechBtn: {
+        backgroundColor: '#EF4444',
     },
     scrollRoot: {
         flex: 1,
@@ -161,71 +176,47 @@ const styles = StyleSheet.create({
     content: {
         paddingBottom: 60,
     },
-    heroBlock: {
-        width: '100%',
-        height: 280,
-        borderBottomLeftRadius: 40,
-        borderBottomRightRadius: 40,
-        justifyContent: 'center',
+    iconHeroCard: {
         alignItems: 'center',
-        paddingTop: 40,
+        paddingVertical: 20,
     },
-    floatHeader: {
-        position: 'absolute',
-        top: 20,
-        left: 20,
-        right: 20,
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        zIndex: 10,
-    },
-    rightActions: {
-        flexDirection: 'row',
-        gap: 12, // Requires RN 0.71+, safe for Expo 48+
-    },
-    actionBtn: {
-        width: 48,
-        height: 48,
-        backgroundColor: 'rgba(255,255,255,0.7)',
+    iconBadge: {
+        width: 88,
+        height: 88,
         borderRadius: 24,
+        backgroundColor: '#ECFDF5',
+        borderWidth: 1,
+        borderColor: '#A7F3D0',
         justifyContent: 'center',
         alignItems: 'center',
-        marginLeft: 8,
-    },
-    activeBtn: {
-        backgroundColor: colors.primary,
-    },
-    heroIconWrapper: {
-        width: 130,
-        height: 130,
-        backgroundColor: 'rgba(255,255,255,0.4)',
-        borderRadius: 65,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: 'rgba(0,0,0,0.1)',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 1,
-        shadowRadius: 20,
+        shadowColor: '#059669',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 2,
     },
     articleBody: {
-        paddingHorizontal: 24,
-        paddingTop: 30,
+        paddingHorizontal: 20,
     },
     metaRow: {
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        marginBottom: 20,
+        marginBottom: 16,
     },
     pill: {
-        backgroundColor: '#ECFDF5',
-        paddingHorizontal: 14,
-        paddingVertical: 6,
-        borderRadius: 20,
+        backgroundColor: '#F3F4F6',
+        paddingHorizontal: 12,
+        paddingVertical: 5,
+        borderRadius: 16,
+        borderWidth: 1,
+        borderColor: colors.border,
     },
     pillText: {
-        fontWeight: '800',
+        fontWeight: '700',
+        color: '#4B5563',
         letterSpacing: 0.5,
+        fontSize: 11,
     },
     timeWrapper: {
         flexDirection: 'row',
@@ -234,24 +225,25 @@ const styles = StyleSheet.create({
     timeText: {
         marginLeft: 6,
         color: colors.textMedium,
-        fontWeight: '600',
+        fontWeight: '500',
+        fontSize: 13,
     },
     title: {
-        fontSize: 32,
-        lineHeight: 40,
-        fontWeight: '800',
+        fontSize: 22,
+        lineHeight: 30,
+        fontWeight: '700',
         color: colors.text,
-        marginBottom: 24,
+        marginBottom: 16,
     },
     divider: {
         height: 1,
-        backgroundColor: 'rgba(0,0,0,0.05)',
-        marginBottom: 24,
+        backgroundColor: colors.border,
+        marginBottom: 20,
     },
     paragraph: {
-        fontSize: 17,
-        lineHeight: 28,
-        marginBottom: 20,
-        color: '#4B5563', // Rich gray for premium legibility
-    }
+        fontSize: 15,
+        lineHeight: 24,
+        color: colors.text,
+        marginBottom: 16,
+    },
 });
