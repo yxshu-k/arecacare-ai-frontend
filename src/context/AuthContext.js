@@ -3,6 +3,7 @@ import { Alert } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import * as Location from 'expo-location';
 import { authService } from '../services/authService';
+import { normalizeAddress } from '../utils/geoNormalizer';
 
 export const AuthContext = createContext();
 
@@ -42,27 +43,27 @@ export const AuthProvider = ({ children }) => {
                     const coords = `${latitude},${longitude}`;
 
                     // 3. Reverse geocode to find user's exact village/town/district name
-                    let placeName = 'Live GPS';
-                    let localityStr = '';
+                    let normalized = {
+                        placeName: 'Live GPS',
+                        district: '',
+                        localityStr: coords,
+                        coordinates: coords,
+                    };
+
                     try {
                         const addresses = await Location.reverseGeocodeAsync({ latitude, longitude });
-                        if (addresses && addresses.length > 0) {
-                            const addr = addresses[0];
-                            const localName = addr.district || addr.subregion || addr.city || addr.name;
-                            localityStr = [addr.name, addr.subregion || addr.city, addr.region].filter(Boolean).join(', ');
-                            if (localName) {
-                                placeName = localName;
-                            }
-                        }
+                        normalized = normalizeAddress(addresses, { latitude, longitude });
                     } catch (geoErr) {
                         console.warn("[Location Hook] Reverse geocode error:", geoErr);
                     }
 
                     const liveProfile = {
                         id: 1,
-                        name: placeName,
-                        locality: localityStr,
-                        region: coords
+                        name: normalized.placeName,
+                        district: normalized.district,
+                        locality: normalized.localityStr,
+                        region: coords,
+                        coordinates: { latitude, longitude }
                     };
 
                     setDefaultFarms([liveProfile]);
