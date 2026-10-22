@@ -23,10 +23,20 @@ try {
 
 const { width, height } = Dimensions.get('window');
 
+const SPEECH_LANG_MAP = {
+    en: 'en-IN',
+    kn: 'kn-IN',
+    hi: 'hi-IN',
+    ta: 'ta-IN',
+    te: 'te-IN',
+    ml: 'ml-IN',
+    tu: 'kn-IN',
+};
+
 // ----------------------------------------------------------------------
 // Custom ArecaCare Creative Components
 // ----------------------------------------------------------------------
-const ChatLineAI = ({ text, colors, isDarkMode, styles, t }) => {
+const ChatLineAI = ({ text, colors, isDarkMode, styles, t, language = 'en' }) => {
     const fadeAnim = useRef(new Animated.Value(0)).current;
     const translateY = useRef(new Animated.Value(10)).current;
     const [copied, setCopied] = useState(false);
@@ -54,8 +64,9 @@ const ChatLineAI = ({ text, colors, isDarkMode, styles, t }) => {
                 setIsSpeaking(false);
             } else {
                 setIsSpeaking(true);
+                const speechLang = SPEECH_LANG_MAP[language] || 'en-IN';
                 Speech.speak(text.replace(/[*#]/g, ''), {
-                    language: 'en-US',
+                    language: speechLang,
                     rate: 0.9,
                     onDone: () => setIsSpeaking(false),
                     onStopped: () => setIsSpeaking(false),
@@ -148,8 +159,11 @@ export default function ChatAssistantScreen({ navigation }) {
     const [inputText, setInputText] = useState('');
     const [isTyping, setIsTyping] = useState(false);
 
-    // Audio engine
-    const [recording, setRecording] = useState(null);
+    // Audio engine state & refs
+    const recordingRef = useRef(null);
+    const soundRef = useRef(null);
+    const isStartingRef = useRef(false);
+    const pendingStopActionRef = useRef(null);
     const [isRecording, setIsRecording] = useState(false);
     const [isRecordingSTT, setIsRecordingSTT] = useState(false);
     const pulseAnim = useRef(new Animated.Value(1)).current;
@@ -186,6 +200,16 @@ export default function ChatAssistantScreen({ navigation }) {
         prepareAudio();
         startNewChat();
         fetchSidebarSessions();
+
+        return () => {
+            if (recordingRef.current) {
+                recordingRef.current.stopAndUnloadAsync().catch(() => {});
+            }
+            if (soundRef.current) {
+                soundRef.current.unloadAsync().catch(() => {});
+            }
+            Speech.stop().catch(() => {});
+        };
     }, []);
 
     useEffect(() => {
@@ -328,35 +352,83 @@ export default function ChatAssistantScreen({ navigation }) {
         }
     };
 
+    const stopAnyAudioPlayback = async () => {
+        try {
+            await Speech.stop();
+        } catch (_) {}
+        if (soundRef.current) {
+            try {
+                await soundRef.current.stopAsync();
+                await soundRef.current.unloadAsync();
+            } catch (_) {}
+            soundRef.current = null;
+        }
+    };
+
     const startAudioRecording = async () => {
         if (!Audio) {
             Alert.alert(
                 "Microphone Disabled",
-                "Your mobile app binary (APK) is physically missing the native C++ 'expo-av' hardware drivers. You MUST rebuild the app exactly as stated below to fix this:\n\nnpx expo run:android\n\nRun that in your PC terminal to install the new drivers to your phone."
+                "Your mobile app binary is missing the native audio hardware drivers."
             );
             return;
         }
+        await stopAnyAudioPlayback();
         try {
             const perm = await Audio.requestPermissionsAsync();
-            if (perm.status !== 'granted') return;
+            if (perm.status !== 'granted') {
+                Alert.alert("Permission Required", "Microphone access is required to speak with AI.");
+                return;
+            }
+
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: true,
+                playsInSilentModeIOS: true,
+            });
+
             setIsRecording(true);
+            isStartingRef.current = true;
+            pendingStopActionRef.current = null;
+
             const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-            setRecording(recording);
+            recordingRef.current = recording;
+            isStartingRef.current = false;
+
+            if (pendingStopActionRef.current === 'voice') {
+                pendingStopActionRef.current = null;
+                await processStopAudioRecording(recording);
+            }
         } catch (err) {
+            console.error("Start audio recording error:", err);
+            isStartingRef.current = false;
             setIsRecording(false);
+            recordingRef.current = null;
         }
     };
 
     const stopAudioRecording = async () => {
-        if (!recording) return;
+        if (isStartingRef.current) {
+            pendingStopActionRef.current = 'voice';
+            return;
+        }
+        const currentRecording = recordingRef.current;
+        if (!currentRecording) {
+            setIsRecording(false);
+            return;
+        }
+        await processStopAudioRecording(currentRecording);
+    };
+
+    const processStopAudioRecording = async (rec) => {
         setIsRecording(false);
         setIsTyping(true);
-        try {
-            await recording.stopAndUnloadAsync();
-            const uri = recording.getURI();
-            setRecording(null);
+        recordingRef.current = null;
 
-            setMessages(prev => [...prev, { id: `voice_${Date.now()}`, text: '🎙️ Processing voice packet...', isAI: false }]);
+        try {
+            await rec.stopAndUnloadAsync();
+            const uri = rec.getURI();
+
+            setMessages(prev => [...prev, { id: `voice_${Date.now()}`, text: '🎙️ Processing voice note...', isAI: false }]);
             setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 
             const locationHint = activeFarm?.region || activeFarm?.locality || activeFarm?.name || null;
@@ -365,11 +437,34 @@ export default function ChatAssistantScreen({ navigation }) {
 
             setMessages(prev => {
                 const updated = [...prev];
-                updated[updated.length - 1] = { id: `v_trans_${Date.now()}`, text: response.transcript || "🎙️ Voice input analyzed.", isAI: false };
+                updated[updated.length - 1] = {
+                    id: `v_trans_${Date.now()}`,
+                    text: response.transcript || "🎙️ Voice input analyzed.",
+                    isAI: false
+                };
                 return updated;
             });
-            setMessages(prev => [...prev, { id: `ai_v_${Date.now()}`, text: response.response || 'Voice analysis complete.', isAI: true }]);
-            Speech.speak(response.response.replace(/[*#]/g, ''), { language: 'en-US', rate: 0.95 });
+
+            const aiReply = response.response || 'Voice analysis complete.';
+            setMessages(prev => [...prev, { id: `ai_v_${Date.now()}`, text: aiReply, isAI: true }]);
+
+            const cleanText = aiReply.replace(/[*#]/g, '');
+            if (response.audio_base64 && Audio && Audio.Sound) {
+                try {
+                    await stopAnyAudioPlayback();
+                    const { sound } = await Audio.Sound.createAsync(
+                        { uri: `data:audio/mp3;base64,${response.audio_base64}` },
+                        { shouldPlay: true }
+                    );
+                    soundRef.current = sound;
+                } catch (audioErr) {
+                    const speechLang = SPEECH_LANG_MAP[language] || 'en-IN';
+                    Speech.speak(cleanText, { language: speechLang, rate: 0.95 });
+                }
+            } else {
+                const speechLang = SPEECH_LANG_MAP[language] || 'en-IN';
+                Speech.speak(cleanText, { language: speechLang, rate: 0.95 });
+            }
 
         } catch (err) {
             setMessages(prev => [...prev, { id: `err_${Date.now()}`, text: `⚠️ Error: ${err.message}`, isAI: true }]);
@@ -379,42 +474,93 @@ export default function ChatAssistantScreen({ navigation }) {
         }
     };
 
+    const toggleAudioRecording = () => {
+        if (isRecording) {
+            stopAudioRecording();
+        } else {
+            startAudioRecording();
+        }
+    };
+
     const startSTTRecording = async () => {
         if (!Audio) {
             Alert.alert(
                 "Microphone Disabled",
-                "Your mobile app binary (APK) is physically missing the native C++ 'expo-av' hardware drivers. You MUST rebuild the app exactly as stated below to fix this:\n\nnpx expo run:android\n\nRun that in your PC terminal to install the new drivers to your phone."
+                "Your mobile app binary is missing the native audio hardware drivers."
             );
             return;
         }
+        await stopAnyAudioPlayback();
         try {
             const perm = await Audio.requestPermissionsAsync();
-            if (perm.status !== 'granted') return;
+            if (perm.status !== 'granted') {
+                Alert.alert("Permission Required", "Microphone access is required for speech to text.");
+                return;
+            }
+
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: true,
+                playsInSilentModeIOS: true,
+            });
+
             setIsRecordingSTT(true);
+            isStartingRef.current = true;
+            pendingStopActionRef.current = null;
+
             const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-            setRecording(recording);
+            recordingRef.current = recording;
+            isStartingRef.current = false;
+
+            if (pendingStopActionRef.current === 'stt') {
+                pendingStopActionRef.current = null;
+                await processStopSTTRecording(recording);
+            }
         } catch (err) {
+            console.error("Start STT recording error:", err);
+            isStartingRef.current = false;
             setIsRecordingSTT(false);
+            recordingRef.current = null;
         }
     };
 
     const stopSTTRecording = async () => {
-        if (!recording) return;
+        if (isStartingRef.current) {
+            pendingStopActionRef.current = 'stt';
+            return;
+        }
+        const currentRecording = recordingRef.current;
+        if (!currentRecording) {
+            setIsRecordingSTT(false);
+            return;
+        }
+        await processStopSTTRecording(currentRecording);
+    };
+
+    const processStopSTTRecording = async (rec) => {
         setIsRecordingSTT(false);
         setIsTyping(true);
+        recordingRef.current = null;
+
         try {
-            await recording.stopAndUnloadAsync();
-            const uri = recording.getURI();
-            setRecording(null);
+            await rec.stopAndUnloadAsync();
+            const uri = rec.getURI();
 
             const response = await chatService.sendSpeechToText(uri, language);
             if (response && response.text) {
                 setInputText(prev => (prev ? prev + ' ' + response.text : response.text));
             }
         } catch (err) {
-            Alert.alert("Transcription Error", err.message);
+            Alert.alert("Transcription Error", err.message || "Failed to transcribe voice.");
         } finally {
             setIsTyping(false);
+        }
+    };
+
+    const toggleSTTRecording = () => {
+        if (isRecordingSTT) {
+            stopSTTRecording();
+        } else {
+            startSTTRecording();
         }
     };
 
@@ -542,7 +688,7 @@ export default function ChatAssistantScreen({ navigation }) {
                         keyboardShouldPersistTaps="handled"
                     >
                         {messages.map(msg => msg.isAI ?
-                            <ChatLineAI key={msg.id} text={msg.text} colors={colors} isDarkMode={isDarkMode} styles={styles} t={t} /> :
+                            <ChatLineAI key={msg.id} text={msg.text} colors={colors} isDarkMode={isDarkMode} styles={styles} t={t} language={language} /> :
                             <ChatLineUser key={msg.id} text={msg.text} styles={styles} />
                         )}
                         {isTyping && <TypingIndicator styles={styles} isDarkMode={isDarkMode} />}
@@ -554,15 +700,21 @@ export default function ChatAssistantScreen({ navigation }) {
                         styles.inputDockLayout,
                         Platform.OS === 'android' && isKeyboardVisible && { marginBottom: keyboardHeight }
                     ]}>
-                        <View style={[styles.inputPillElevated, isRecording && styles.inputPillElevatedRecording]}>
+                        <View style={[styles.inputPillElevated, (isRecording || isRecordingSTT) && styles.inputPillElevatedRecording]}>
                             <TextInput
                                 style={styles.textInputCreative}
-                                placeholder={isRecording ? t('listening') : t('chat_placeholder')}
-                                placeholderTextColor={isRecording ? "#FCA5A5" : colors.textLight}
+                                placeholder={
+                                    isRecording
+                                        ? `🎙️ ${t('listening') || 'Listening...'} (Tap stop to send)`
+                                        : isRecordingSTT
+                                            ? `🎙️ ${t('listening') || 'Listening...'} (Tap mic to transcribe)`
+                                            : t('chat_placeholder')
+                                }
+                                placeholderTextColor={(isRecording || isRecordingSTT) ? "#EF4444" : colors.textLight}
                                 value={inputText}
                                 onChangeText={setInputText}
                                 multiline
-                                editable={!isTyping && !isRecording}
+                                editable={!isTyping && !isRecording && !isRecordingSTT}
                             />
 
                             {inputText.trim().length > 0 ? (
@@ -570,25 +722,40 @@ export default function ChatAssistantScreen({ navigation }) {
                                     <Feather name="send" size={18} color="white" />
                                 </TouchableOpacity>
                             ) : (
-                                <Animated.View style={[{ transform: [{ scale: pulseAnim }], flexDirection: 'row', alignItems: 'center' }]}>
+                                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                     <TouchableOpacity
-                                        style={styles.micBtnSTT}
-                                        onPressIn={startSTTRecording}
-                                        onPressOut={stopSTTRecording}
+                                        style={[
+                                            styles.micBtnSTT,
+                                            isRecordingSTT && styles.micBtnSTTActive
+                                        ]}
+                                        onPress={toggleSTTRecording}
                                         disabled={isTyping || isRecording}
+                                        activeOpacity={0.7}
                                     >
-                                        <Feather name="mic" size={20} color={isRecordingSTT ? '#EF4444' : colors.textMedium} />
+                                        {isRecordingSTT ? (
+                                            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+                                                <Feather name="stop-circle" size={24} color="#EF4444" />
+                                            </Animated.View>
+                                        ) : (
+                                            <Feather name="mic" size={20} color={colors.textMedium} />
+                                        )}
                                     </TouchableOpacity>
 
                                     <TouchableOpacity
                                         style={isRecording ? styles.creativeMicBtnActive : styles.creativeMicBtnIdle}
-                                        onPressIn={startAudioRecording}
-                                        onPressOut={stopAudioRecording}
+                                        onPress={toggleAudioRecording}
                                         disabled={isTyping || isRecordingSTT}
+                                        activeOpacity={0.7}
                                     >
-                                        <MaterialCommunityIcons name="waveform" size={20} color="white" />
+                                        {isRecording ? (
+                                            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
+                                                <Feather name="square" size={18} color="white" />
+                                            </Animated.View>
+                                        ) : (
+                                            <MaterialCommunityIcons name="waveform" size={20} color="white" />
+                                        )}
                                     </TouchableOpacity>
-                                </Animated.View>
+                                </View>
                             )}
                         </View>
                     </View>
@@ -785,6 +952,9 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 4,
+    },
+    micBtnSTTActive: {
+        backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.2)' : '#FEE2E2',
     },
     creativeMicBtnIdle: {
         width: 42,
