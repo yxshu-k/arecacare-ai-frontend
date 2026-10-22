@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
     View,
     Modal,
@@ -16,6 +16,7 @@ import {
 import { Feather } from '@expo/vector-icons';
 import AppText from './AppText';
 import { useTheme } from '../context/ThemeContext';
+import { useKeyboard } from '../hooks/useKeyboard';
 
 export const FARMER_STATUS_PRESETS = [
     { id: 'busy_plantation', text: '🌿 Busy in plantation', tag: 'Field Work' },
@@ -38,6 +39,8 @@ export default function FarmerStatusModal({
     const { colors, isDarkMode } = useTheme();
     const [statusText, setStatusText] = useState('');
     const [saving, setSaving] = useState(false);
+    const scrollRef = useRef(null);
+    const { keyboardHeight, isKeyboardVisible } = useKeyboard();
 
     useEffect(() => {
         if (visible) {
@@ -79,7 +82,7 @@ export default function FarmerStatusModal({
             <TouchableWithoutFeedback onPress={onClose}>
                 <View style={styles.backdrop}>
                     <KeyboardAvoidingView
-                        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                         style={styles.keyboardContainer}
                     >
                         <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
@@ -105,9 +108,13 @@ export default function FarmerStatusModal({
                                 </View>
 
                                 <ScrollView
+                                    ref={scrollRef}
                                     showsVerticalScrollIndicator={false}
                                     keyboardShouldPersistTaps="handled"
-                                    contentContainerStyle={styles.scrollContent}
+                                    contentContainerStyle={[
+                                        styles.scrollContent,
+                                        { paddingBottom: isKeyboardVisible ? keyboardHeight + 40 : 30 }
+                                    ]}
                                 >
                                     {/* Custom Status Input Card */}
                                     <View style={[styles.inputCard, { backgroundColor: isDarkMode ? '#1E1E1E' : '#F9FAFB', borderColor: colors.border }]}>

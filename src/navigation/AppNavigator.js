@@ -23,6 +23,7 @@ export default function AppNavigator() {
         <Tab.Navigator
             screenOptions={{
                 headerShown: false,
+                tabBarHideOnKeyboard: true,
                 tabBarActiveTintColor: colors.primary,
                 tabBarInactiveTintColor: colors.textLight,
                 tabBarStyle: {

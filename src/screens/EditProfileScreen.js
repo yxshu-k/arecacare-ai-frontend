@@ -1,4 +1,4 @@
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useState, useContext, useMemo, useRef } from 'react';
 import {
     View,
     StyleSheet,
@@ -19,6 +19,7 @@ import FarmerStatusModal from '../components/FarmerStatusModal';
 import { useTheme } from '../context/ThemeContext';
 import { AuthContext } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useKeyboard } from '../hooks/useKeyboard';
 import { formatPhone } from '../utils/formatters';
 import { isValidPhone, isValidName } from '../utils/validators';
 
@@ -44,6 +45,9 @@ export default function EditProfileScreen({ navigation }) {
     const [loading, setLoading] = useState(false);
     const [avatarModalVisible, setAvatarModalVisible] = useState(false);
     const [statusModalVisible, setStatusModalVisible] = useState(false);
+
+    const scrollRef = useRef(null);
+    const { keyboardHeight, isKeyboardVisible } = useKeyboard();
 
     // Profile Completeness metric
     const profileCompleteness = useMemo(() => {
@@ -179,12 +183,18 @@ export default function EditProfileScreen({ navigation }) {
             </View>
 
             <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
                 style={styles.container}
             >
                 <ScrollView
+                    ref={scrollRef}
                     showsVerticalScrollIndicator={false}
-                    contentContainerStyle={styles.scroll}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={[
+                        styles.scroll,
+                        { paddingBottom: isKeyboardVisible ? keyboardHeight + 80 : 40 }
+                    ]}
                 >
                     {/* Completeness Card */}
                     <View style={styles.completenessCard}>
@@ -277,6 +287,11 @@ export default function EditProfileScreen({ navigation }) {
                             value={name}
                             onChangeText={setName}
                             maxLength={60}
+                            onFocus={() => {
+                                setTimeout(() => {
+                                    scrollRef.current?.scrollTo({ y: 160, animated: true });
+                                }, 120);
+                            }}
                         />
                     </View>
 
@@ -297,6 +312,11 @@ export default function EditProfileScreen({ navigation }) {
                             onChangeText={(text) => setPhone(formatPhone(text))}
                             keyboardType="phone-pad"
                             maxLength={10}
+                            onFocus={() => {
+                                setTimeout(() => {
+                                    scrollRef.current?.scrollTo({ y: 280, animated: true });
+                                }, 120);
+                            }}
                         />
                         <AppText variant="caption" style={styles.inputHelpText}>
                             Used for Kisan Call Center advisories & harvest alerts.
@@ -348,6 +368,11 @@ export default function EditProfileScreen({ navigation }) {
                             value={region}
                             onChangeText={setRegion}
                             maxLength={50}
+                            onFocus={() => {
+                                setTimeout(() => {
+                                    scrollRef.current?.scrollTo({ y: 460, animated: true });
+                                }, 120);
+                            }}
                         />
 
                         {/* Popular Taluks */}
@@ -397,6 +422,11 @@ export default function EditProfileScreen({ navigation }) {
                             value={about}
                             onChangeText={setAbout}
                             maxLength={120}
+                            onFocus={() => {
+                                setTimeout(() => {
+                                    scrollRef.current?.scrollTo({ y: 640, animated: true });
+                                }, 120);
+                            }}
                         />
 
                         <View style={styles.charCountRow}>

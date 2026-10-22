@@ -12,6 +12,7 @@ import { chatService } from '../services/chatService';
 import { AuthContext } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import * as Clipboard from 'expo-clipboard';
+import { useKeyboard } from '../hooks/useKeyboard';
 
 let Audio = null;
 try {
@@ -159,6 +160,15 @@ export default function ChatAssistantScreen({ navigation }) {
     const drawerAnim = useRef(new Animated.Value(-width * 0.85)).current;
 
     const scrollRef = useRef(null);
+    const { keyboardHeight, isKeyboardVisible } = useKeyboard();
+
+    useEffect(() => {
+        if (isKeyboardVisible) {
+            setTimeout(() => {
+                scrollRef.current?.scrollToEnd({ animated: true });
+            }, 120);
+        }
+    }, [isKeyboardVisible]);
 
     useEffect(() => {
         const prepareAudio = async () => {
@@ -540,7 +550,10 @@ export default function ChatAssistantScreen({ navigation }) {
                     </ScrollView>
 
                     {/* Creative Dynamic Input Array */}
-                    <View style={styles.inputDockLayout}>
+                    <View style={[
+                        styles.inputDockLayout,
+                        Platform.OS === 'android' && isKeyboardVisible && { marginBottom: keyboardHeight }
+                    ]}>
                         <View style={[styles.inputPillElevated, isRecording && styles.inputPillElevatedRecording]}>
                             <TextInput
                                 style={styles.textInputCreative}

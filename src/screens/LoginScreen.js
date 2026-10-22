@@ -11,6 +11,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { formatEmail } from '../utils/formatters';
 import { isValidEmail } from '../utils/validators';
+import { useKeyboard } from '../hooks/useKeyboard';
 
 export default function LoginScreen({ navigation }) {
     const { colors, isDarkMode } = useTheme();
@@ -22,6 +23,7 @@ export default function LoginScreen({ navigation }) {
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
     const { login } = useContext(AuthContext);
+    const { keyboardHeight, isKeyboardVisible } = useKeyboard();
 
     const validateForm = () => {
         let valid = true;
@@ -61,7 +63,14 @@ export default function LoginScreen({ navigation }) {
                 style={styles.container}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={[
+                        styles.scroll,
+                        { paddingBottom: isKeyboardVisible ? keyboardHeight + 40 : 20 }
+                    ]}
+                >
                     <View style={styles.header}>
                         <View style={styles.iconBackground}>
                             <MaterialCommunityIcons name="leaf" size={48} color={colors.primary} />

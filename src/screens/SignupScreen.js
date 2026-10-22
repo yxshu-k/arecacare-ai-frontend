@@ -11,6 +11,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { formatPhone, formatEmail } from '../utils/formatters';
 import { isValidEmail, isValidPhone, isValidPassword, isValidName } from '../utils/validators';
+import { useKeyboard } from '../hooks/useKeyboard';
 
 export default function SignupScreen({ navigation }) {
     const { colors, isDarkMode } = useTheme();
@@ -27,6 +28,7 @@ export default function SignupScreen({ navigation }) {
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
     const { register } = useContext(AuthContext);
+    const { keyboardHeight, isKeyboardVisible } = useKeyboard();
 
     const validateForm = () => {
         let valid = true;
@@ -85,7 +87,14 @@ export default function SignupScreen({ navigation }) {
                 style={styles.container}
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
             >
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+                <ScrollView
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={[
+                        styles.scroll,
+                        { paddingBottom: isKeyboardVisible ? keyboardHeight + 40 : 20 }
+                    ]}
+                >
                     <View style={styles.header}>
                         <AppText variant="heading1" style={{ color: colors.text }}>{t('create_account_title')}</AppText>
                         <AppText variant="bodyMedium" color="textMedium" style={styles.subtitle}>
