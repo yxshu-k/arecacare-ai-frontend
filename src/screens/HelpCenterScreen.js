@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useContext } from 'react';
+import React, { useState, useMemo, useContext, useRef } from 'react';
 import {
     View,
     StyleSheet,
@@ -17,6 +17,7 @@ import AppText from '../components/AppText';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { AuthContext } from '../context/AuthContext';
+import { useKeyboard } from '../hooks/useKeyboard';
 
 const FAQ_ITEMS = [
     {
@@ -203,6 +204,8 @@ export default function HelpCenterScreen({ navigation }) {
     const [inquiryTopic, setInquiryTopic] = useState('Disease Help');
     const [inquiryMessage, setInquiryMessage] = useState('');
     const [submittingInquiry, setSubmittingInquiry] = useState(false);
+    const scrollRef = useRef(null);
+    const { keyboardHeight, isKeyboardVisible } = useKeyboard();
 
     const categories = ['All', 'Disease Diagnosis', 'Weather & Alerts', 'Farms & Yield', 'Offline & Sync', 'Account'];
 
@@ -339,10 +342,19 @@ export default function HelpCenterScreen({ navigation }) {
             </View>
 
             <KeyboardAvoidingView
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
                 style={{ flex: 1 }}
             >
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+                <ScrollView
+                    ref={scrollRef}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={[
+                        styles.scroll,
+                        { paddingBottom: isKeyboardVisible ? keyboardHeight + 80 : 40 }
+                    ]}
+                >
 
                     {/* Search Bar */}
                     <View style={styles.searchContainer}>
@@ -622,6 +634,11 @@ export default function HelpCenterScreen({ navigation }) {
                                 value={inquiryMessage}
                                 onChangeText={setInquiryMessage}
                                 maxLength={500}
+                                onFocus={() => {
+                                    setTimeout(() => {
+                                        scrollRef.current?.scrollToEnd({ animated: true });
+                                    }, 120);
+                                }}
                             />
                             <AppText variant="caption" style={{ color: colors.textLight, textAlign: 'right', marginTop: 4, fontSize: 11 }}>
                                 {inquiryMessage.length}/500

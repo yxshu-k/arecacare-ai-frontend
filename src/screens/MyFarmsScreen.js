@@ -1,4 +1,4 @@
-import React, { useState, useContext, useMemo } from 'react';
+import React, { useState, useContext, useMemo, useRef } from 'react';
 import {
     View,
     StyleSheet,
@@ -18,6 +18,7 @@ import AppText from '../components/AppText';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useKeyboard } from '../hooks/useKeyboard';
 
 const ARECA_VARIETIES = ['Mangala', 'South Kanara', 'Sumangala', 'Mohitnagar', 'Intercropped'];
 const SOIL_TYPES = ['Red Laterite', 'Loamy', 'Sandy Loam', 'Clay'];
@@ -40,6 +41,8 @@ export default function MyFarmsScreen({ navigation }) {
     const [modalVisible, setModalVisible] = useState(false);
     const [editingFarmId, setEditingFarmId] = useState(null);
     const [saving, setSaving] = useState(false);
+    const modalScrollRef = useRef(null);
+    const { keyboardHeight, isKeyboardVisible } = useKeyboard();
 
     // Form fields state
     const [farmName, setFarmName] = useState('');
@@ -439,7 +442,7 @@ export default function MyFarmsScreen({ navigation }) {
                 <TouchableWithoutFeedback onPress={() => setModalVisible(false)}>
                     <View style={styles.modalBackdrop}>
                         <KeyboardAvoidingView
-                            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                             style={styles.keyboardContainer}
                         >
                             <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
@@ -459,7 +462,15 @@ export default function MyFarmsScreen({ navigation }) {
                                         </TouchableOpacity>
                                     </View>
 
-                                    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalScroll}>
+                                    <ScrollView
+                                        ref={modalScrollRef}
+                                        showsVerticalScrollIndicator={false}
+                                        keyboardShouldPersistTaps="handled"
+                                        contentContainerStyle={[
+                                            styles.modalScroll,
+                                            { paddingBottom: isKeyboardVisible ? keyboardHeight + 60 : 30 }
+                                        ]}
+                                    >
                                         {/* Farm Name */}
                                         <View style={styles.inputGroup}>
                                             <AppText variant="caption" style={styles.inputLabel}>{t('plantation_name')}</AppText>
@@ -469,6 +480,11 @@ export default function MyFarmsScreen({ navigation }) {
                                                 placeholderTextColor={colors.textLight}
                                                 value={farmName}
                                                 onChangeText={setFarmName}
+                                                onFocus={() => {
+                                                    setTimeout(() => {
+                                                        modalScrollRef.current?.scrollTo({ y: 0, animated: true });
+                                                    }, 120);
+                                                }}
                                             />
                                         </View>
 
@@ -481,6 +497,11 @@ export default function MyFarmsScreen({ navigation }) {
                                                 placeholderTextColor={colors.textLight}
                                                 value={taluk}
                                                 onChangeText={setTaluk}
+                                                onFocus={() => {
+                                                    setTimeout(() => {
+                                                        modalScrollRef.current?.scrollTo({ y: 80, animated: true });
+                                                    }, 120);
+                                                }}
                                             />
                                             {/* Quick Taluks */}
                                             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.chipRow}>
@@ -515,6 +536,11 @@ export default function MyFarmsScreen({ navigation }) {
                                                     value={areaAcres}
                                                     onChangeText={setAreaAcres}
                                                     keyboardType="numeric"
+                                                    onFocus={() => {
+                                                        setTimeout(() => {
+                                                            modalScrollRef.current?.scrollTo({ y: 160, animated: true });
+                                                        }, 120);
+                                                    }}
                                                 />
                                             </View>
 
@@ -527,6 +553,11 @@ export default function MyFarmsScreen({ navigation }) {
                                                     value={palmCount}
                                                     onChangeText={setPalmCount}
                                                     keyboardType="numeric"
+                                                    onFocus={() => {
+                                                        setTimeout(() => {
+                                                            modalScrollRef.current?.scrollTo({ y: 160, animated: true });
+                                                        }, 120);
+                                                    }}
                                                 />
                                             </View>
                                         </View>
@@ -540,6 +571,11 @@ export default function MyFarmsScreen({ navigation }) {
                                                 value={palmAge}
                                                 onChangeText={setPalmAge}
                                                 keyboardType="numeric"
+                                                onFocus={() => {
+                                                    setTimeout(() => {
+                                                        modalScrollRef.current?.scrollTo({ y: 240, animated: true });
+                                                    }, 120);
+                                                }}
                                             />
                                         </View>
 

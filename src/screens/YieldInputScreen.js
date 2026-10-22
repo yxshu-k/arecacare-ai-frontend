@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Screen from '../components/Screen';
@@ -9,6 +9,7 @@ import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { yieldService } from '../services/yieldService';
 import { formatNumber } from '../utils/formatters';
+import { useKeyboard } from '../hooks/useKeyboard';
 
 export default function YieldInputScreen({ navigation }) {
     const { colors, isDarkMode } = useTheme();
@@ -19,6 +20,8 @@ export default function YieldInputScreen({ navigation }) {
     const [age, setAge] = useState('');
     const [area, setArea] = useState('');
     const [loading, setLoading] = useState(false);
+    const scrollRef = useRef(null);
+    const { keyboardHeight, isKeyboardVisible } = useKeyboard();
 
     const handlePredict = async () => {
         if (!soilType.trim() || !rainfall.trim() || !age.trim() || !area.trim()) {
@@ -58,9 +61,18 @@ export default function YieldInputScreen({ navigation }) {
 
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
             >
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+                <ScrollView
+                    ref={scrollRef}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={[
+                        styles.scroll,
+                        { paddingBottom: isKeyboardVisible ? keyboardHeight + 60 : 40 }
+                    ]}
+                >
 
                     <AppText variant="bodyMedium" color="textMedium" style={styles.instructions}>
                         {t('calc_yield')}
@@ -91,6 +103,11 @@ export default function YieldInputScreen({ navigation }) {
                             keyboardType="numeric"
                             value={age}
                             onChangeText={(text) => setAge(formatNumber(text))}
+                            onFocus={() => {
+                                setTimeout(() => {
+                                    scrollRef.current?.scrollTo({ y: 120, animated: true });
+                                }, 120);
+                            }}
                         />
 
                         <AppTextInput
@@ -100,6 +117,11 @@ export default function YieldInputScreen({ navigation }) {
                             keyboardType="numeric"
                             value={area}
                             onChangeText={(text) => setArea(formatNumber(text))}
+                            onFocus={() => {
+                                setTimeout(() => {
+                                    scrollRef.current?.scrollTo({ y: 200, animated: true });
+                                }, 120);
+                            }}
                         />
                     </View>
 
