@@ -277,10 +277,10 @@ export default function SettingsScreen({ navigation }) {
 
                 <View style={{ flex: 1, marginLeft: 12 }}>
                     <AppText variant="heading2" style={{ color: colors.text }}>
-                        App Settings
+                        {t('settings')}
                     </AppText>
                     <AppText variant="caption" style={{ color: colors.textMedium }}>
-                        Preferences, GPS & diagnostics
+                        {t('preferences')}
                     </AppText>
                 </View>
             </View>

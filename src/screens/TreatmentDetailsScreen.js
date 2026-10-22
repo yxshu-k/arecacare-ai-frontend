@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { notificationService } from '../services/notificationService';
 
-const TreatmentCard = ({ type, title, description, iconLib, icon, color }) => (
-    <View style={[styles.card, { borderColor: color + '30' }]}>
+const TreatmentCard = ({ type, title, description, iconLib, icon, color, styles, colors, t }) => (
+    <View style={[styles.card, { borderColor: color + '40' }]}>
         <View style={styles.cardHeader}>
-            <View style={[styles.iconBox, { backgroundColor: color + '15' }]}>
+            <View style={[styles.iconBox, { backgroundColor: color + '20' }]}>
                 {iconLib === 'Feather' ? (
                     <Feather name={icon} size={24} color={color} />
                 ) : (
@@ -21,35 +22,42 @@ const TreatmentCard = ({ type, title, description, iconLib, icon, color }) => (
                 <AppText variant="caption" style={{ color: color, fontWeight: '700', textTransform: 'uppercase' }}>
                     {type}
                 </AppText>
-                <AppText variant="heading3">{title}</AppText>
+                <AppText variant="heading3" style={{ color: colors.text }}>{title}</AppText>
             </View>
         </View>
-        <AppText variant="bodyMedium" color="textMedium" style={{ marginTop: 12, lineHeight: 22 }}>
+        <AppText variant="bodyMedium" style={{ marginTop: 12, lineHeight: 22, color: colors.textMedium }}>
             {description}
         </AppText>
 
         <TouchableOpacity
-            style={[styles.remindBtn, { backgroundColor: color + '15' }]}
+            style={[styles.remindBtn, { backgroundColor: color + '20' }]}
             onPress={() => notificationService.scheduleTreatmentReminder(title, 5).then((success) => {
                 if (success) Alert.alert("Reminder Set", "You will receive a native push notification when it's time to re-apply this treatment.");
             })}
         >
             <Feather name="bell" size={16} color={color} />
             <AppText variant="bodySmall" style={{ color: color, fontWeight: '700', marginLeft: 6 }}>
-                Remind me to re-apply
+                {t('remind_reapply')}
             </AppText>
         </TouchableOpacity>
     </View>
 );
 
 export default function TreatmentDetailsScreen({ route, navigation }) {
+    const { colors, isDarkMode } = useTheme();
+    const { t } = useLanguage();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const { details, diseaseName } = route.params || {};
 
     const isHealthy = diseaseName?.toLowerCase().includes('healthy');
-    const headerTitle = isHealthy ? "Care Guide" : "Recommended Treatment";
-    const headerIconColor = isHealthy ? "#16A34A" : colors.primary;
-    const headerBgColor = isHealthy ? "#DCFCE7" : "#F0FDF4";
-    const headerBorder = isHealthy ? "#BBF7D0" : "#DCFCE7";
+    const headerTitle = isHealthy ? t('care_guide') : t('recommended_treatment');
+    const headerIconColor = isHealthy ? "#10B981" : colors.primary;
+    const headerBgColor = isHealthy
+        ? (isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#DCFCE7')
+        : (isDarkMode ? 'rgba(5, 150, 105, 0.15)' : '#F0FDF4');
+    const headerBorder = isHealthy
+        ? (isDarkMode ? 'rgba(16, 185, 129, 0.3)' : '#BBF7D0')
+        : (isDarkMode ? 'rgba(5, 150, 105, 0.3)' : '#DCFCE7');
 
     const introText = isHealthy
         ? "Your arecanut palm appears in excellent condition! To maintain this high vitality, please follow the prophylactic maintenance recommendations below."
@@ -61,7 +69,7 @@ export default function TreatmentDetailsScreen({ route, navigation }) {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Feather name="chevron-left" size={28} color={colors.text} />
                 </TouchableOpacity>
-                <AppText variant="heading3">{headerTitle}</AppText>
+                <AppText variant="heading3" style={{ color: colors.text }}>{headerTitle}</AppText>
                 <View style={{ width: 28 }} />
             </View>
 
@@ -76,33 +84,39 @@ export default function TreatmentDetailsScreen({ route, navigation }) {
 
                 {details?.chemical_treatment && (
                     <TreatmentCard
-                        type="Chemical Option"
+                        type={t('chemical_option')}
                         title={details.chemical_treatment.title}
                         description={details.chemical_treatment.desc}
                         iconLib="MaterialCommunityIcons"
                         icon="flask-empty-outline"
                         color="#3B82F6"
+                        styles={styles}
+                        colors={colors}
+                        t={t}
                     />
                 )}
 
                 {details?.organic_treatment && (
                     <TreatmentCard
-                        type="Organic Option"
+                        type={t('organic_option')}
                         title={details.organic_treatment.title}
                         description={details.organic_treatment.desc}
                         iconLib="Feather"
                         icon="shield"
                         color={colors.primary}
+                        styles={styles}
+                        colors={colors}
+                        t={t}
                     />
                 )}
 
                 {details?.preventive_measures && details.preventive_measures.length > 0 && (
                     <View style={styles.section}>
-                        <AppText variant="heading3" style={styles.sectionTitle}>Preventative Practices</AppText>
+                        <AppText variant="heading3" style={[styles.sectionTitle, { color: colors.text }]}>{t('preventative_practices')}</AppText>
                         {details.preventive_measures.map((measure, idx) => (
                             <View key={idx} style={styles.bulletRow}>
                                 <View style={styles.bullet} />
-                                <AppText variant="bodyMedium">{measure}</AppText>
+                                <AppText variant="bodyMedium" style={{ color: colors.text, flex: 1 }}>{measure}</AppText>
                             </View>
                         ))}
                     </View>
@@ -112,7 +126,7 @@ export default function TreatmentDetailsScreen({ route, navigation }) {
 
             <View style={styles.footer}>
                 <AppButton
-                    title="Done & Return Home"
+                    title={t('done_return_home')}
                     onPress={() => navigation.navigate('HomeMain')}
                 />
             </View>
@@ -120,7 +134,7 @@ export default function TreatmentDetailsScreen({ route, navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     header: {
         flexDirection: 'row',
@@ -132,11 +146,9 @@ const styles = StyleSheet.create({
     scroll: { paddingHorizontal: 20, paddingBottom: 40 },
     summaryBox: {
         flexDirection: 'row',
-        backgroundColor: '#F0FDF4',
         padding: 16,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#DCFCE7',
         marginBottom: 24,
         alignItems: 'flex-start',
     },
@@ -145,10 +157,11 @@ const styles = StyleSheet.create({
         padding: 20,
         borderRadius: 20,
         borderWidth: 1,
+        borderColor: colors.border,
         marginBottom: 16,
-        shadowColor: colors.black,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.04,
+        shadowOpacity: isDarkMode ? 0.3 : 0.04,
         shadowRadius: 12,
         elevation: 2,
     },

@@ -9,10 +9,10 @@ import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 
-const MenuRow = ({ icon, title, value, onPress, isDestructive, colors, styles }) => (
+const MenuRow = ({ icon, title, value, onPress, isDestructive, colors, isDarkMode, styles }) => (
     <TouchableOpacity style={styles.menuRow} onPress={onPress}>
         <View style={styles.menuRowLeft}>
-            <View style={[styles.iconBox, isDestructive && { backgroundColor: '#FEF2F2' }]}>
+            <View style={[styles.iconBox, isDestructive && { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.2)' : '#FEF2F2' }]}>
                 <Feather name={icon} size={20} color={isDestructive ? colors.error : colors.primary} />
             </View>
             <AppText variant="bodyMedium" style={{ marginLeft: 16, color: isDestructive ? '#DC2626' : colors.text }}>
@@ -20,7 +20,7 @@ const MenuRow = ({ icon, title, value, onPress, isDestructive, colors, styles })
             </AppText>
         </View>
         <View style={styles.menuRowRight}>
-            {value && <AppText variant="caption" color="textMedium" style={{ marginRight: 8 }}>{value}</AppText>}
+            {value && <AppText variant="caption" color="textMedium" style={{ marginRight: 8, color: colors.textMedium }}>{value}</AppText>}
             <Feather name="chevron-right" size={20} color={colors.textLight} />
         </View>
     </TouchableOpacity>
@@ -32,7 +32,7 @@ export default function ProfileScreen({ navigation }) {
     const { language, t } = useLanguage();
     const [avatarModalVisible, setAvatarModalVisible] = useState(false);
     const [statusModalVisible, setStatusModalVisible] = useState(false);
-    const styles = React.useMemo(() => getStyles(colors), [colors]);
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
 
     const currentLangNative = React.useMemo(() => {
         const map = {
@@ -50,22 +50,22 @@ export default function ProfileScreen({ navigation }) {
 
     const handleLogout = () => {
         Alert.alert(
-            "Log Out",
-            "Are you sure you want to log out of your account?",
+            t("logout"),
+            t("logout_confirm_msg") || "Are you sure you want to log out of your account?",
             [
-                { text: "Cancel", style: "cancel" },
-                { text: "Log Out", style: "destructive", onPress: logout }
+                { text: t("cancel"), style: "cancel" },
+                { text: t("logout"), style: "destructive", onPress: logout }
             ]
         );
     };
 
     const handleDeactivate = () => {
         Alert.alert(
-            "Deactivate Account",
-            "Are you sure you want to permanently delete your ArecaCare account? This action cannot be undone.",
+            t("deactivate"),
+            t("deactivate_confirm_msg") || "Are you sure you want to permanently delete your ArecaCare account? This action cannot be undone.",
             [
-                { text: "Cancel", style: "cancel" },
-                { text: "Delete", style: "destructive", onPress: deactivate }
+                { text: t("cancel"), style: "cancel" },
+                { text: t("delete"), style: "destructive", onPress: deactivate }
             ]
         );
     };
@@ -144,6 +144,7 @@ export default function ProfileScreen({ navigation }) {
                         }
                         onPress={() => navigation.navigate('MyFarms')}
                         colors={colors}
+                        isDarkMode={isDarkMode}
                         styles={styles}
                     />
                     <MenuRow
@@ -152,6 +153,7 @@ export default function ProfileScreen({ navigation }) {
                         value={userData?.phone || userData?.region || (userData?.name ? 'Verified' : 'Update')}
                         onPress={() => navigation.navigate('EditProfile')}
                         colors={colors}
+                        isDarkMode={isDarkMode}
                         styles={styles}
                     />
                 </View>
@@ -164,6 +166,7 @@ export default function ProfileScreen({ navigation }) {
                         value={isDarkMode ? 'Dark Mode' : 'Standard'}
                         onPress={() => navigation.navigate('Settings')}
                         colors={colors}
+                        isDarkMode={isDarkMode}
                         styles={styles}
                     />
                     <MenuRow
@@ -172,19 +175,34 @@ export default function ProfileScreen({ navigation }) {
                         value={currentLangNative}
                         onPress={() => navigation.navigate('Language')}
                         colors={colors}
+                        isDarkMode={isDarkMode}
                         styles={styles}
                     />
                 </View>
 
                 <View style={styles.section}>
                     <AppText variant="heading3" style={styles.sectionTitle}>{t("support")}</AppText>
-                    <MenuRow icon="help-circle" title={t("help_center")} colors={colors} styles={styles} />
-                    <MenuRow icon="file-text" title={t("privacy_policy")} colors={colors} styles={styles} />
+                    <MenuRow
+                        icon="help-circle"
+                        title={t("help_center")}
+                        onPress={() => navigation.navigate('HelpCenter')}
+                        colors={colors}
+                        isDarkMode={isDarkMode}
+                        styles={styles}
+                    />
+                    <MenuRow
+                        icon="file-text"
+                        title={t("privacy_policy")}
+                        onPress={() => navigation.navigate('PrivacyPolicy')}
+                        colors={colors}
+                        isDarkMode={isDarkMode}
+                        styles={styles}
+                    />
                 </View>
 
                 <View style={styles.section}>
-                    <MenuRow icon="log-out" title={t("logout")} onPress={handleLogout} colors={colors} styles={styles} />
-                    <MenuRow icon="trash-2" title={t("deactivate")} isDestructive onPress={handleDeactivate} colors={colors} styles={styles} />
+                    <MenuRow icon="log-out" title={t("logout")} onPress={handleLogout} colors={colors} isDarkMode={isDarkMode} styles={styles} />
+                    <MenuRow icon="trash-2" title={t("deactivate")} isDestructive onPress={handleDeactivate} colors={colors} isDarkMode={isDarkMode} styles={styles} />
                 </View>
 
                 <View style={styles.footerInfo}>
@@ -200,7 +218,7 @@ export default function ProfileScreen({ navigation }) {
                 avatarUrl={userData?.avatar_url}
                 userName={userData?.name}
                 onUpload={uploadAvatar}
-                onDelete={deleteAvatar}
+                deleteAvatar={deleteAvatar}
             />
 
             {/* Farmer Status Modal */}
@@ -216,7 +234,7 @@ export default function ProfileScreen({ navigation }) {
     );
 }
 
-const getStyles = (colors) => StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     screen: { backgroundColor: colors.background, flex: 1 },
     scroll: { paddingBottom: 40 },
     profileHeader: {
@@ -235,7 +253,7 @@ const getStyles = (colors) => StyleSheet.create({
         width: 88,
         height: 88,
         borderRadius: 44,
-        backgroundColor: '#E8F5E9',
+        backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.25)' : '#E8F5E9',
         justifyContent: 'center',
         alignItems: 'center',
         overflow: 'hidden',
@@ -244,7 +262,7 @@ const getStyles = (colors) => StyleSheet.create({
         elevation: 2,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.08,
+        shadowOpacity: isDarkMode ? 0.3 : 0.08,
         shadowRadius: 4,
     },
     cameraBadge: {
@@ -257,7 +275,7 @@ const getStyles = (colors) => StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 2,
-        borderColor: '#FFFFFF',
+        borderColor: colors.surface,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.25,

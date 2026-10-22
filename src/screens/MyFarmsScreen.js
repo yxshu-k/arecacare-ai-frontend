@@ -17,6 +17,7 @@ import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const ARECA_VARIETIES = ['Mangala', 'South Kanara', 'Sumangala', 'Mohitnagar', 'Intercropped'];
 const SOIL_TYPES = ['Red Laterite', 'Loamy', 'Sandy Loam', 'Clay'];
@@ -26,6 +27,7 @@ const POPULAR_TALUKS = ['Sullia', 'Puttur', 'Bantwal', 'Belthangady', 'Shivamogg
 export default function MyFarmsScreen({ navigation }) {
     const { userData, updateUser, activeFarm } = useContext(AuthContext);
     const { colors, isDarkMode } = useTheme();
+    const { t } = useLanguage();
     const styles = useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
 
     const farms = useMemo(() => {
@@ -201,16 +203,16 @@ export default function MyFarmsScreen({ navigation }) {
                 </TouchableOpacity>
                 <View style={{ flex: 1, marginLeft: 12 }}>
                     <AppText variant="heading2" style={{ color: colors.text }}>
-                        My Plantations
+                        {t('my_plantations')}
                     </AppText>
                     <AppText variant="caption" style={{ color: colors.textMedium }}>
-                        Arecanut land & palm management
+                        {t('arecanut_land_management')}
                     </AppText>
                 </View>
                 <TouchableOpacity style={styles.addHeaderBtn} onPress={openAddModal}>
                     <Feather name="plus" size={16} color="#FFFFFF" style={{ marginRight: 4 }} />
                     <AppText variant="caption" style={{ color: '#FFFFFF', fontWeight: 'bold' }}>
-                        Add Farm
+                        {t('add_farm')}
                     </AppText>
                 </TouchableOpacity>
             </View>
@@ -222,22 +224,22 @@ export default function MyFarmsScreen({ navigation }) {
                             <MaterialCommunityIcons name="tree" size={48} color={colors.primary} />
                         </View>
                         <AppText variant="heading2" style={{ color: colors.text, textAlign: 'center', marginTop: 16 }}>
-                            No Plantations Registered Yet
+                            {t('no_plantations_registered')}
                         </AppText>
                         <AppText variant="bodyMedium" style={{ color: colors.textMedium, textAlign: 'center', marginTop: 8, lineHeight: 22, paddingHorizontal: 12 }}>
-                            Register your arecanut land to track palm counts, soil variety, and enable tailored microclimate forecasts for your crop.
+                            {t('arecanut_land_management')}
                         </AppText>
 
                         <TouchableOpacity style={styles.emptyCtaBtn} onPress={openAddModal} activeOpacity={0.85}>
                             <Feather name="plus-circle" size={18} color="#FFFFFF" style={{ marginRight: 8 }} />
                             <AppText variant="bodyLarge" style={{ color: '#FFFFFF', fontWeight: 'bold' }}>
-                                Register First Plantation
+                                {t('register_first_plantation')}
                             </AppText>
                         </TouchableOpacity>
 
                         <View style={styles.featuresCard}>
                             <AppText variant="caption" style={{ color: colors.primary, fontWeight: '700', letterSpacing: 0.6, marginBottom: 14 }}>
-                                WHY REGISTER YOUR PLANTATION?
+                                {t('why_register')}
                             </AppText>
 
                             <View style={styles.featureItem}>
@@ -275,7 +277,7 @@ export default function MyFarmsScreen({ navigation }) {
                                         {totalPalms}
                                     </AppText>
                                     <AppText variant="caption" style={{ color: colors.textMedium }}>
-                                        Total Palms
+                                        {t('bearing_palms')}
                                     </AppText>
                                 </View>
                             </View>
@@ -291,7 +293,7 @@ export default function MyFarmsScreen({ navigation }) {
                                         {totalAcres} ac
                                     </AppText>
                                     <AppText variant="caption" style={{ color: colors.textMedium }}>
-                                        Total Area
+                                        {t('total_area')}
                                     </AppText>
                                 </View>
                             </View>
@@ -307,7 +309,7 @@ export default function MyFarmsScreen({ navigation }) {
                                         {farms.length}
                                     </AppText>
                                     <AppText variant="caption" style={{ color: colors.textMedium }}>
-                                        Plantations
+                                        {t('active_farms')}
                                     </AppText>
                                 </View>
                             </View>
@@ -316,7 +318,7 @@ export default function MyFarmsScreen({ navigation }) {
                         {/* Plantation Cards */}
                         <View style={styles.sectionHeader}>
                             <AppText variant="bodyLarge" style={{ fontWeight: '700', color: colors.text }}>
-                                Registered Plantations
+                                {t('my_plantations')}
                             </AppText>
                             <AppText variant="caption" style={{ color: colors.textLight }}>
                                 Primary farm used for weather & yields
@@ -344,7 +346,7 @@ export default function MyFarmsScreen({ navigation }) {
                                                     <View style={styles.primaryBadge}>
                                                         <Feather name="check-circle" size={12} color="#059669" style={{ marginRight: 4 }} />
                                                         <AppText variant="caption" style={{ color: '#059669', fontWeight: 'bold', fontSize: 11 }}>
-                                                            Primary
+                                                            {t('set_as_primary')}
                                                         </AppText>
                                                     </View>
                                                 )}
@@ -369,27 +371,27 @@ export default function MyFarmsScreen({ navigation }) {
                                     {/* Metrics Grid */}
                                     <View style={styles.metricsGrid}>
                                         <View style={styles.metricPill}>
-                                            <AppText variant="caption" style={styles.metricLabel}>AREA</AppText>
-                                            <AppText variant="bodyMedium" style={styles.metricValue}>{farm.area_acres} Acres</AppText>
+                                            <AppText variant="caption" style={styles.metricLabel}>{t('total_area')}</AppText>
+                                            <AppText variant="bodyMedium" style={styles.metricValue}>{farm.area_acres} {t('acres')}</AppText>
                                         </View>
                                         <View style={styles.metricPill}>
-                                            <AppText variant="caption" style={styles.metricLabel}>PALMS</AppText>
-                                            <AppText variant="bodyMedium" style={styles.metricValue}>{farm.palm_count} Trees</AppText>
+                                            <AppText variant="caption" style={styles.metricLabel}>{t('palm_count')}</AppText>
+                                            <AppText variant="bodyMedium" style={styles.metricValue}>{farm.palm_count}</AppText>
                                         </View>
                                         <View style={styles.metricPill}>
-                                            <AppText variant="caption" style={styles.metricLabel}>PALM AGE</AppText>
-                                            <AppText variant="bodyMedium" style={styles.metricValue}>{farm.palm_age_years || 1} Yrs</AppText>
+                                            <AppText variant="caption" style={styles.metricLabel}>{t('palm_age')}</AppText>
+                                            <AppText variant="bodyMedium" style={styles.metricValue}>{farm.palm_age_years || 1}</AppText>
                                         </View>
                                         <View style={styles.metricPill}>
-                                            <AppText variant="caption" style={styles.metricLabel}>VARIETY</AppText>
+                                            <AppText variant="caption" style={styles.metricLabel}>{t('areca_variety')}</AppText>
                                             <AppText variant="bodyMedium" style={styles.metricValue}>{farm.variety || 'Mangala'}</AppText>
                                         </View>
                                         <View style={styles.metricPill}>
-                                            <AppText variant="caption" style={styles.metricLabel}>SOIL TYPE</AppText>
+                                            <AppText variant="caption" style={styles.metricLabel}>{t('soil_type')}</AppText>
                                             <AppText variant="bodyMedium" style={styles.metricValue}>{farm.soil_type || 'Red Laterite'}</AppText>
                                         </View>
                                         <View style={styles.metricPill}>
-                                            <AppText variant="caption" style={styles.metricLabel}>IRRIGATION</AppText>
+                                            <AppText variant="caption" style={styles.metricLabel}>{t('irrigation_source')}</AppText>
                                             <AppText variant="bodyMedium" style={styles.metricValue}>{farm.irrigation_source || 'Drip'}</AppText>
                                         </View>
                                     </View>
@@ -403,7 +405,7 @@ export default function MyFarmsScreen({ navigation }) {
                                             >
                                                 <Feather name="star" size={14} color={colors.primary} style={{ marginRight: 6 }} />
                                                 <AppText variant="caption" style={{ color: colors.primary, fontWeight: '700' }}>
-                                                    Set as Primary
+                                                    {t('set_as_primary')}
                                                 </AppText>
                                             </TouchableOpacity>
                                         ) : (
@@ -416,7 +418,7 @@ export default function MyFarmsScreen({ navigation }) {
                                         >
                                             <Feather name="trash-2" size={14} color="#DC2626" style={{ marginRight: 4 }} />
                                             <AppText variant="caption" style={{ color: '#DC2626', fontWeight: '600' }}>
-                                                Remove
+                                                {t('delete')}
                                             </AppText>
                                         </TouchableOpacity>
                                     </View>
@@ -450,7 +452,7 @@ export default function MyFarmsScreen({ navigation }) {
                                     {/* Modal Header */}
                                     <View style={styles.modalHeader}>
                                         <AppText variant="heading3" style={{ color: colors.text }}>
-                                            {editingFarmId ? 'Edit Plantation' : 'Add New Plantation'}
+                                            {editingFarmId ? t('edit_plantation') : t('register_new_plantation')}
                                         </AppText>
                                         <TouchableOpacity onPress={() => setModalVisible(false)}>
                                             <Feather name="x" size={22} color={colors.textLight} />
@@ -460,7 +462,7 @@ export default function MyFarmsScreen({ navigation }) {
                                     <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.modalScroll}>
                                         {/* Farm Name */}
                                         <View style={styles.inputGroup}>
-                                            <AppText variant="caption" style={styles.inputLabel}>PLANTATION NAME</AppText>
+                                            <AppText variant="caption" style={styles.inputLabel}>{t('plantation_name')}</AppText>
                                             <TextInput
                                                 style={[styles.textInput, { color: colors.text, borderColor: colors.border }]}
                                                 placeholder="e.g. Home Plantation or River Garden"
@@ -472,7 +474,7 @@ export default function MyFarmsScreen({ navigation }) {
 
                                         {/* Taluk / Location */}
                                         <View style={styles.inputGroup}>
-                                            <AppText variant="caption" style={styles.inputLabel}>TALUK / REGION</AppText>
+                                            <AppText variant="caption" style={styles.inputLabel}>{t('taluk_region')}</AppText>
                                             <TextInput
                                                 style={[styles.textInput, { color: colors.text, borderColor: colors.border }]}
                                                 placeholder="e.g. Sullia, Puttur, Shivamogga"
@@ -505,7 +507,7 @@ export default function MyFarmsScreen({ navigation }) {
                                         {/* Numeric Inputs Row: Area, Palms, Age */}
                                         <View style={styles.multiInputRow}>
                                             <View style={[styles.inputGroup, { flex: 1, marginRight: 8 }]}>
-                                                <AppText variant="caption" style={styles.inputLabel}>AREA (ACRES)</AppText>
+                                                <AppText variant="caption" style={styles.inputLabel}>{t('plantation_area')}</AppText>
                                                 <TextInput
                                                     style={[styles.textInput, { color: colors.text, borderColor: colors.border }]}
                                                     placeholder="e.g. 2.5"
@@ -517,7 +519,7 @@ export default function MyFarmsScreen({ navigation }) {
                                             </View>
 
                                             <View style={[styles.inputGroup, { flex: 1, marginLeft: 8 }]}>
-                                                <AppText variant="caption" style={styles.inputLabel}>PALM COUNT</AppText>
+                                                <AppText variant="caption" style={styles.inputLabel}>{t('palm_count')}</AppText>
                                                 <TextInput
                                                     style={[styles.textInput, { color: colors.text, borderColor: colors.border }]}
                                                     placeholder="e.g. 1000"
@@ -530,7 +532,7 @@ export default function MyFarmsScreen({ navigation }) {
                                         </View>
 
                                         <View style={styles.inputGroup}>
-                                            <AppText variant="caption" style={styles.inputLabel}>AVERAGE PALM AGE (YEARS)</AppText>
+                                            <AppText variant="caption" style={styles.inputLabel}>{t('palm_age')}</AppText>
                                             <TextInput
                                                 style={[styles.textInput, { color: colors.text, borderColor: colors.border }]}
                                                 placeholder="e.g. 7"
@@ -543,7 +545,7 @@ export default function MyFarmsScreen({ navigation }) {
 
                                         {/* Variety Selector */}
                                         <View style={styles.inputGroup}>
-                                            <AppText variant="caption" style={styles.inputLabel}>ARECANUT VARIETY</AppText>
+                                            <AppText variant="caption" style={styles.inputLabel}>{t('areca_variety')}</AppText>
                                             <View style={styles.chipsWrap}>
                                                 {ARECA_VARIETIES.map(item => (
                                                     <TouchableOpacity
@@ -570,7 +572,7 @@ export default function MyFarmsScreen({ navigation }) {
 
                                         {/* Soil Type Selector */}
                                         <View style={styles.inputGroup}>
-                                            <AppText variant="caption" style={styles.inputLabel}>SOIL TYPE</AppText>
+                                            <AppText variant="caption" style={styles.inputLabel}>{t('soil_type')}</AppText>
                                             <View style={styles.chipsWrap}>
                                                 {SOIL_TYPES.map(item => (
                                                     <TouchableOpacity
@@ -597,7 +599,7 @@ export default function MyFarmsScreen({ navigation }) {
 
                                         {/* Irrigation Source */}
                                         <View style={styles.inputGroup}>
-                                            <AppText variant="caption" style={styles.inputLabel}>IRRIGATION SOURCE</AppText>
+                                            <AppText variant="caption" style={styles.inputLabel}>{t('irrigation_source')}</AppText>
                                             <View style={styles.chipsWrap}>
                                                 {IRRIGATION_TYPES.map(item => (
                                                     <TouchableOpacity
@@ -634,7 +636,7 @@ export default function MyFarmsScreen({ navigation }) {
                                                 <>
                                                     <Feather name="check" size={18} color="#FFFFFF" style={{ marginRight: 6 }} />
                                                     <AppText variant="bodyLarge" style={{ color: '#FFFFFF', fontWeight: 'bold' }}>
-                                                        {editingFarmId ? 'Save Changes' : 'Register Plantation'}
+                                                        {editingFarmId ? t('save_changes') : t('save_plantation')}
                                                     </AppText>
                                                 </>
                                             )}

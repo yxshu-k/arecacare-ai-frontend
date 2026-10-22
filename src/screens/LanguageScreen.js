@@ -97,23 +97,23 @@ export default function LanguageScreen({ navigation }) {
 
                 <View style={{ flex: 1, marginLeft: 12 }}>
                     <AppText variant="heading2" style={{ color: colors.text }}>
-                        App Language
+                        {t('lang_title')}
                     </AppText>
                     <AppText variant="caption" style={{ color: colors.textMedium }}>
-                        Dialects & regional translations
+                        {t('lang_subtitle')}
                     </AppText>
                 </View>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-                <View style={[styles.infoBox, { backgroundColor: isDarkMode ? '#1E293B' : '#ECFDF5', borderColor: isDarkMode ? colors.border : '#A7F3D0' }]}>
+                <View style={[styles.infoBox, { backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.15)' : '#ECFDF5', borderColor: isDarkMode ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0' }]}>
                     <Feather name="globe" size={20} color={colors.primary} style={{ marginTop: 2 }} />
                     <View style={{ flex: 1, marginLeft: 12 }}>
                         <AppText variant="bodyMedium" style={{ color: colors.text, fontWeight: '700' }}>
-                            Local Dialect Support
+                            {t('lang_info_title')}
                         </AppText>
                         <AppText variant="caption" style={{ color: colors.textMedium, marginTop: 2, lineHeight: 18 }}>
-                            ArecaCare AI supports native dialects spoken across the Western Ghats arecanut belts. Changing language will update the UI and AgriBot responses.
+                            {t('lang_info_desc')}
                         </AppText>
                     </View>
                 </View>
@@ -127,10 +127,10 @@ export default function LanguageScreen({ navigation }) {
 
             <View style={styles.footer}>
                 <AppButton
-                    title="Apply Language"
+                    title={t('apply_language')}
                     onPress={() => {
-                        Alert.alert('Language Applied', 'Application language has been updated successfully.', [
-                            { text: 'OK', onPress: () => navigation.goBack() }
+                        Alert.alert(t('lang_applied_title'), t('lang_applied_msg'), [
+                            { text: t('ok'), onPress: () => navigation.goBack() }
                         ]);
                     }}
                 />

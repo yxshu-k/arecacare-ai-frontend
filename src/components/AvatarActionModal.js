@@ -162,7 +162,7 @@ export default function AvatarActionModal({
                                 </View>
 
                                 {/* Title Header */}
-                                <View style={styles.sheetHeader}>
+                                <View style={[styles.sheetHeader, { borderBottomColor: colors.border }]}>
                                     <AppText variant="heading3" style={{ color: colors.text }}>
                                         Profile photo
                                     </AppText>
@@ -175,34 +175,34 @@ export default function AvatarActionModal({
                                 <View style={styles.actionGrid}>
                                     {/* Camera */}
                                     <TouchableOpacity style={styles.actionItem} onPress={handleCamera}>
-                                        <View style={[styles.actionIconBox, { backgroundColor: '#ECFDF5' }]}>
+                                        <View style={[styles.actionIconBox, { backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5' }]}>
                                             <Feather name="camera" size={22} color="#059669" />
                                         </View>
-                                        <AppText variant="caption" style={styles.actionLabel}>Camera</AppText>
+                                        <AppText variant="caption" style={[styles.actionLabel, { color: colors.text }]}>Camera</AppText>
                                     </TouchableOpacity>
 
                                     {/* Gallery */}
                                     <TouchableOpacity style={styles.actionItem} onPress={handleGallery}>
-                                        <View style={[styles.actionIconBox, { backgroundColor: '#EFF6FF' }]}>
+                                        <View style={[styles.actionIconBox, { backgroundColor: isDarkMode ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF' }]}>
                                             <Feather name="image" size={22} color="#2563EB" />
                                         </View>
-                                        <AppText variant="caption" style={styles.actionLabel}>Gallery</AppText>
+                                        <AppText variant="caption" style={[styles.actionLabel, { color: colors.text }]}>Gallery</AppText>
                                     </TouchableOpacity>
 
                                     {/* View Photo (if available) */}
                                     {!!avatarUrl && (
                                         <TouchableOpacity style={styles.actionItem} onPress={handleViewPhoto}>
-                                            <View style={[styles.actionIconBox, { backgroundColor: '#F5F3FF' }]}>
+                                            <View style={[styles.actionIconBox, { backgroundColor: isDarkMode ? 'rgba(124, 58, 237, 0.2)' : '#F5F3FF' }]}>
                                                 <Feather name="eye" size={22} color="#7C3AED" />
                                             </View>
-                                            <AppText variant="caption" style={styles.actionLabel}>View photo</AppText>
+                                            <AppText variant="caption" style={[styles.actionLabel, { color: colors.text }]}>View photo</AppText>
                                         </TouchableOpacity>
                                     )}
 
                                     {/* Remove Photo (if available) */}
                                     {!!avatarUrl && (
                                         <TouchableOpacity style={styles.actionItem} onPress={handleDeletePhoto}>
-                                            <View style={[styles.actionIconBox, { backgroundColor: '#FEF2F2' }]}>
+                                            <View style={[styles.actionIconBox, { backgroundColor: isDarkMode ? 'rgba(220, 38, 38, 0.2)' : '#FEF2F2' }]}>
                                                 <Feather name="trash-2" size={22} color="#DC2626" />
                                             </View>
                                             <AppText variant="caption" style={[styles.actionLabel, { color: '#DC2626' }]}>

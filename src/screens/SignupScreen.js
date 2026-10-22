@@ -1,17 +1,21 @@
 import React, { useState, useContext } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, Alert, Keyboard } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-import { colors } from '../theme/colors';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import AppTextInput from '../components/AppTextInput';
 import GoogleAuthButton from '../components/GoogleAuthButton';
 import { AuthContext } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { formatPhone, formatEmail } from '../utils/formatters';
 import { isValidEmail, isValidPhone, isValidPassword, isValidName } from '../utils/validators';
 
 export default function SignupScreen({ navigation }) {
+    const { colors, isDarkMode } = useTheme();
+    const { t } = useLanguage();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
     const [email, setEmail] = useState('');
@@ -68,16 +72,11 @@ export default function SignupScreen({ navigation }) {
         setLoading(true);
         try {
             await register({ name, phone, email, password });
-            // If successful, AuthContext will auto-login and AppNavigator will render.
         } catch (error) {
-            Alert.alert("Registration Failed", error.message);
+            Alert.alert(t('error') || "Registration Failed", error.message);
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleMockGoogleLogin = () => {
-        Alert.alert("Google Auth", "Integration ready! Requires Native Google SDK generation in EAS Build.");
     };
 
     return (
@@ -88,26 +87,26 @@ export default function SignupScreen({ navigation }) {
             >
                 <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
                     <View style={styles.header}>
-                        <AppText variant="heading1">Create Account</AppText>
+                        <AppText variant="heading1" style={{ color: colors.text }}>{t('create_account_title')}</AppText>
                         <AppText variant="bodyMedium" color="textMedium" style={styles.subtitle}>
-                            Join the future of smart agriculture
+                            {t('signup_subtitle')}
                         </AppText>
                     </View>
 
                     <View style={styles.form}>
-                        <GoogleAuthButton title="Sign Up with Google" style={{ marginBottom: 12 }} />
+                        <GoogleAuthButton title={t('signup_google')} style={{ marginBottom: 12 }} />
 
-                        <AppTextInput label="Full Name" icon="user" placeholder="Ramesh Kumar" value={name} onChangeText={(text) => { setName(text); setErrors({ ...errors, name: '' }) }} />
+                        <AppTextInput label={t('full_name')} icon="user" placeholder="Ramesh Kumar" value={name} onChangeText={(text) => { setName(text); setErrors({ ...errors, name: '' }) }} />
                         {errors.name && <AppText style={styles.errorText}>{errors.name}</AppText>}
 
-                        <AppTextInput label="Phone Number (Optional)" icon="phone" placeholder="9876543210" keyboardType="phone-pad" value={phone} onChangeText={(text) => { setPhone(formatPhone(text)); setErrors({ ...errors, phone: '' }) }} />
+                        <AppTextInput label={t('phone_number')} icon="phone" placeholder="9876543210" keyboardType="phone-pad" value={phone} onChangeText={(text) => { setPhone(formatPhone(text)); setErrors({ ...errors, phone: '' }) }} />
                         {errors.phone && <AppText style={styles.errorText}>{errors.phone}</AppText>}
 
-                        <AppTextInput label="Email Address" icon="mail" placeholder="farmer@example.com" keyboardType="email-address" value={email} onChangeText={(text) => { setEmail(formatEmail(text)); setErrors({ ...errors, email: '' }) }} />
+                        <AppTextInput label={t('email_address')} icon="mail" placeholder="farmer@example.com" keyboardType="email-address" value={email} onChangeText={(text) => { setEmail(formatEmail(text)); setErrors({ ...errors, email: '' }) }} />
                         {errors.email && <AppText style={styles.errorText}>{errors.email}</AppText>}
 
                         <AppTextInput
-                            label="Password"
+                            label={t('password')}
                             icon="lock"
                             placeholder="••••••••"
                             secureTextEntry={!showPassword}
@@ -119,7 +118,7 @@ export default function SignupScreen({ navigation }) {
                         {errors.password && <AppText style={styles.errorText}>{errors.password}</AppText>}
 
                         <AppTextInput
-                            label="Confirm Password"
+                            label={t('confirm_password')}
                             icon="lock"
                             placeholder="••••••••"
                             secureTextEntry={!showConfirmPassword}
@@ -135,21 +134,21 @@ export default function SignupScreen({ navigation }) {
                             onPress={() => { setAgreePrivacy(!agreePrivacy); setErrors({ ...errors, agreePrivacy: '' }); }}
                         >
                             <View style={[styles.checkbox, agreePrivacy && styles.checkboxActive]}>
-                                {agreePrivacy && <Feather name="check" size={14} color={colors.white} />}
+                                {agreePrivacy && <Feather name="check" size={14} color="#FFFFFF" />}
                             </View>
                             <AppText variant="bodySmall" color="textMedium" style={styles.checkboxText}>
-                                By registering, I explicitly consent to the processing of agricultural and minimal location data by AI systems.
+                                {t('consent_checkbox')}
                             </AppText>
                         </TouchableOpacity>
                         {errors.agreePrivacy && <AppText style={styles.errorText}>{errors.agreePrivacy}</AppText>}
 
-                        <AppButton title="Create Account" onPress={handleSignup} loading={loading} style={styles.signupBtn} />
+                        <AppButton title={t('create_account')} onPress={handleSignup} loading={loading} style={styles.signupBtn} />
                     </View>
 
                     <View style={styles.footer}>
-                        <AppText variant="bodyMedium" color="textMedium">Already have an account? </AppText>
+                        <AppText variant="bodyMedium" color="textMedium">{t('already_have_account')} </AppText>
                         <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-                            <AppText variant="bodyMedium" color="primary" style={styles.loginText}>Login</AppText>
+                            <AppText variant="bodyMedium" color="primary" style={styles.loginText}>{t('sign_in')}</AppText>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -158,7 +157,7 @@ export default function SignupScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     container: { flex: 1 },
     scroll: { flexGrow: 1, paddingVertical: 20 },
     header: { marginBottom: 30, marginTop: 20 },
@@ -179,7 +178,8 @@ const styles = StyleSheet.create({
         height: 20,
         borderRadius: 6,
         borderWidth: 1.5,
-        borderColor: colors.textMedium,
+        borderColor: colors.border,
+        backgroundColor: colors.surface,
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 12,

@@ -4,9 +4,12 @@ import * as SecureStore from 'expo-secure-store';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 
 export default function SplashScreen({ navigation }) {
+    const { colors, isDarkMode } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
+
     useEffect(() => {
         if (navigation) {
             const timer = setTimeout(async () => {
@@ -49,7 +52,7 @@ export default function SplashScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     screen: {
         backgroundColor: colors.background,
     },
@@ -66,12 +69,14 @@ const styles = StyleSheet.create({
     },
     iconBackground: {
         backgroundColor: colors.surface,
+        borderWidth: isDarkMode ? 1 : 0,
+        borderColor: colors.border,
         padding: 24,
         borderRadius: 30,
         marginBottom: 24,
         shadowColor: colors.primary,
         shadowOffset: { width: 0, height: 8 },
-        shadowOpacity: 0.15,
+        shadowOpacity: isDarkMode ? 0.3 : 0.15,
         shadowRadius: 24,
         elevation: 8,
     },
@@ -83,6 +88,7 @@ const styles = StyleSheet.create({
     subtitle: {
         textAlign: 'center',
         letterSpacing: 0.5,
+        color: colors.textMedium,
     },
     loadingContainer: {
         alignItems: 'center',
@@ -91,5 +97,6 @@ const styles = StyleSheet.create({
         marginTop: 16,
         textTransform: 'uppercase',
         letterSpacing: 1,
+        color: colors.textLight,
     }
 });

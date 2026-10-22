@@ -4,21 +4,23 @@ import { View, StyleSheet, FlatList, TouchableOpacity, Image, RefreshControl, Mo
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { diseaseService } from '../services/diseaseService';
 import { useLanguage } from '../context/LanguageContext';
 
-const SkeletonItem = () => (
-    <View style={styles.card}>
-        <View style={[styles.imageMock, { backgroundColor: '#F3F4F6' }]} />
-        <View style={styles.cardContent}>
-            <View style={{ height: 16, width: '60%', backgroundColor: '#E5E7EB', borderRadius: 4, marginBottom: 8 }} />
-            <View style={{ height: 12, width: '40%', backgroundColor: '#F3F4F6', borderRadius: 4 }} />
+const SkeletonItem = ({ colors, isDarkMode }) => (
+    <View style={[stylesLocal.card(colors), { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={[stylesLocal.imageMock, { backgroundColor: isDarkMode ? '#262626' : '#F3F4F6' }]} />
+        <View style={stylesLocal.cardContent}>
+            <View style={{ height: 16, width: '60%', backgroundColor: isDarkMode ? '#333333' : '#E5E7EB', borderRadius: 4, marginBottom: 8 }} />
+            <View style={{ height: 12, width: '40%', backgroundColor: isDarkMode ? '#262626' : '#F3F4F6', borderRadius: 4 }} />
         </View>
     </View>
 );
 
 export default function HistoryScreen({ navigation }) {
+    const { colors, isDarkMode } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -56,12 +58,12 @@ export default function HistoryScreen({ navigation }) {
 
     const handleDelete = (id, name) => {
         Alert.alert(
-            "Delete Scan",
-            `Are you sure you want to permanently delete the record for ${name || 'this scan'}?`,
+            t("delete"),
+            `${t("delete")} ${name || ''}?`,
             [
-                { text: "Cancel", style: "cancel" },
+                { text: t("cancel"), style: "cancel" },
                 {
-                    text: "Delete",
+                    text: t("delete"),
                     style: "destructive",
                     onPress: async () => {
                         setRefreshing(true);
@@ -69,7 +71,7 @@ export default function HistoryScreen({ navigation }) {
                             await diseaseService.deleteHistoryItem(id);
                             setHistory(prev => prev.filter(item => item.id !== id));
                         } catch (err) {
-                            Alert.alert('Delete Failed', err.message);
+                            Alert.alert(t('error'), err.message);
                         }
                         setRefreshing(false);
                     }
@@ -81,12 +83,12 @@ export default function HistoryScreen({ navigation }) {
     const handleClearAll = () => {
         if (history.length === 0) return;
         Alert.alert(
-            "Clear History",
-            "This will permanently wipe all history from our secure servers. This cannot be undone.",
+            t("clear_all"),
+            t("clear_all_confirm_msg") || "This will permanently wipe all history. This cannot be undone.",
             [
-                { text: "Keep Scans", style: "cancel" },
+                { text: t("cancel"), style: "cancel" },
                 {
-                    text: "Wipe All",
+                    text: t("delete"),
                     style: "destructive",
                     onPress: async () => {
                         setRefreshing(true);
@@ -94,7 +96,7 @@ export default function HistoryScreen({ navigation }) {
                             await diseaseService.clearAllHistory();
                             setHistory([]);
                         } catch (err) {
-                            Alert.alert('Clear Failed', err.message);
+                            Alert.alert(t('error'), err.message);
                         }
                         setRefreshing(false);
                     }
@@ -104,11 +106,11 @@ export default function HistoryScreen({ navigation }) {
     };
 
     const getDiseaseColor = (name) => {
-        if (!name) return { color: colors.primary, bg: '#F0FDF4' };
+        if (!name) return { color: colors.primary, bg: isDarkMode ? 'rgba(34, 197, 94, 0.2)' : '#F0FDF4' };
         const lower = name.toLowerCase();
-        if (lower.includes('healthy')) return { color: '#16A34A', bg: '#DCFCE7' };
-        if (lower.includes('unknown') || lower.includes('non-arecanut')) return { color: '#6B7280', bg: '#F3F4F6' };
-        return { color: '#DC2626', bg: '#FEF2F2' };
+        if (lower.includes('healthy')) return { color: '#22C55E', bg: isDarkMode ? 'rgba(34, 197, 94, 0.2)' : '#DCFCE7' };
+        if (lower.includes('unknown') || lower.includes('non-arecanut')) return { color: colors.textMedium, bg: isDarkMode ? '#262626' : '#F3F4F6' };
+        return { color: '#EF4444', bg: isDarkMode ? 'rgba(239, 68, 68, 0.2)' : '#FEF2F2' };
     };
 
     // Filter Logic
@@ -151,13 +153,16 @@ export default function HistoryScreen({ navigation }) {
                         {t((item.disease_name || 'Unknown').replace(/Non-Arecanut:\s*/i, ''))}
                     </AppText>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
-                        <AppText variant="caption" color="textMedium">Conf: {item.confidence}%</AppText>
+                        <AppText variant="caption" color="textMedium">{t('confidence')}: {item.confidence}%</AppText>
                         <AppText variant="caption" color="textLight">{dateStr}</AppText>
                     </View>
                 </View>
 
                 {/* Trash Icon */}
-                <TouchableOpacity onPress={() => handleDelete(item.id, item.disease_name)} style={styles.deleteBtn}>
+                <TouchableOpacity
+                    onPress={() => handleDelete(item.id, item.disease_name)}
+                    style={[styles.deleteBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2' }]}
+                >
                     <Feather name="trash-2" size={20} color="#DC2626" />
                 </TouchableOpacity>
             </TouchableOpacity>
@@ -183,23 +188,23 @@ export default function HistoryScreen({ navigation }) {
 
             {loading ? (
                 <View style={styles.list}>
-                    {[1, 2, 3, 4, 5].map(k => <SkeletonItem key={k} />)}
+                    {[1, 2, 3, 4, 5].map(k => <SkeletonItem key={k} colors={colors} isDarkMode={isDarkMode} />)}
                 </View>
             ) : error && history.length === 0 ? (
                 <View style={styles.emptyState}>
                     <Feather name="wifi-off" size={48} color={colors.danger || '#DC2626'} />
-                    <AppText variant="heading3" style={{ marginTop: 16, textAlign: 'center' }}>Offline Mode</AppText>
+                    <AppText variant="heading3" style={{ marginTop: 16, textAlign: 'center' }}>{t('error')}</AppText>
                     <AppText variant="bodyMedium" color="textMedium" style={{ marginTop: 8, textAlign: 'center' }}>
                         {error}
                     </AppText>
                     <TouchableOpacity onPress={() => fetchHistory()} style={[styles.card, { backgroundColor: colors.primary, marginTop: 20 }]}>
-                        <AppText variant="bodyMedium" style={{ color: colors.white, fontWeight: '700' }}>Retry Sync</AppText>
+                        <AppText variant="bodyMedium" style={{ color: colors.white, fontWeight: '700' }}>{t('retry')}</AppText>
                     </TouchableOpacity>
                 </View>
             ) : history.length === 0 ? (
                 <View style={styles.emptyState}>
                     <Feather name="inbox" size={48} color={colors.border} />
-                    <AppText variant="bodyMedium" color="textLight" style={{ marginTop: 16 }}>No scan history found on our servers.</AppText>
+                    <AppText variant="bodyMedium" color="textLight" style={{ marginTop: 16 }}>{t('no_history_title')}</AppText>
                 </View>
             ) : (
                 <FlatList
@@ -214,7 +219,7 @@ export default function HistoryScreen({ navigation }) {
                     ListEmptyComponent={
                         <View style={styles.emptyState}>
                             <Feather name="filter" size={40} color={colors.border} />
-                            <AppText variant="bodyMedium" color="textLight" style={{ marginTop: 16 }}>No scans match this filter.</AppText>
+                            <AppText variant="bodyMedium" color="textLight" style={{ marginTop: 16 }}>{t('no_history_sub')}</AppText>
                         </View>
                     }
                 />
@@ -232,14 +237,18 @@ export default function HistoryScreen({ navigation }) {
                         </View>
 
                         <View style={styles.filterOptions}>
-                            {['All', 'Healthy', 'Diseased'].map(f => (
+                            {[
+                                { key: 'All', label: t('filter_all') },
+                                { key: 'Healthy', label: t('filter_healthy') },
+                                { key: 'Diseased', label: t('filter_diseased') }
+                            ].map(f => (
                                 <TouchableOpacity
-                                    key={f}
-                                    style={[styles.filterChip, activeFilter === f && styles.filterChipActive]}
-                                    onPress={() => { setActiveFilter(f); setFilterMenuVisible(false); }}
+                                    key={f.key}
+                                    style={[styles.filterChip, activeFilter === f.key && styles.filterChipActive]}
+                                    onPress={() => { setActiveFilter(f.key); setFilterMenuVisible(false); }}
                                 >
-                                    <AppText variant="bodyMedium" style={{ color: activeFilter === f ? colors.white : colors.text }}>
-                                        {f}
+                                    <AppText variant="bodyMedium" style={{ color: activeFilter === f.key ? colors.white : colors.text }}>
+                                        {f.label}
                                     </AppText>
                                 </TouchableOpacity>
                             ))}
@@ -251,7 +260,7 @@ export default function HistoryScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     header: {
         flexDirection: 'row',
@@ -286,6 +295,7 @@ const styles = StyleSheet.create({
         borderRadius: 16,
         marginBottom: 16,
         borderWidth: 1,
+        borderColor: colors.border,
         shadowColor: colors.black,
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.04,
@@ -306,7 +316,6 @@ const styles = StyleSheet.create({
     deleteBtn: {
         padding: 10,
         marginLeft: 10,
-        backgroundColor: '#FEF2F2',
         borderRadius: 12,
     },
     emptyState: {
@@ -318,7 +327,7 @@ const styles = StyleSheet.create({
     },
     modalOverlay: {
         flex: 1,
-        backgroundColor: 'rgba(0,0,0,0.5)',
+        backgroundColor: 'rgba(0,0,0,0.6)',
         justifyContent: 'flex-end',
     },
     bottomSheet: {
@@ -327,6 +336,8 @@ const styles = StyleSheet.create({
         borderTopRightRadius: 24,
         padding: 24,
         paddingBottom: 40,
+        borderWidth: isDarkMode ? 1 : 0,
+        borderColor: colors.border,
     },
     sheetHeader: {
         flexDirection: 'row',
@@ -352,3 +363,25 @@ const styles = StyleSheet.create({
         borderColor: colors.primary
     }
 });
+
+const stylesLocal = {
+    card: (colors) => ({
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 16,
+        borderRadius: 16,
+        marginBottom: 16,
+        borderWidth: 1,
+    }),
+    imageMock: {
+        width: 60,
+        height: 60,
+        borderRadius: 12,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 16,
+    },
+    cardContent: {
+        flex: 1,
+    },
+};

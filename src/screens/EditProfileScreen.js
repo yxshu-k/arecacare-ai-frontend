@@ -18,6 +18,7 @@ import AvatarActionModal from '../components/AvatarActionModal';
 import FarmerStatusModal from '../components/FarmerStatusModal';
 import { useTheme } from '../context/ThemeContext';
 import { AuthContext } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import { formatPhone } from '../utils/formatters';
 import { isValidPhone, isValidName } from '../utils/validators';
 
@@ -33,6 +34,7 @@ const QUICK_NOTES = [
 export default function EditProfileScreen({ navigation }) {
     const { userData, updateUser, uploadAvatar, deleteAvatar, activeFarm, refreshLocation } = useContext(AuthContext);
     const { colors, isDarkMode } = useTheme();
+    const { t } = useLanguage();
     const styles = useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
 
     const [name, setName] = useState(userData?.name || '');
@@ -152,10 +154,10 @@ export default function EditProfileScreen({ navigation }) {
 
                 <View style={{ flex: 1, marginLeft: 12 }}>
                     <AppText variant="heading2" style={{ color: colors.text }}>
-                        Personal Information
+                        {t('personal_information')}
                     </AppText>
                     <AppText variant="caption" style={{ color: colors.textMedium }}>
-                        Farmer identity & contact details
+                        {t('manage_profile_details')}
                     </AppText>
                 </View>
 
@@ -169,7 +171,7 @@ export default function EditProfileScreen({ navigation }) {
                             <ActivityIndicator size="small" color="#FFFFFF" />
                         ) : (
                             <AppText variant="caption" style={{ color: '#FFFFFF', fontWeight: 'bold' }}>
-                                Save
+                                {t('save')}
                             </AppText>
                         )}
                     </TouchableOpacity>
@@ -190,7 +192,7 @@ export default function EditProfileScreen({ navigation }) {
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <Feather name="shield" size={16} color={colors.primary} style={{ marginRight: 6 }} />
                                 <AppText variant="caption" style={{ color: colors.primary, fontWeight: '700', letterSpacing: 0.5 }}>
-                                    PROFILE COMPLETION
+                                    {t('profile_completeness')}
                                 </AppText>
                             </View>
                             <AppText variant="caption" style={{ color: colors.primary, fontWeight: '800' }}>
@@ -235,7 +237,7 @@ export default function EditProfileScreen({ navigation }) {
                         </TouchableOpacity>
 
                         <AppText variant="heading2" style={{ color: colors.text, marginTop: 10 }}>
-                            {name || 'Farmer'}
+                            {name || t('farmer')}
                         </AppText>
 
                         <View style={styles.badgeRow}>
@@ -247,7 +249,7 @@ export default function EditProfileScreen({ navigation }) {
                             <View style={[styles.verifiedBadge, { backgroundColor: isDarkMode ? '#064E3B40' : '#ECFDF5' }]}>
                                 <Feather name="check-circle" size={12} color="#059669" style={{ marginRight: 4 }} />
                                 <AppText variant="caption" style={{ color: '#059669', fontWeight: 'bold', fontSize: 11 }}>
-                                    Verified Farmer
+                                    {t('registered_farmer')}
                                 </AppText>
                             </View>
                         </View>
@@ -264,12 +266,12 @@ export default function EditProfileScreen({ navigation }) {
                         <View style={styles.sectionHeader}>
                             <Feather name="user" size={16} color={colors.primary} style={{ marginRight: 8 }} />
                             <AppText variant="caption" style={styles.sectionTitle}>
-                                BASIC IDENTITY
+                                {t('full_name')}
                             </AppText>
                         </View>
 
                         <AppTextInput
-                            label="Full Name"
+                            label={t('full_name')}
                             icon="user"
                             placeholder="e.g. Ramesh Gowda"
                             value={name}
@@ -283,12 +285,12 @@ export default function EditProfileScreen({ navigation }) {
                         <View style={styles.sectionHeader}>
                             <Feather name="phone-call" size={16} color={colors.primary} style={{ marginRight: 8 }} />
                             <AppText variant="caption" style={styles.sectionTitle}>
-                                CONTACT & COMMUNICATIONS
+                                {t('phone_number')}
                             </AppText>
                         </View>
 
                         <AppTextInput
-                            label="Mobile Number"
+                            label={t('phone_number')}
                             icon="phone"
                             placeholder="10-digit mobile number"
                             value={phone}
@@ -324,7 +326,7 @@ export default function EditProfileScreen({ navigation }) {
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <Feather name="map-pin" size={16} color={colors.primary} style={{ marginRight: 8 }} />
                                 <AppText variant="caption" style={styles.sectionTitle}>
-                                    NATIVE TALUK / DISTRICT
+                                    {t('taluk_region')}
                                 </AppText>
                             </View>
                             <TouchableOpacity
@@ -334,13 +336,13 @@ export default function EditProfileScreen({ navigation }) {
                             >
                                 <Feather name="navigation" size={12} color={colors.primary} style={{ marginRight: 4 }} />
                                 <AppText variant="caption" style={{ color: colors.primary, fontWeight: '700', fontSize: 11 }}>
-                                    Auto-Detect
+                                    {t('use_gps_location')}
                                 </AppText>
                             </TouchableOpacity>
                         </View>
 
                         <AppTextInput
-                            label="Taluk / Region"
+                            label={t('taluk_region')}
                             icon="map"
                             placeholder="e.g. Sullia, Puttur, Shivamogga"
                             value={region}
@@ -483,7 +485,7 @@ export default function EditProfileScreen({ navigation }) {
                                         fontWeight: 'bold',
                                     }}
                                 >
-                                    {hasChanges ? 'Save Changes' : 'All Changes Saved'}
+                                    {hasChanges ? t('save_changes') : t('save_profile')}
                                 </AppText>
                             </>
                         )}

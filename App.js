@@ -8,6 +8,23 @@ import OfflineNotice from './src/components/OfflineNotice';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import CustomSplashScreen from './src/screens/CustomSplashScreen';
 import { useState } from 'react';
+import { useTheme } from './src/context/ThemeContext';
+
+function AppContent({ isSplashComplete, setSplashComplete }) {
+  const { colors } = useTheme();
+
+  return (
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      <OfflineNotice isVisible={false} />
+
+      {!isSplashComplete ? (
+        <CustomSplashScreen onAnimationDone={() => setSplashComplete(true)} />
+      ) : null}
+
+      <RootNavigator />
+    </View>
+  );
+}
 
 export default function App() {
   const [isSplashComplete, setSplashComplete] = useState(false);
@@ -17,15 +34,10 @@ export default function App() {
       <ThemeProvider>
         <LanguageProvider>
           <AuthProvider>
-            <View style={{ flex: 1 }}>
-              <OfflineNotice isVisible={false} />
-
-              {!isSplashComplete ? (
-                <CustomSplashScreen onAnimationDone={() => setSplashComplete(true)} />
-              ) : null}
-
-              <RootNavigator />
-            </View>
+            <AppContent
+              isSplashComplete={isSplashComplete}
+              setSplashComplete={setSplashComplete}
+            />
           </AuthProvider>
         </LanguageProvider>
       </ThemeProvider>

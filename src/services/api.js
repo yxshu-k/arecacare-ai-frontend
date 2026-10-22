@@ -1,24 +1,41 @@
 import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
+import { Platform } from 'react-native';
 
-// We pull the API URL dynamically from our .env file.
-const rawApiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.0.108:8000';
-const API_URL = rawApiUrl.replace(/\/+$/, '');
+// Dynamically resolve API URL:
+// - Physical Mobile: Routes to your PC's Wi-Fi LAN IP (e.g., 192.168.x.x)
+// - Android Studio Emulator: Automatically routes through QEMU's dedicated loopback gateway (10.0.2.2)
+const rawApiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.16:8000';
+
+const getInitialBaseUrl = () => {
+    let url = rawApiUrl.replace(/\/+$/, '');
+    if (Platform.OS === 'android') {
+        const serverHost = Platform.constants?.ServerHost || '';
+        // If Metro packager is connected via 10.0.2.2 or localhost, this is an Android Emulator
+        if (serverHost.includes('10.0.2.2') || serverHost.includes('localhost') || serverHost.includes('127.0.0.1')) {
+            url = url.replace(/192\.168\.\d+\.\d+/, '10.0.2.2');
+        }
+    }
+    return url;
+};
+
+let currentBaseUrl = getInitialBaseUrl();
+console.log(`[API Config] Initial Base URL: ${currentBaseUrl} (Platform: ${Platform.OS}, Env: ${rawApiUrl})`);
 
 const api = axios.create({
-    baseURL: API_URL,
+    baseURL: currentBaseUrl,
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 30000,
+    timeout: 20000,
 });
 
 // --- REQUEST INTERCEPTOR ---
 // This runs before EVERY single outgoing API call.
-// It searches our native secure storage for an active Authentication Token (JWT)
-// and autonomously attaches it as a Bearer Header for backend verification.
+// It ensures the dynamic baseURL is always current and attaches JWT authentication.
 api.interceptors.request.use(
     async (config) => {
+        config.baseURL = currentBaseUrl;
         try {
             const token = await SecureStore.getItemAsync('auth_token');
             if (token) {
@@ -39,27 +56,48 @@ api.interceptors.request.use(
     }
 );
 
-// --- RESPONSE INTERCEPTOR ---
-// This runs globally when the backend replies.
-// Useful for globally catching 401 Unauthorized errors and force log-outs.
+// --- RESPONSE INTERCEPTOR WITH DYNAMIC NETWORK AUTO-RETRY ---
+// Automatically switches between 192.168.x.x (physical mobile) and 10.0.2.2 (Android Studio emulator)
 api.interceptors.response.use(
     (response) => {
         return response;
     },
-    (error) => {
+    async (error) => {
+        const originalRequest = error.config;
+
+        // If a network connection error occurred (no HTTP response received) and we haven't retried yet:
+        if (!error.response && originalRequest && !originalRequest._networkRetried && Platform.OS === 'android') {
+            originalRequest._networkRetried = true;
+
+            let fallbackUrl = null;
+            if (currentBaseUrl.includes('192.168.')) {
+                // Host 192.168.x.x unreachable -> Auto-switch to Android Emulator's 10.0.2.2 gateway
+                fallbackUrl = currentBaseUrl.replace(/192\.168\.\d+\.\d+/, '10.0.2.2');
+            } else if (currentBaseUrl.includes('10.0.2.2')) {
+                // 10.0.2.2 unreachable -> Switch back to local Wi-Fi IP for real mobile device
+                fallbackUrl = rawApiUrl.replace(/\/+$/, '');
+            }
+
+            if (fallbackUrl && fallbackUrl !== currentBaseUrl) {
+                console.log(`[Axios API] Network unreachable at ${currentBaseUrl}. Auto-switching to ${fallbackUrl}...`);
+                currentBaseUrl = fallbackUrl.replace(/\/+$/, '');
+                api.defaults.baseURL = currentBaseUrl;
+                originalRequest.baseURL = currentBaseUrl;
+
+                // Transparently retry the failed request with the new baseURL
+                return api(originalRequest);
+            }
+        }
+
         // Global error logging for debugging (Demoted to warn to prevent Expo red screens)
         if (error.response) {
             console.warn(`[Axios Error ${error.response.status}] =>`, error.response.data);
 
-            // If the user's token expired on the backend server
             if (error.response.status === 401) {
-                // Here we would ideally trigger a global logout function via Context API.
-                // Since this is outside of the React Tree, we rely on the AuthContext to catch 401s where relevant, 
-                // or we use a navigation ref.
                 console.warn("[Axios API] Unauthorized access detected. Session likely expired.");
             }
         } else if (error.request) {
-            console.warn("[Axios API] Network Error / No Response (Is the Backend Server running API_URL?)");
+            console.warn(`[Axios API] Network Error / No Response to: ${currentBaseUrl}${originalRequest?.url || ''}`);
         }
         return Promise.reject(error);
     }
