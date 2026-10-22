@@ -10,8 +10,8 @@ import { tipsService } from '../services/tipsService';
 import { weatherService } from '../services/weatherService';
 
 export default function TipsScreen({ navigation }) {
-    const { colors } = useTheme();
-    const styles = React.useMemo(() => getStyles(colors), [colors]);
+    const { colors, isDarkMode } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const { t } = useLanguage();
     const { activeFarm } = useContext(AuthContext);
 
@@ -71,18 +71,18 @@ export default function TipsScreen({ navigation }) {
                     <MaterialCommunityIcons name={item.icon || 'leaf'} size={24} color="#059669" />
                 </View>
                 <View style={styles.badge}>
-                    <AppText variant="overline" style={styles.badgeText}>{item.category?.toUpperCase()}</AppText>
+                    <AppText variant="overline" style={styles.badgeText}>{(t(item.category) || item.category)?.toUpperCase()}</AppText>
                 </View>
             </View>
 
             <AppText variant="heading3" numberOfLines={2} style={styles.titleText}>
-                {item.title}
+                {t(item.title) || item.title}
             </AppText>
 
             <View style={styles.cardFooter}>
                 <View style={styles.footerRow}>
                     <Feather name="clock" size={14} color={colors.textLight || "#6B7280"} />
-                    <AppText variant="caption" style={styles.readTimeText}>{item.readTime}</AppText>
+                    <AppText variant="caption" style={styles.readTimeText}>{t(item.readTime) || item.readTime}</AppText>
                 </View>
                 <Feather name="arrow-right" size={18} color="#059669" />
             </View>
@@ -99,7 +99,7 @@ export default function TipsScreen({ navigation }) {
                 ) : (
                     <View style={{ width: 28 }} />
                 )}
-                <AppText variant="heading3">{t("farming_tips")}</AppText>
+                <AppText variant="heading3" style={{ color: colors.text }}>{t("farming_tips")}</AppText>
                 <TouchableOpacity onPress={handleRefresh} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
                     <Feather name="refresh-cw" size={20} color={colors.text} />
                 </TouchableOpacity>
@@ -143,7 +143,7 @@ export default function TipsScreen({ navigation }) {
     );
 }
 
-const getStyles = (colors) => StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     screen: {
         flex: 1,
         backgroundColor: colors.background,
@@ -155,6 +155,8 @@ const getStyles = (colors) => StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 16,
         backgroundColor: colors.background,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
     },
     subHeader: {
         paddingHorizontal: 20,
@@ -187,7 +189,7 @@ const getStyles = (colors) => StyleSheet.create({
         borderColor: colors.border,
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.04,
+        shadowOpacity: isDarkMode ? 0.3 : 0.04,
         shadowRadius: 3,
         elevation: 1,
     },
@@ -201,12 +203,14 @@ const getStyles = (colors) => StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 12,
-        backgroundColor: '#ECFDF5',
+        backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5',
+        borderWidth: 1,
+        borderColor: isDarkMode ? '#064E3B' : '#D1FAE5',
         justifyContent: 'center',
         alignItems: 'center',
     },
     badge: {
-        backgroundColor: '#F3F4F6',
+        backgroundColor: colors.background,
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 16,
@@ -214,7 +218,7 @@ const getStyles = (colors) => StyleSheet.create({
         borderColor: colors.border,
     },
     badgeText: {
-        color: '#4B5563',
+        color: colors.primary,
         fontWeight: '600',
         fontSize: 11,
         letterSpacing: 0.5,

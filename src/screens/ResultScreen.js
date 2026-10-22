@@ -4,9 +4,13 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export default function ResultScreen({ route, navigation }) {
+    const { colors, isDarkMode } = useTheme();
+    const { t } = useLanguage();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const { prediction } = route.params || {};
 
     const diseaseName = prediction?.prediction || 'Unknown Condition';
@@ -18,12 +22,28 @@ export default function ResultScreen({ route, navigation }) {
     const isNonArecanut = diseaseName.toLowerCase().includes('non-arecanut');
 
     // Remove prefix for display
-    const displayDiseaseName = diseaseName.replace(/Non-Arecanut:\s*/i, '');
+    const rawDiseaseName = diseaseName.replace(/Non-Arecanut:\s*/i, '');
+    const displayDiseaseName = t(rawDiseaseName) || rawDiseaseName;
 
-    // Dynamic color theming based on prediction state
-    const themeBg = isHealthy ? '#DCFCE7' : ((isUnknown || isNonArecanut) ? '#F3F4F6' : '#FEF2F2');
-    const themeBorder = isHealthy ? '#BBF7D0' : ((isUnknown || isNonArecanut) ? '#E5E7EB' : '#FECACA');
-    const themeText = isHealthy ? '#16A34A' : ((isUnknown || isNonArecanut) ? '#4B5563' : '#DC2626');
+    // Dynamic color theming based on prediction state & dark mode
+    const themeBg = isHealthy
+        ? (isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#DCFCE7')
+        : ((isUnknown || isNonArecanut)
+            ? (isDarkMode ? 'rgba(156, 163, 175, 0.15)' : '#F3F4F6')
+            : (isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2'));
+
+    const themeBorder = isHealthy
+        ? (isDarkMode ? 'rgba(16, 185, 129, 0.35)' : '#BBF7D0')
+        : ((isUnknown || isNonArecanut)
+            ? (isDarkMode ? 'rgba(156, 163, 175, 0.3)' : '#E5E7EB')
+            : (isDarkMode ? 'rgba(239, 68, 68, 0.35)' : '#FECACA'));
+
+    const themeText = isHealthy
+        ? (isDarkMode ? '#34D399' : '#16A34A')
+        : ((isUnknown || isNonArecanut)
+            ? (isDarkMode ? '#D1D5DB' : '#4B5563')
+            : (isDarkMode ? '#F87171' : '#DC2626'));
+
     const themeIcon = isHealthy ? 'check-circle' : ((isUnknown || isNonArecanut) ? 'info' : 'alert-triangle');
 
     return (
@@ -32,7 +52,7 @@ export default function ResultScreen({ route, navigation }) {
                 <TouchableOpacity onPress={() => navigation.navigate('HomeMain')}>
                     <Feather name="chevron-left" size={28} color={colors.text} />
                 </TouchableOpacity>
-                <AppText variant="heading3">Detection Result</AppText>
+                <AppText variant="heading3" style={{ color: colors.text }}>{t('detection_result')}</AppText>
                 <TouchableOpacity>
                     <Feather name="share-2" size={24} color={colors.text} />
                 </TouchableOpacity>
@@ -56,22 +76,22 @@ export default function ResultScreen({ route, navigation }) {
                         <View style={styles.confidenceBadge}>
                             <Feather name={themeIcon} size={14} color={themeText} />
                             <AppText variant="caption" style={{ color: themeText, marginLeft: 4, fontWeight: '700' }}>
-                                Confidence: {confidence.toFixed(1)}%
+                                {t('confidence')}: {confidence.toFixed(1)}%
                             </AppText>
                         </View>
                         {!isHealthy && !isUnknown && !isNonArecanut && (
-                            <View style={styles.severityTag}>
-                                <AppText variant="caption" style={{ color: '#DC2626', fontWeight: '700' }}>High Severity</AppText>
+                            <View style={[styles.severityTag, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.25)' : '#FEE2E2' }]}>
+                                <AppText variant="caption" style={{ color: isDarkMode ? '#F87171' : '#DC2626', fontWeight: '700' }}>{t('high_severity')}</AppText>
                             </View>
                         )}
                         {isHealthy && (
-                            <View style={[styles.severityTag, { backgroundColor: '#BBF7D0' }]}>
-                                <AppText variant="caption" style={{ color: '#16A34A', fontWeight: '700' }}>Plant Healthy</AppText>
+                            <View style={[styles.severityTag, { backgroundColor: isDarkMode ? 'rgba(16, 185, 129, 0.25)' : '#BBF7D0' }]}>
+                                <AppText variant="caption" style={{ color: isDarkMode ? '#34D399' : '#16A34A', fontWeight: '700' }}>{t('plant_healthy')}</AppText>
                             </View>
                         )}
                         {isNonArecanut && (
-                            <View style={[styles.severityTag, { backgroundColor: '#E5E7EB' }]}>
-                                <AppText variant="caption" style={{ color: '#4B5563', fontWeight: '700' }}>Subject Identified</AppText>
+                            <View style={[styles.severityTag, { backgroundColor: isDarkMode ? 'rgba(156, 163, 175, 0.25)' : '#E5E7EB' }]}>
+                                <AppText variant="caption" style={{ color: isDarkMode ? '#D1D5DB' : '#4B5563', fontWeight: '700' }}>{t('subject_identified')}</AppText>
                             </View>
                         )}
                     </View>
@@ -79,8 +99,8 @@ export default function ResultScreen({ route, navigation }) {
 
                 {/* Detailed Description */}
                 <View style={styles.section}>
-                    <AppText variant="heading3" style={styles.sectionTitle}>Description</AppText>
-                    <AppText variant="body" color="textMedium" style={{ lineHeight: 24 }}>
+                    <AppText variant="heading3" style={[styles.sectionTitle, { color: colors.text }]}>{t('description')}</AppText>
+                    <AppText variant="body" color="textMedium" style={{ lineHeight: 24, color: colors.textMedium }}>
                         {prediction?.details?.description || 'Detailed agricultural description is currently unavailable for this condition.'}
                     </AppText>
                 </View>
@@ -88,7 +108,7 @@ export default function ResultScreen({ route, navigation }) {
                 {/* Quick Symptoms List */}
                 {prediction?.details?.symptoms && prediction.details.symptoms.length > 0 && (
                     <View style={styles.section}>
-                        <AppText variant="heading3" style={styles.sectionTitle}>Identified Symptoms</AppText>
+                        <AppText variant="heading3" style={[styles.sectionTitle, { color: colors.text }]}>{t('identified_symptoms')}</AppText>
                         {prediction.details.symptoms.map((symp, index) => (
                             <View key={index} style={styles.symptomRow}>
                                 <Feather name="alert-circle" size={20} color="#F59E0B" />
@@ -102,12 +122,12 @@ export default function ResultScreen({ route, navigation }) {
 
             <View style={styles.footer}>
                 <AppButton
-                    title={isHealthy ? "View Care Guide" : "View Treatment"}
+                    title={isHealthy ? t('view_care_guide') : t('view_treatment')}
                     onPress={() => navigation.navigate('TreatmentDetails', { details: prediction?.details, diseaseName })}
                     style={{ marginBottom: 12 }}
                 />
                 <AppButton
-                    title="View Disease Info"
+                    title={t('view_disease_info')}
                     variant="outline"
                     onPress={() => navigation.navigate('DiseaseInfo', { details: prediction?.details, diseaseName })}
                 />
@@ -116,7 +136,7 @@ export default function ResultScreen({ route, navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     header: {
         flexDirection: 'row',
@@ -128,19 +148,19 @@ const styles = StyleSheet.create({
     scroll: { paddingHorizontal: 20, paddingBottom: 40 },
     resultCard: {
         flexDirection: 'row',
-        backgroundColor: '#FEF2F2', // Light red tint for disease
+        backgroundColor: colors.surface,
         borderRadius: 20,
         padding: 20,
         marginBottom: 30,
         borderWidth: 1,
-        borderColor: '#FECACA',
+        borderColor: colors.border,
         alignItems: 'center',
     },
     mockImageMini: {
         width: 70,
         height: 70,
         borderRadius: 16,
-        backgroundColor: '#FCA5A5',
+        backgroundColor: isDarkMode ? colors.surface : '#FCA5A5',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16,
@@ -153,7 +173,6 @@ const styles = StyleSheet.create({
     },
     severityTag: {
         alignSelf: 'flex-start',
-        backgroundColor: '#FEE2E2',
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 8,

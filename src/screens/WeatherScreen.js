@@ -4,9 +4,11 @@ import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { weatherService } from '../services/weatherService';
 import { AuthContext } from '../context/AuthContext';
+
+import { useLanguage } from '../context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
@@ -31,7 +33,7 @@ const getWeatherIcon = (condition) => {
     return 'weather-partly-cloudy';
 };
 
-const MetricCard = ({ icon, title, value, unit }) => (
+const MetricCard = ({ icon, title, value, unit, styles }) => (
     <View style={styles.glassMetricCard}>
         <Feather name={icon} size={22} color="rgba(255,255,255,0.7)" />
         <AppText variant="caption" style={{ color: 'rgba(255,255,255,0.8)', marginTop: 8 }}>{title}</AppText>
@@ -42,25 +44,26 @@ const MetricCard = ({ icon, title, value, unit }) => (
     </View>
 );
 
-const RiskBadge = ({ disease, risk, message }) => {
+const RiskBadge = ({ disease, risk, message, colors, styles, t }) => {
     const riskGradient = {
         'High': ['#EF4444', '#B91C1C'],
         'Medium': ['#F59E0B', '#B45309'],
         'Low': ['#10B981', '#047857'],
     };
-    const colors = riskGradient[risk] || ['#6B7280', '#374151'];
+    const badgeColors = riskGradient[risk] || ['#6B7280', '#374151'];
+    const translatedRisk = risk === 'High' ? t('risk_high') : risk === 'Medium' ? t('risk_moderate') : t('risk_low');
 
     return (
         <View style={styles.riskCardWrapper}>
-            <LinearGradient colors={colors} style={styles.riskCardIndicator} />
+            <LinearGradient colors={badgeColors} style={styles.riskCardIndicator} />
             <View style={styles.riskCardBody}>
                 <View style={styles.riskHeader}>
-                    <AppText variant="bodyMedium" style={{ fontWeight: '800', flex: 1, color: '#1F2937' }}>{disease}</AppText>
-                    <View style={[styles.riskBadge, { backgroundColor: colors[0] + '20' }]}>
-                        <AppText variant="caption" style={{ color: colors[1], fontWeight: '800' }}>{risk}</AppText>
+                    <AppText variant="bodyMedium" style={{ fontWeight: '800', flex: 1, color: colors.text }}>{t(disease)}</AppText>
+                    <View style={[styles.riskBadge, { backgroundColor: badgeColors[0] + '20' }]}>
+                        <AppText variant="caption" style={{ color: badgeColors[0], fontWeight: '800' }}>{translatedRisk}</AppText>
                     </View>
                 </View>
-                <AppText variant="caption" style={{ color: '#4B5563', marginTop: 4, lineHeight: 18 }}>
+                <AppText variant="caption" style={{ color: colors.textMedium, marginTop: 4, lineHeight: 18 }}>
                     {message}
                 </AppText>
             </View>
@@ -69,6 +72,9 @@ const RiskBadge = ({ disease, risk, message }) => {
 };
 
 export default function WeatherScreen({ navigation }) {
+    const { colors, isDarkMode } = useTheme();
+    const { t } = useLanguage();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const [weather, setWeather] = useState(null);
     const [advisory, setAdvisory] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -107,10 +113,10 @@ export default function WeatherScreen({ navigation }) {
     if (loading) {
         return (
             <Screen style={styles.screen} noPadding>
-                <LinearGradient colors={['#F3F4F6', '#E5E7EB']} style={styles.loadingGradient}>
+                <LinearGradient colors={isDarkMode ? ['#121212', '#1E1E1E'] : ['#F3F4F6', '#E5E7EB']} style={styles.loadingGradient}>
                     <ActivityIndicator size="large" color={colors.primary} />
-                    <AppText variant="bodyMedium" style={{ marginTop: 16, color: '#6B7280' }}>
-                        Calibrating meteorological sensors...
+                    <AppText variant="bodyMedium" style={{ marginTop: 16, color: colors.textMedium }}>
+                        {t('scanning_weather')}
                     </AppText>
                 </LinearGradient>
             </Screen>
@@ -118,7 +124,7 @@ export default function WeatherScreen({ navigation }) {
     }
 
     return (
-        <Screen style={{ flex: 1, backgroundColor: '#F9FAFB' }} noPadding>
+        <Screen style={styles.screen} noPadding>
             <ScrollView showsVerticalScrollIndicator={false} style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }}>
 
                 {/* Premium Weather Hero Glass Block */}
@@ -138,11 +144,11 @@ export default function WeatherScreen({ navigation }) {
                         <AppText variant="bodyMedium" style={styles.locationText}>
                             {activeFarm?.name && activeFarm.name !== 'Current Location'
                                 ? activeFarm.name
-                                : (weather?.location || 'Plantation Region')}
+                                : (weather?.location || t('location'))}
                         </AppText>
                         {weather?.location && activeFarm?.name && activeFarm.name !== weather.location && activeFarm.name !== 'Current Location' ? (
                             <AppText variant="caption" style={{ color: 'rgba(255,255,255,0.75)', marginTop: 2, fontSize: 12 }}>
-                                Radar Station: {weather.location}
+                                {weather.location}
                             </AppText>
                         ) : null}
                     </View>
@@ -159,18 +165,18 @@ export default function WeatherScreen({ navigation }) {
                     </View>
 
                     <AppText style={styles.conditionText}>
-                        {weather?.weather_condition || 'Scanning...'}
+                        {weather?.weather_condition || t('loading')}
                     </AppText>
                     <AppText style={styles.feelsLikeText}>
-                        Feels like {Math.round(weather?.feels_like || 0)}°C
+                        {t('feels_like')} {Math.round(weather?.feels_like || 0)}°C
                     </AppText>
 
                     {/* Glassmorphism Metrics Grid */}
                     <View style={styles.glassGrid}>
-                        <MetricCard icon="droplet" title="Humidity" value={weather?.humidity ?? '--'} unit="%" />
-                        <MetricCard icon="cloud-rain" title="Rainfall" value={weather?.rainfall != null ? weather.rainfall.toFixed(1) : '0'} unit="mm" />
-                        <MetricCard icon="wind" title="Wind" value={weather?.wind_speed != null ? weather.wind_speed.toFixed(1) : '--'} unit="kmh" />
-                        <MetricCard icon="cloud" title="Clouds" value={weather?.cloud_coverage ?? '--'} unit="%" />
+                        <MetricCard icon="droplet" title={t('humidity')} value={weather?.humidity ?? '--'} unit="%" styles={styles} />
+                        <MetricCard icon="cloud-rain" title={t('rainfall')} value={weather?.rainfall != null ? weather.rainfall.toFixed(1) : '0'} unit="mm" styles={styles} />
+                        <MetricCard icon="wind" title={t('wind')} value={weather?.wind_speed != null ? weather.wind_speed.toFixed(1) : '--'} unit="kmh" styles={styles} />
+                        <MetricCard icon="cloud" title={t('clouds')} value={weather?.cloud_coverage ?? '--'} unit="%" styles={styles} />
                     </View>
                 </LinearGradient>
 
@@ -179,14 +185,14 @@ export default function WeatherScreen({ navigation }) {
                     {/* Overall Risk Summary */}
                     {advisory && (
                         <View style={styles.summaryCard}>
-                            <View style={styles.summaryIconFrame}>
+                            <View style={[styles.summaryIconFrame, { backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5' }]}>
                                 <Feather name="activity" size={24} color={colors.primary} />
                             </View>
                             <View style={{ flex: 1 }}>
-                                <AppText variant="bodyMedium" style={{ fontWeight: '800', color: '#1F2937' }}>
-                                    Farm Health Status
+                                <AppText variant="bodyMedium" style={{ fontWeight: '800', color: colors.text }}>
+                                    {t('farm_health')}
                                 </AppText>
-                                <AppText variant="caption" style={{ color: '#4B5563', marginTop: 4, lineHeight: 18 }}>
+                                <AppText variant="caption" style={{ color: colors.textMedium, marginTop: 4, lineHeight: 18 }}>
                                     {advisory.summary}
                                 </AppText>
                             </View>
@@ -196,9 +202,9 @@ export default function WeatherScreen({ navigation }) {
                     {/* Pathogen Detection */}
                     {advisory?.risks && advisory.risks.length > 0 && (
                         <>
-                            <AppText variant="heading3" style={styles.sectionTitle}>Pathogen Risk Analysis</AppText>
+                            <AppText variant="heading3" style={[styles.sectionTitle, { color: colors.text }]}>{t('disease_risk_alert')}</AppText>
                             {advisory.risks.map((risk, index) => (
-                                <RiskBadge key={index} disease={risk.disease} risk={risk.risk} message={risk.message} />
+                                <RiskBadge key={index} disease={risk.disease} risk={risk.risk} message={risk.message} colors={colors} styles={styles} t={t} />
                             ))}
                         </>
                     )}
@@ -206,23 +212,23 @@ export default function WeatherScreen({ navigation }) {
                     {/* Proactive Intelligence */}
                     {advisory?.recommendations && advisory.recommendations.length > 0 && (
                         <>
-                            <AppText variant="heading3" style={[styles.sectionTitle, { marginTop: 10 }]}>Proactive Intelligence</AppText>
+                            <AppText variant="heading3" style={[styles.sectionTitle, { marginTop: 10, color: colors.text }]}>{t('weather_advisory')}</AppText>
                             {advisory.recommendations.map((rec, index) => (
                                 <View key={index} style={styles.recCard}>
                                     <View style={styles.recHeader}>
                                         <Feather name="check-circle" size={18} color="#059669" />
-                                        <AppText variant="bodyMedium" style={{ fontWeight: '800', marginLeft: 10, color: '#111827' }}>
-                                            {rec.disease} Directive
+                                        <AppText variant="bodyMedium" style={{ fontWeight: '800', marginLeft: 10, color: colors.text }}>
+                                            {t(rec.disease)}
                                         </AppText>
                                     </View>
                                     {rec.spray_advisory ? (
-                                        <AppText variant="caption" style={styles.recText}>
-                                            <AppText style={{ fontWeight: '700' }}>Rx:</AppText> {rec.spray_advisory}
+                                        <AppText variant="caption" style={[styles.recText, { color: colors.textMedium }]}>
+                                            <AppText style={{ fontWeight: '700', color: colors.text }}>{t('spray_advisory')}: </AppText>{rec.spray_advisory}
                                         </AppText>
                                     ) : null}
                                     {rec.prevention ? (
-                                        <AppText variant="caption" style={styles.recText}>
-                                            <AppText style={{ fontWeight: '700' }}>Shield:</AppText> {rec.prevention}
+                                        <AppText variant="caption" style={[styles.recText, { color: colors.textMedium }]}>
+                                            <AppText style={{ fontWeight: '700', color: colors.text }}>{t('prevention')}: </AppText>{rec.prevention}
                                         </AppText>
                                     ) : null}
                                 </View>
@@ -236,8 +242,8 @@ export default function WeatherScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
-    screen: { flex: 1 },
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
+    screen: { flex: 1, backgroundColor: colors.background },
     loadingGradient: {
         flex: 1,
         justifyContent: 'center',
@@ -305,7 +311,7 @@ const styles = StyleSheet.create({
         flexWrap: 'wrap',
         justifyContent: 'space-between',
         marginTop: 35,
-        backgroundColor: 'rgba(0,0,0,0.1)',
+        backgroundColor: 'rgba(0,0,0,0.15)',
         padding: 16,
         borderRadius: 24,
     },
@@ -334,7 +340,9 @@ const styles = StyleSheet.create({
     },
     summaryCard: {
         flexDirection: 'row',
-        backgroundColor: 'white',
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
         padding: 20,
         borderRadius: 24,
         shadowColor: '#000',
@@ -349,20 +357,20 @@ const styles = StyleSheet.create({
         width: 50,
         height: 50,
         borderRadius: 16,
-        backgroundColor: '#ECFDF5',
         justifyContent: 'center',
         alignItems: 'center',
         marginRight: 16,
     },
     sectionTitle: {
-        color: '#111827',
         fontWeight: '800',
         marginBottom: 16,
         marginLeft: 4,
     },
     riskCardWrapper: {
         flexDirection: 'row',
-        backgroundColor: 'white',
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
         borderRadius: 20,
         overflow: 'hidden',
         marginBottom: 16,
@@ -391,7 +399,7 @@ const styles = StyleSheet.create({
         borderRadius: 12,
     },
     recCard: {
-        backgroundColor: 'white',
+        backgroundColor: colors.surface,
         borderRadius: 20,
         padding: 20,
         marginBottom: 16,
@@ -401,7 +409,7 @@ const styles = StyleSheet.create({
         shadowRadius: 10,
         elevation: 2,
         borderWidth: 1,
-        borderColor: '#F3F4F6',
+        borderColor: colors.border,
     },
     recHeader: {
         flexDirection: 'row',
@@ -409,7 +417,6 @@ const styles = StyleSheet.create({
         marginBottom: 12,
     },
     recText: {
-        color: '#4B5563',
         lineHeight: 22,
         marginBottom: 8,
     }

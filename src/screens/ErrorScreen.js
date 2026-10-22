@@ -3,11 +3,14 @@ import { View, StyleSheet, Dimensions } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
 export default function ErrorScreen({ error, onRetry }) {
+    const { colors, isDarkMode } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
+
     return (
         <View style={styles.container}>
             <View style={styles.iconCircle}>
@@ -31,7 +34,7 @@ export default function ErrorScreen({ error, onRetry }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.background,
@@ -43,7 +46,9 @@ const styles = StyleSheet.create({
         width: 100,
         height: 100,
         borderRadius: 50,
-        backgroundColor: '#FEF2F2',
+        backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.2)' : '#FEF2F2',
+        borderWidth: isDarkMode ? 1 : 0,
+        borderColor: isDarkMode ? '#991B1B' : 'transparent',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 24,
@@ -58,6 +63,7 @@ const styles = StyleSheet.create({
         lineHeight: 24,
         marginBottom: 32,
         paddingHorizontal: 20,
+        color: colors.textMedium,
     },
     retryBtn: {
         width: width * 0.7,

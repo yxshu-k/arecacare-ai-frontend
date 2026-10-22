@@ -3,18 +3,19 @@ import { View, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
-const InfoSection = ({ icon, title, items }) => (
+const InfoSection = ({ icon, title, items, colors, styles }) => (
     <View style={styles.section}>
         <View style={styles.sectionHeader}>
             <Feather name={icon} size={20} color={colors.primary} />
-            <AppText variant="heading3" style={{ marginLeft: 8 }}>{title}</AppText>
+            <AppText variant="heading3" style={{ marginLeft: 8, color: colors.text }}>{title}</AppText>
         </View>
         {items.map((item, index) => (
             <View key={index} style={styles.bulletRow}>
                 <View style={styles.bullet} />
-                <AppText variant="bodyMedium" color="textMedium" style={{ flex: 1, lineHeight: 22 }}>
+                <AppText variant="bodyMedium" color="textMedium" style={{ flex: 1, lineHeight: 22, color: colors.textMedium }}>
                     {item}
                 </AppText>
             </View>
@@ -23,11 +24,18 @@ const InfoSection = ({ icon, title, items }) => (
 );
 
 export default function DiseaseInfoScreen({ route, navigation }) {
+    const { colors, isDarkMode } = useTheme();
+    const { t } = useLanguage();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const { details, diseaseName } = route.params || {};
 
     const isHealthy = diseaseName?.toLowerCase().includes('healthy');
-    const heroColor = isHealthy ? '#16A34A' : colors.primary;
-    const heroBg = isHealthy ? '#DCFCE7' : '#F0FDF4';
+    const heroColor = isHealthy ? (isDarkMode ? '#34D399' : '#16A34A') : colors.primary;
+    const heroBg = isHealthy
+        ? (isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#DCFCE7')
+        : (isDarkMode ? 'rgba(5, 150, 105, 0.15)' : '#F0FDF4');
+
+    const localizedDisease = t(diseaseName) || diseaseName || t('condition_overview');
 
     return (
         <Screen style={styles.screen} noPadding>
@@ -35,7 +43,7 @@ export default function DiseaseInfoScreen({ route, navigation }) {
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
                     <Feather name="chevron-left" size={28} color={colors.text} />
                 </TouchableOpacity>
-                <AppText variant="heading3">About {diseaseName || 'Condition'}</AppText>
+                <AppText variant="heading3" style={{ color: colors.text }}>{localizedDisease}</AppText>
                 <View style={{ width: 44 }} />
             </View>
 
@@ -49,15 +57,17 @@ export default function DiseaseInfoScreen({ route, navigation }) {
                         color={heroColor}
                     />
                     <AppText variant="heading3" style={{ color: heroColor, marginTop: 12, textAlign: 'center', paddingHorizontal: 20 }}>
-                        {diseaseName || 'Condition Overview'}
+                        {localizedDisease}
                     </AppText>
                 </View>
 
                 <View style={styles.infoContainer}>
                     <InfoSection
                         icon="info"
-                        title="Description"
+                        title={t('description')}
                         items={[details?.description || 'No detailed description available for this condition.']}
+                        colors={colors}
+                        styles={styles}
                     />
 
                     {details?.symptoms && details.symptoms.length > 0 && (
@@ -65,8 +75,10 @@ export default function DiseaseInfoScreen({ route, navigation }) {
                             <View style={styles.divider} />
                             <InfoSection
                                 icon="alert-circle"
-                                title="Characteristics / Symptoms"
+                                title={t('characteristics_symptoms')}
                                 items={details.symptoms}
+                                colors={colors}
+                                styles={styles}
                             />
                         </>
                     )}
@@ -76,8 +88,10 @@ export default function DiseaseInfoScreen({ route, navigation }) {
                             <View style={styles.divider} />
                             <InfoSection
                                 icon="shield"
-                                title="Preventative Measures"
+                                title={t('prevention_measures')}
                                 items={details.preventive_measures}
+                                colors={colors}
+                                styles={styles}
                             />
                         </>
                     )}
@@ -87,7 +101,7 @@ export default function DiseaseInfoScreen({ route, navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     header: {
         flexDirection: 'row',
@@ -106,7 +120,6 @@ const styles = StyleSheet.create({
     scroll: { paddingBottom: 40 },
     heroImageMock: {
         height: 220,
-        backgroundColor: '#F0FDF4',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,

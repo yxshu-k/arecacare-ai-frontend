@@ -90,8 +90,8 @@ export default function FarmerStatusModal({
                                 </View>
 
                                 {/* Header */}
-                                <View style={styles.header}>
-                                    <View>
+                                <View style={[styles.header, { borderBottomColor: colors.border }]}>
+                                    <View style={{ flex: 1, paddingRight: 12 }}>
                                         <AppText variant="heading3" style={{ color: colors.text }}>
                                             About & Status
                                         </AppText>
@@ -135,7 +135,7 @@ export default function FarmerStatusModal({
                                             />
                                         </View>
 
-                                        <View style={styles.inputFooter}>
+                                        <View style={[styles.inputFooter, { borderTopColor: colors.border }]}>
                                             <TouchableOpacity
                                                 style={[
                                                     styles.saveBtn,

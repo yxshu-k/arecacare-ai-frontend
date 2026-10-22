@@ -13,9 +13,9 @@ import { syncService } from '../services/syncService';
 
 export default function HomeScreen({ navigation }) {
     const { userData, logout, activeFarm } = useContext(AuthContext);
-    const { colors } = useTheme();
+    const { colors, isDarkMode } = useTheme();
     const { t } = useLanguage();
-    const styles = React.useMemo(() => getStyles(colors), [colors]);
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
 
     const userName = userData?.name || 'Farmer';
     const targetLocation = activeFarm?.region || '13.9299,75.5681';
@@ -247,7 +247,7 @@ export default function HomeScreen({ navigation }) {
     );
 }
 
-const getStyles = (colors) => StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     scroll: { paddingVertical: 10, paddingBottom: 40 },
     header: {
@@ -263,9 +263,11 @@ const getStyles = (colors) => StyleSheet.create({
         backgroundColor: colors.surface,
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: colors.black,
+        borderWidth: 1,
+        borderColor: colors.border,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: isDarkMode ? 0.3 : 0.05,
         shadowRadius: 4,
         elevation: 2,
     },
@@ -288,7 +290,7 @@ const getStyles = (colors) => StyleSheet.create({
         marginBottom: 20,
     },
     cameraIconWrap: {
-        backgroundColor: colors.white,
+        backgroundColor: '#FFFFFF',
         padding: 12,
         borderRadius: 16,
     },
@@ -317,9 +319,10 @@ const getStyles = (colors) => StyleSheet.create({
         borderRadius: 16,
         marginBottom: 16,
         borderWidth: 1,
-        shadowColor: colors.black,
+        borderColor: colors.border,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: isDarkMode ? 0.3 : 0.05,
         shadowRadius: 6,
         elevation: 2,
     },
@@ -360,16 +363,16 @@ const getStyles = (colors) => StyleSheet.create({
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: colors.border,
-        shadowColor: colors.black,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: isDarkMode ? 0.3 : 0.05,
         shadowRadius: 6,
         elevation: 2,
     },
     recentImage: {
         width: '100%',
         height: 90,
-        backgroundColor: '#E8F5E9'
+        backgroundColor: isDarkMode ? colors.background : '#E8F5E9'
     },
     recentTextWrap: {
         padding: 12,
