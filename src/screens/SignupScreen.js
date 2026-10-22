@@ -1,5 +1,6 @@
 import React, { useState, useContext } from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, Alert, Keyboard } from 'react-native';
+import { Feather } from '@expo/vector-icons';
 import { colors } from '../theme/colors';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';

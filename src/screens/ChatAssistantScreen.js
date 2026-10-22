@@ -300,7 +300,8 @@ export default function ChatAssistantScreen({ navigation }) {
         setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 
         try {
-            const response = await chatService.sendMessage(trimmed, sessionId);
+            const locationHint = activeFarm?.location || activeFarm?.name || null;
+            const response = await chatService.sendMessage(trimmed, sessionId, language || 'en', locationHint);
             fetchSidebarSessions();
             setMessages(prev => [...prev, { id: `ai_${Date.now()}`, text: response.response || 'System Error.', isAI: true }]);
         } catch (error) {
@@ -342,7 +343,8 @@ export default function ChatAssistantScreen({ navigation }) {
             setMessages(prev => [...prev, { id: `voice_${Date.now()}`, text: '🎙️ Processing voice packet...', isAI: false }]);
             setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
 
-            const response = await chatService.sendVoiceMessage(uri, sessionId, language);
+            const locationHint = activeFarm?.location || activeFarm?.name || null;
+            const response = await chatService.sendVoiceMessage(uri, sessionId, language || 'en', locationHint);
             fetchSidebarSessions();
 
             setMessages(prev => {

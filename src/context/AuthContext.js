@@ -12,7 +12,7 @@ export const AuthProvider = ({ children }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     const [defaultFarms, setDefaultFarms] = useState([
-        { id: 1, name: 'My Location', region: '13.9299,75.5681' }
+        { id: 1, name: 'Current Location', locality: '', region: '13.9299,75.5681' }
     ]);
     const [activeFarm, setActiveFarm] = useState(defaultFarms[0]);
 
@@ -21,18 +21,53 @@ export const AuthProvider = ({ children }) => {
             try {
                 let { status } = await Location.requestForegroundPermissionsAsync();
                 if (status !== 'granted') {
-                    const fallback = { id: 1, name: 'My Location (Offline)', region: '13.9299,75.5681' };
+                    const fallback = { id: 1, name: 'My Location (Offline)', locality: '', region: '13.9299,75.5681' };
                     setDefaultFarms([fallback]);
                     setActiveFarm(fallback);
                     return;
                 }
 
-                let location = await Location.getCurrentPositionAsync({});
-                const coords = `${location.coords.latitude},${location.coords.longitude}`;
-                const liveProfile = { id: 1, name: 'Live GPS', region: coords };
+                // 1. First get last known position for instant responsiveness (especially indoors)
+                let location = await Location.getLastKnownPositionAsync({});
+                
+                // 2. Then get fresh position with balanced accuracy
+                if (!location) {
+                    location = await Location.getCurrentPositionAsync({
+                        accuracy: Location.Accuracy.Balanced,
+                    });
+                }
 
-                setDefaultFarms([liveProfile]);
-                setActiveFarm(liveProfile);
+                if (location && location.coords) {
+                    const { latitude, longitude } = location.coords;
+                    const coords = `${latitude},${longitude}`;
+
+                    // 3. Reverse geocode to find user's exact village/town/district name
+                    let placeName = 'Live GPS';
+                    let localityStr = '';
+                    try {
+                        const addresses = await Location.reverseGeocodeAsync({ latitude, longitude });
+                        if (addresses && addresses.length > 0) {
+                            const addr = addresses[0];
+                            const localName = addr.district || addr.subregion || addr.city || addr.name;
+                            localityStr = [addr.name, addr.subregion || addr.city, addr.region].filter(Boolean).join(', ');
+                            if (localName) {
+                                placeName = localName;
+                            }
+                        }
+                    } catch (geoErr) {
+                        console.warn("[Location Hook] Reverse geocode error:", geoErr);
+                    }
+
+                    const liveProfile = {
+                        id: 1,
+                        name: placeName,
+                        locality: localityStr,
+                        region: coords
+                    };
+
+                    setDefaultFarms([liveProfile]);
+                    setActiveFarm(liveProfile);
+                }
             } catch (err) {
                 console.warn("[Location Hook] Failed to fetch GPS:", err);
             }
