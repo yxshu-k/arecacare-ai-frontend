@@ -1,12 +1,14 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native';
-import { View, StyleSheet, FlatList, TouchableOpacity, Image, RefreshControl, Modal, Alert, Animated } from 'react-native';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
+import { View, StyleSheet, FlatList, TouchableOpacity, Image, RefreshControl, Modal, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { useTheme } from '../context/ThemeContext';
 import { diseaseService } from '../services/diseaseService';
 import { useLanguage } from '../context/LanguageContext';
+import { diseaseService } from '../services/diseaseService';
+import { colors } from '../theme/colors';
 
 const SkeletonItem = ({ colors, isDarkMode }) => (
     <View style={[stylesLocal.card(colors), { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -25,13 +27,12 @@ export default function HistoryScreen({ navigation }) {
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState(null);
-    const { t } = useLanguage();
 
     // Filtering State
     const [filterMenuVisible, setFilterMenuVisible] = useState(false);
     const [activeFilter, setActiveFilter] = useState('All');
 
-    const fetchHistory = async (isRefresh = false) => {
+    const fetchHistory = useCallback(async (isRefresh = false) => {
         if (isRefresh) {
             setRefreshing(true);
         } else {
@@ -40,20 +41,20 @@ export default function HistoryScreen({ navigation }) {
         setError(null);
         try {
             const data = await diseaseService.getHistory();
-            setHistory(data);
+            setHistory(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.warn(err);
+            console.warn('[HistoryScreen] History Fetch Error:', err);
             setError(err.message || 'Failed to sync history.');
         } finally {
             setLoading(false);
             setRefreshing(false);
         }
-    };
+    }, []);
 
     useFocusEffect(
         useCallback(() => {
             fetchHistory();
-        }, [])
+        }, [fetchHistory])
     );
 
     const handleDelete = (id, name) => {
@@ -115,15 +116,19 @@ export default function HistoryScreen({ navigation }) {
 
     // Filter Logic
     const filteredHistory = history.filter(item => {
-        const isHealthy = item.disease_name?.toLowerCase().includes('healthy');
+        const isHealthy = item.disease_name?.toLowerCase().includes('healthy') || item.disease?.toLowerCase().includes('healthy');
         if (activeFilter === 'Healthy') return isHealthy;
         if (activeFilter === 'Diseased') return !isHealthy && !item.disease_name?.toLowerCase().includes('unknown') && !item.disease_name?.toLowerCase().includes('non-arecanut');
         return true;
     });
 
     const renderItem = ({ item }) => {
-        const style = getDiseaseColor(item.disease_name);
-        const dateStr = new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+        const rawDiseaseName = item.disease_name || item.disease || item.prediction || 'Unknown Condition';
+        const diseaseName = t ? t(rawDiseaseName) : rawDiseaseName;
+        const style = getDiseaseColor(rawDiseaseName);
+        const dateStr = item.created_at
+            ? new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+            : (item.date || 'Recently');
 
         return (
             <TouchableOpacity
@@ -132,9 +137,9 @@ export default function HistoryScreen({ navigation }) {
                     screen: 'Result',
                     params: {
                         prediction: {
-                            prediction: item.disease_name,
-                            confidence: item.confidence,
-                            saved_path: item.image_url,
+                            prediction: rawDiseaseName,
+                            confidence: item.confidence || 95,
+                            saved_path: item.image_url || item.saved_path,
                             details: item.details
                         }
                     }
@@ -173,10 +178,10 @@ export default function HistoryScreen({ navigation }) {
         <Screen style={styles.screen} noPadding>
             <View style={styles.header}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <AppText variant="heading2">{t("scan_history")}</AppText>
+                    <AppText variant="heading2">{t ? t("scan_history") : "Scan History"}</AppText>
                     {history.length > 0 && (
                         <TouchableOpacity onPress={handleClearAll} style={{ marginLeft: 16 }}>
-                            <AppText variant="bodySmall" style={{ color: '#DC2626', fontWeight: '700' }}>{t("clear_all")}</AppText>
+                            <AppText variant="bodySmall" style={{ color: '#DC2626', fontWeight: '700' }}>{t ? t("clear_all") : "CLEAR"}</AppText>
                         </TouchableOpacity>
                     )}
                 </View>
@@ -209,7 +214,7 @@ export default function HistoryScreen({ navigation }) {
             ) : (
                 <FlatList
                     data={filteredHistory}
-                    keyExtractor={item => item.id}
+                    keyExtractor={(item, idx) => String(item.id || item._id || idx)}
                     renderItem={renderItem}
                     contentContainerStyle={styles.list}
                     showsVerticalScrollIndicator={false}
@@ -230,7 +235,7 @@ export default function HistoryScreen({ navigation }) {
                 <View style={styles.modalOverlay}>
                     <View style={styles.bottomSheet}>
                         <View style={styles.sheetHeader}>
-                            <AppText variant="heading3">{t("filter_scans")}</AppText>
+                            <AppText variant="heading3">Filter Scans</AppText>
                             <TouchableOpacity onPress={() => setFilterMenuVisible(false)}>
                                 <Feather name="x" size={24} color={colors.textMedium} />
                             </TouchableOpacity>
@@ -320,7 +325,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
     },
     emptyState: {
         flex: 1,
-        justifyContent: 'center',
+        justify: 'center',
         alignItems: 'center',
         padding: 40,
         marginTop: 60
