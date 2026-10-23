@@ -1,122 +1,210 @@
-# ArecaCare AI - Mobile Application 🌿
+# 🌿 ArecaCare AI — Mobile Application
 
-**Smart Arecanut Disease Detection & Advisory**  
-*Healthy Crops | Informed Farmers | Sustainable Future*
+> **Production-Ready React Native (Expo) Mobile Application for Arecanut Farmers.**  
+> *Instant Disease Diagnosis • Weather-Driven Warning Radar • Regional Voice AI Agronomist • Precision Yield Intelligence*
 
----
-
-## 🎯 Project Overview
-This repository contains the **React Native (Expo)** mobile application for ArecaCare AI. The goal of this frontend is to build a fully functional mobile tool for farmers (19 screens) that integrates directly with our FastAPI backend. 
-
-Key features include:
-- AI-Powered Disease Detection (Leaf Spot, Yellow Leaf, Bud Rot)
-- Weather & Agricultural Advisory
-- Yield Prediction Calculations
-- AI Voice/Chat Assistant (Multilingual)
-- Farming Tips & Articles
-- Farmer Profile & Farm Settings
+[![React Native](https://img.shields.io/badge/React_Native-0.74-61DAFB.svg?logo=react&logoColor=black)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo_SDK-57-000020.svg?logo=expo&logoColor=white)](https://expo.dev/)
+[![JavaScript](https://img.shields.io/badge/Language-JavaScript_ES6+-F7DF1E.svg?logo=javascript&logoColor=black)](https://developer.mozilla.org/)
+[![Platform](https://img.shields.io/badge/Platform-Android%20%7C%20iOS-brightgreen.svg)]()
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
 
 ---
 
-## 🛠️ Technology Stack
-To ensure a robust, enterprise-grade mobile application, we are strictly using the following UI blueprint stack:
+## 📱 1. Application Overview
 
-- **Framework**: React Native (via Expo SDK 57)
-- **State Management**: React Context API & `useReducer`
-- **Navigation**: React Navigation (Stack + Bottom Tabs)
-- **HTTP Client**: Axios (for FastAPI integration)
-- **Storage**: AsyncStorage / SecureStore (Tokens)
-- **Device Features**: `expo-image-picker` & `expo-camera` (for plant scanning)
-- **Environment config**: Native EXPO_PUBLIC environment variables
+**ArecaCare AI Mobile** is a full-featured agricultural mobile assistant purpose-built for arecanut plantation growers. Combining an intuitive, high-contrast UI tailored for field visibility with cutting-edge AI, the app translates complex plant pathology and meteorological forecasting into clear, actionable farming directives in local languages.
 
----
-
-## 🗺️ The Complete Development Workflow
-Our development is meticulously structured across strictly managed phases, moving from the initial blueprint UI to a production-ready application. Below is the exact step-by-step history of what has been accomplished and what remains:
-
-### ⚙️ Stage 1: Foundation & Core UI (Completed ✅)
-- **Phase 1: Project Foundation**: Bootstrapped the Expo SDK 57 environment, established a strict modular directory structure (`components/`, `screens/`, `navigation/`), and cleared all default boilerplate.
-- **Phase 2: Design System & Components**: Defined the Agricultural Green color palette and standardized scalable typography. Built robust, reusable UI atoms (`AppText`, `AppButton`, `AppTextInput`, and `Screen` wrappers).
-- **Phase 3: Splash & Onboarding**: Built the dynamic `SplashScreen` and a 3-step `OnboardingScreen` educational flow.
-- **Phase 4: Authentication**: Developed High-Fidelity `LoginScreen` and `SignupScreen`. Implemented `AuthContext` for global session management using `expo-secure-store` for safe, encrypted token persistence.
-- **Phase 5: Navigation Architecture**: Integrated React Navigation (Native Stack + Bottom Tabs). Established `RootNavigator` to act as an authentication gatekeeper, seamlessly handling logged-in vs logged-out routing.
-- **Phase 6: Professional UI & Home Dashboard**: Replaced all placeholder emojis globally with `@expo/vector-icons` for an enterprise aesthetic. Built the primary `HomeScreen` dashboard featuring dynamic Action Cards and a personalized greeting system.
-
-### 🌿 Stage 2: Core AI Features (Completed ✅)
-- **Phase 7: AI Disease Diagnostics Flow**: Engineered nested Stack routing for the plant scanning process. Built the Camera Viewfinder UI (`ScanPlantScreen`), a mock AI-inference `ImagePreviewScreen`, and constructed the highly detailed scientific readouts (`ResultScreen` & `TreatmentDetailsScreen`).
-- **Phase 8: Yield Prediction Engine**: Developed the environmental data input forms (`YieldInputScreen`) securely wrapped in iOS/Android KeyboardAvoidingViews. Constructed the stunning prediction metric gauge dashboard (`YieldResultScreen`).
-- **Phase 9: History, Tips, & Profile**: Finalized all bottom tab screens. Built `HistoryScreen` (timeline of past AI scans with severity color-coding), `TipsScreen` (farming knowledge repository with bookmarks), and `ProfileScreen` (user settings matrix and secure logout control).
-
-### 🤖 Stage 3: Smart Integrations (Completed ✅)
-- **Phase 10: Settings**: Built the interactive system toggles for Dark Mode, Push Notifications, and Data Saver.
-- **Phase 11: Language / Localization**: Developed a visually robust multilingual translation selector for 6 regional languages.
-- **Phase 12: Weather & Advisory**: Integrated a highly sophisticated real-time climate dashboard with comprehensive environmental metric grids.
-- **Phase 13: AI Assistant & Disease Info**: Built the interactive Chat Interface with functional UI for Voice processing. Added the previously omitted Disease Information reference screen.
-
-### 🚀 Stage 4: Production Polish (In Progress 🚧)
-- **Phase 14: State Handling (Completed ✅)**: Wired up global Error fallback screens, Full-Screen blocking Loaders, and a global absolute-positioned Offline Network banner.
-- **Phase 15: Permissions & Device Security (Completed ✅)**: Robustly constructed the native service boundaries for Camera and Microphone access, injecting visual fallback UI into the scanning and chat views if native permissions are suddenly revoked.
-- **Phase 16 - 18 (Upcoming ⏳)**: Final E2E Testing, UI Performance Optimization on Android/iOS devices, and final Production App Bundling (APK/AAB).
+### 🌟 Core Capabilities
+1. **Camera AI Disease Scanner:** Point your smartphone camera at an infected arecanut leaf or nut bunch for instant computer vision disease diagnosis (Koleroga, Yellow Leaf Disease, Bud Rot, Anabe Roga, or Healthy) with confidence percentages and certified organic/chemical remedies.
+2. **Weather & Disease Vulnerability Radar:** Real-time environmental monitoring that correlates humidity (>85%), monsoon precipitation, and temperature to calculate risk levels for seasonal fungal outbreaks before crops are damaged.
+3. **Regional Voice AI Agronomist:** A voice-enabled conversational assistant powered by Google Gemini AI that listens to farmers in their native tongue and speaks back practical advice.
+4. **Precision Yield Estimator:** Custom calculators analyzing palm density, spacing, soil chemistry, and irrigation to accurately forecast annual harvest quintals.
+5. **Real Email OTP Password Recovery:** Production-grade security workflow delivering 6-digit verification codes directly to farmers' inboxes.
+6. **Native Multilingual Engine:** Instant in-app toggling across 6 Indian regional languages without requiring an application restart.
 
 ---
 
-## 📈 Engineering Audit & Status Report 
-*(Current Phase: Frontend + Backend API Integration)*
+## 🌐 2. Regional Language Support
 
-### ✅ 1. Completed Work (Fully Integrated & Tested)
-- **Phase 0-3 & 5 (Foundation):** Project structure, React Navigation (Stack + Bottom Tabs), splash screen, onboarding flow, and core design system (colors/typography) are fully implemented.
-- **Phase 4 (Authentication):** JWT handling, secure token storage (`AsyncStorage/expo-secure-store`), protected routing, and login/logout pipelines are completely wired to `/api/auth/...`.
-- **Phase 6 & 7 (Scanner & Treatment):** The native `expo-camera` is flawlessly integrated. Photo capture, `FormData` construction, and the POST request to `/api/disease/predict` are complete.
-- **Phase 8 (Yield Prediction):** The UI input form and the backend connection to `POST /api/yield/predict` have been tested end-to-end.
-- **Phase 15 (Weather & Advisory):** The live OpenWeatherMap integration via `GET /api/weather/advisory` is functioning and mapping risks accurately.
-- **Phase 16 (AI Chat Assistant):** Conversational chat interface is successfully communicating with the Gemini backend via `POST /api/assistant/chat`.
-- **Phase 18 (Permissions & Security):** We strictly implemented native camera permission checks and achieved the full Security Checklist (JWT, protected routes, token cleanup).
+Language accessibility is vital for rural farmers. ArecaCare AI includes comprehensive translations and culturally resonant terminology for:
 
-### ⏳ 2. Pending Work (WIP or Partially Implemented)
-- **Phase 12 (Profile):** We have the basic auth data, but the full "Profile Edit" (`GET/PUT /api/user/update`) UI and integration still need to be built/wired.
-- **Phase 17 (Error/Loading/Offline Handling):** We added Axios interceptors, but we still need to build a global "Offline/No Signal" UI screen and standardize loading spinners across all API calls.
-- **Phase 19 (Testing & Integration):** We have done heavy backend unit testing, but we need to execute frontend User Flow E2E testing on physical devices.
-- **Phase 20 (UI Polish & Optimization):** We need to fix minor UI layout bugs, spacing, padding, Z-index layers, and unify color themes across all screens.
-- **Phase 21 (Production Build):** The `.apk` has been successfully compiled via EAS, but final documentation and App Store screenshots are pending.
+| Language | Native Script | Coverage |
+| :--- | :--- | :--- |
+| **Kannada** | ಕನ್ನಡ | 100% UI, Alerts, Weather Directives & Audio TTS |
+| **English** | English | 100% Standard Global Reference |
+| **Malayalam** | മലയാളം | 100% UI, Advisory & Disease Names |
+| **Hindi** | हिन्दी | 100% UI & Advisory Descriptions |
+| **Tamil** | தமிழ் | 100% UI & Farm Intelligence Labels |
+| **Telugu** | తెలుగు | 100% UI & Plant Health Categories |
 
-### ⏭️ 3. Skipped Works (Needs Immediate Attention for v1.0)
-- **Phase 10 (Tips & Farming Articles):** The roadmap highlights a List & Detail view and a `GET /api/articles` endpoint. Currently, these operate on hardcoded frontend mockups and require a dedicated backend database integration.
-- **History Integration (`GET /api/predictions/history`):** While the backend tracks history in MongoDB, we haven't fully finalized the UI list to fetch and display the history of a farmer's past scans.
-
-### 🚀 4. Future Implementation (Post v1.0)
-- **Phase 14 (Language / Localization):** True multi-language support (translating all buttons, text, and menus into Kannada, Malayalam, etc. using translation libraries) will be implemented as a Phase 2 update.
-- **Voice TTS/STT:** Implementing native microphone speech-to-text for the AI assistant deferred to focus on text-based robustness.
-- **Global Theme Switching:** Implementing a global toggle between Light/Dark mode will happen once Light mode UI is completely robust.
-
----
-## 🔗 Backend API Contract Requirements
-This mobile app strictly interfaces with the existing ArecaCare FastAPI Backend. Primary communication routes:
-- `POST /api/auth/login` (Authentication)
-- `POST /api/disease/predict` (AI Image Analysis)
-- `GET /api/weather/advisory` (Farming Advisory)
-- `POST /api/assistant/chat` (AI Chatbot)
-- `POST /api/yield/predict` (Yield Estimation)
+*All API calls automatically pass the active dialect via the HTTP `Accept-Language` header, ensuring backend AI models respond in the farmer's selected language.*
 
 ---
 
-## 🏃♂️ How to Run the App Locally
+## 🎨 3. Design System & User Experience
 
-1. **Install Node.js & Dependencies**:
-   Ensure you have Node.js installed. Navigate to this directory and install dependencies:
-   ```bash
-   npm install
-   ```
+- **Farmer-Centric Color Palette:** Rich Agricultural Emerald (`#15803D`, `#16A34A`), Warm Earth (`#D97706`), Alert Red (`#DC2626`), and Soft Natural Backgrounds (`#F3F4F6`, Dark Mode: `#121212`).
+- **Dynamic Theming:** Seamless global toggle between **Light Mode** and **Dark Mode** via React Context.
+- **Offline Network Resilience:** Top-pinned animated banner (`OfflineNotice.js`) warns the user if internet connectivity drops, gracefully caching local data.
+- **Adaptive Network Routing:** Automatically detects whether the app is running inside the **Android Studio Emulator** (`10.0.2.2`) or on a **Physical Device** over local Wi-Fi (`192.168.x.x`), preventing common connection errors.
 
-2. **Start the Expo Development Server**:
-   ```bash
-   npx expo start -c
-   ```
+---
 
-3. **View the App**:
-   - **On Mobile**: Download **Expo Go** from the Google Play Store (Android) or App Store (iOS) and scan the QR code in the terminal.
-   - **On Web**: Press `w` in the terminal to view in your browser.
-   - **On Emulator**: Press `a` (for Android Studio) or `i` (for iOS Simulator) in the terminal.
+## 📱 4. Screen Inventory (19 Production Screens)
 
+```text
+arecacare-ai-frontend/
+├── src/
+│   ├── components/            # Reusable UI Atoms & Form Controls
+│   │   ├── AppButton.js       # High-feedback button with loading spinners
+│   │   ├── AppText.js         # Scalable typography system
+│   │   ├── AppTextInput.js    # Clean text inputs with icons & errors
+│   │   ├── Screen.js          # Safe-area container wrapper
+│   │   ├── Card.js            # Elevated card containers
+│   │   ├── OfflineNotice.js   # Animated network drop warning bar
+│   │   ├── GoogleAuthButton.js# Google OAuth SSO trigger
+│   │   └── FarmerStatusModal.js# Quick farm health readout dialog
+│   ├── context/               # Global State Architecture
+│   │   ├── AuthContext.js     # User session, JWT tokens, auto-login
+│   │   ├── ThemeContext.js    # Light/Dark mode state & color palettes
+│   │   └── LanguageContext.js # Multi-dialect dictionary & switching
+│   ├── navigation/            # Route Architecture
+│   │   ├── RootNavigator.js   # Auth state gatekeeper
+│   │   ├── AuthNavigator.js   # Onboarding, Login, Signup, Forgot Password
+│   │   └── AppNavigator.js    # Bottom Tabs & Feature Stacks
+│   ├── screens/               # 19 Feature Screens
+│   │   ├── SplashScreen.js           # Animated brand launch screen
+│   │   ├── OnboardingScreen.js       # 3-step farmer intro wizard
+│   │   ├── LoginScreen.js            # Email & Google SSO login
+│   │   ├── SignupScreen.js           # New farmer account creation
+│   │   ├── ForgotPasswordScreen.js   # 4-step live Email OTP wizard
+│   │   ├── HomeScreen.js             # Central dashboard with action cards
+│   │   ├── ScanPlantScreen.js        # Camera viewfinder & photo selector
+│   │   ├── ResultScreen.js           # AI disease diagnostic readout
+│   │   ├── TreatmentDetailsScreen.js # Chemical & organic remedy guide
+│   │   ├── DiseaseInfoScreen.js      # Plant pathology encyclopedia
+│   │   ├── HistoryScreen.js          # Timeline of past disease scans
+│   │   ├── WeatherScreen.js          # Climate dashboard & disease risk radar
+│   │   ├── YieldInputScreen.js       # Plantation parameters form
+│   │   ├── YieldResultScreen.js      # Graphical harvest prediction gauge
+│   │   ├── ChatAssistantScreen.js    # Multimodal text & voice AI agronomist
+│   │   ├── TipsScreen.js             # Weather-driven seasonal farming advice
+│   │   ├── TipDetailScreen.js        # Detailed agricultural article reader
+│   │   ├── ProfileScreen.js          # Farm acreage, avatar, & account control
+│   │   └── LanguageScreen.js         # 6-dialect switcher
+│   ├── services/              # External Integrations & APIs
+│   │   ├── api.js             # Axios client with interceptors & auto-switch
+│   │   └── authService.js     # Auth, tokens, profile, & OTP endpoints
+│   └── utils/                 # Utilities, validators, & formatters
+```
 
+---
+
+## 🛠️ 5. Technology Stack
+
+| Domain | Technology / Library | Purpose |
+| :--- | :--- | :--- |
+| **Framework** | React Native (Expo SDK 57) | Cross-platform mobile development |
+| **Navigation**| React Navigation v6 (Stack + Tabs) | Native-speed fluid screen transitions |
+| **State Management** | React Context API + Hooks | Lightweight, high-performance global state |
+| **HTTP Client**| Axios | Interceptors, dynamic base URLs, & JWT attachment |
+| **Secure Storage** | `expo-secure-store` | Hardware-backed encrypted JWT token storage |
+| **Camera & Media** | `expo-camera`, `expo-image-picker` | Native leaf & nut photo capture |
+| **Audio & Speech** | `expo-av`, `expo-speech` | Native audio recording & Text-to-Speech synthesis |
+| **Icons & Visuals** | `@expo/vector-icons` (Feather, Material) | Universal vector iconography |
+
+---
+
+## 🚀 6. Step-by-Step User Journey
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Farmer as 🌾 Farmer
+    participant App as 📱 Mobile App
+    participant API as ⚡ FastAPI Backend
+    participant AI as 🧠 PyTorch & Gemini
+
+    Farmer->>App: Launch App & Select Kannada/English
+    App->>Farmer: Personalized Home Dashboard (Weather + Risk Alert)
+    Farmer->>App: Tap "Scan Leaf" & Capture Infected Nut Bunch
+    App->>API: POST /predict (Multipart Image + GPS Weather Context)
+    API->>AI: ResNet18 Tensor Check + Gemini Multimodal Vision
+    AI-->>API: Diagnosis: Koleroga (94% Confidence) + Bordeaux Spray
+    API-->>App: JSON Diagnostic Report
+    App->>Farmer: High-Contrast Diagnostic Screen with Chemical Dosages
+    Farmer->>App: Open AI Chatbot & Speak Voice Query
+    App->>API: POST /api/assistant/chat/voice (Audio File)
+    API-->>App: Spoken Audio Response + Regional Kannada Text
+    App->>Farmer: Plays Audio Advisory through Phone Speaker
+```
+
+---
+
+## 💻 7. Local Setup & Running the App
+
+### 1. Prerequisites
+- **Node.js** (v18.x or v20.x LTS recommended).
+- **npm** or **yarn**.
+- **Expo Go** app installed on your physical Android/iOS phone (from Google Play Store or Apple App Store), OR **Android Studio** emulator configured.
+- The **ArecaCare AI Backend** running locally (or hosted on Render/Cloud).
+
+### 2. Installation
+```powershell
+# Navigate into arecacare-ai-frontend
+cd arecacare-ai-frontend
+
+# Install all npm dependencies
+npm install
+```
+
+### 3. Environment Configuration
+Create a `.env` file in `arecacare-ai-frontend/`:
+
+```ini
+# For physical devices on the same Wi-Fi network:
+# Replace with your computer's local IP (find it via `ipconfig` on Windows)
+EXPO_PUBLIC_API_URL=http://192.168.x.x:8000
+
+# Or when using Android Studio Emulator:
+# EXPO_PUBLIC_API_URL=http://10.0.2.2:8000
+```
+*(Note: `src/services/api.js` automatically detects if you are on an Android Emulator and switches to `10.0.2.2` automatically!)*
+
+### 4. Start the Development Server
+```powershell
 npx expo start -c
-run backend - uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+### 5. Running on Your Device
+- **Physical Phone:** Open the **Expo Go** app, tap **Scan QR Code**, and scan the QR code displayed in your terminal.
+- **Android Emulator:** Press `a` in your terminal to launch on the running emulator.
+- **Web Browser Preview:** Press `w` in your terminal.
+
+---
+
+## 📦 8. Generating Production Builds (APK)
+
+This project is fully pre-configured for **EAS Build (Expo Application Services)** to compile standalone Android APKs:
+
+```powershell
+# 1. Install EAS CLI globally
+npm install -g eas-cli
+
+# 2. Login to your Expo account
+eas login
+
+# 3. Build a standalone Android APK
+eas build -p android --profile preview
+```
+Once the build completes on Expo Cloud, you will receive a direct link to download the `.apk` file for installation on any Android phone.
+
+---
+
+## 📄 License & Credits
+
+- **Author & Maintainer:** Yakshitha K ([@yxshu-k](https://github.com/yxshu-k))
+- **Connect:** [GitHub Profile](https://github.com/yxshu-k)
+- **Frontend Stack:** React Native, Expo SDK 57, React Navigation
+- **Designed for:** Arecanut Farmers of Karnataka, Kerala, and across India.
