@@ -4,7 +4,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import * as Google from 'expo-auth-session/providers/google';
 import AppText from './AppText';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 import { AuthContext } from '../context/AuthContext';
 
 // Completes the Auth session properly when returning from the Google Web browser
@@ -12,6 +12,7 @@ WebBrowser.maybeCompleteAuthSession();
 
 export default function GoogleAuthButton({ title = "Continue with Google", style }) {
     const { googleLogin } = useContext(AuthContext);
+    const { colors, isDarkMode } = useTheme();
 
     // Native Google Sign-In SDK configuration
     const [request, response, promptAsync] = Google.useAuthRequest({
@@ -31,12 +32,19 @@ export default function GoogleAuthButton({ title = "Continue with Google", style
 
     return (
         <TouchableOpacity
-            style={[styles.googleBtn, style]}
+            style={[
+                styles.googleBtn,
+                {
+                    backgroundColor: colors.surface,
+                    borderColor: colors.border,
+                },
+                style
+            ]}
             disabled={!request}
             onPress={() => promptAsync()}
         >
             <MaterialCommunityIcons name="google" size={22} color="#DB4437" style={{ marginRight: 12 }} />
-            <AppText style={styles.googleBtnText}>{title}</AppText>
+            <AppText style={[styles.googleBtnText, { color: colors.text }]}>{title}</AppText>
         </TouchableOpacity>
     );
 }
@@ -46,12 +54,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'center',
-        backgroundColor: colors.white,
         borderWidth: 1,
-        borderColor: colors.border,
         paddingVertical: 14,
         borderRadius: 12,
-        shadowColor: colors.black,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: 0.05,
         shadowRadius: 5,
@@ -60,7 +66,6 @@ const styles = StyleSheet.create({
     googleBtnText: {
         fontSize: 16,
         fontWeight: '600',
-        color: '#3C4043',
         fontFamily: 'sans-serif',
     },
 });

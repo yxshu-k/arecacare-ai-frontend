@@ -1,16 +1,17 @@
 import React from 'react';
 import { View, StyleSheet, ActivityIndicator } from 'react-native';
 import AppText from './AppText';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
 
 export default function FullScreenLoader({ visible = false, message = 'Processing...' }) {
+    const { colors } = useTheme();
     if (!visible) return null;
 
     return (
         <View style={styles.container}>
-            <View style={styles.box}>
+            <View style={[styles.box, { backgroundColor: colors.surface }]}>
                 <ActivityIndicator size="large" color={colors.primary} />
-                <AppText variant="heading3" style={styles.text}>{message}</AppText>
+                <AppText variant="heading3" style={[styles.text, { color: colors.text }]}>{message}</AppText>
             </View>
         </View>
     );
@@ -26,18 +27,16 @@ const styles = StyleSheet.create({
         elevation: 100, // Android z-index enforcement
     },
     box: {
-        backgroundColor: colors.surface,
         padding: 24,
         borderRadius: 16,
         alignItems: 'center',
         minWidth: 150,
-        shadowColor: colors.black,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
         shadowOpacity: 0.1,
         shadowRadius: 16,
     },
     text: {
         marginTop: 16,
-        color: colors.text,
     }
 });

@@ -1,4 +1,5 @@
 import api from './api';
+import { Platform } from 'react-native';
 
 export const chatService = {
     /**
@@ -7,13 +8,20 @@ export const chatService = {
      * @param {string} sessionId - Session ID for conversation memory
      * @returns {Promise<Object>} - AI response with message, response, session_id
      */
-    sendMessage: async (message, sessionId = 'mobile_chat') => {
+    sendMessage: async (message, sessionId = 'mobile_chat', language = 'en', location = null) => {
         try {
-            const response = await api.post('/api/assistant/chat', {
+            const payload = {
                 message: message,
                 session_id: sessionId,
-                language: 'en',
-            }, {
+                language: language || 'en',
+            };
+            if (location) {
+                payload.location = location;
+            }
+            const response = await api.post('/api/assistant/chat', payload, {
+                headers: {
+                    ...(location ? { 'X-Location-Query': location } : {})
+                },
                 timeout: 30000,
             });
             return response.data;
@@ -31,36 +39,82 @@ export const chatService = {
      * @param {string} audioUri - Audio file URI
      * @param {string} sessionId - Chat session ID
      * @param {string} language - Target language code
+     * @param {string} location - Optional location hint or coordinates
      */
-    sendVoiceMessage: async (audioUri, sessionId = 'mobile_chat', language = 'en') => {
+    sendVoiceMessage: async (audioUri, sessionId = 'mobile_chat', language = 'en', location = null) => {
         try {
             const formData = new FormData();
 
-            // Generate basic name + infer type
-            const filename = audioUri.split('/').pop() || 'voice.m4a';
+            const cleanUri = Platform.OS === 'android' && !audioUri.startsWith('file://') && !audioUri.startsWith('content://')
+                ? `file://${audioUri}`
+                : audioUri;
+
+            const filename = cleanUri.split('/').pop() || 'voice.m4a';
             const match = /\.(\w+)$/.exec(filename);
-            const type = match ? `audio/${match[1]}` : `audio/mp4`;
+            const type = match ? `audio/${match[1]}` : `audio/m4a`;
 
             formData.append('file', {
-                uri: audioUri,
+                uri: cleanUri,
                 name: filename,
                 type: type,
             });
             formData.append('session_id', sessionId);
-            formData.append('language', language);
+            formData.append('language', language || 'en');
 
-            console.log(`[ChatService] Sending voice upload to backend: `, filename);
+            console.log(`[ChatService] Sending voice upload via Axios:`, filename);
+
             const response = await api.post('/api/assistant/chat/voice', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-                timeout: 30000,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                    ...(location ? { 'X-Location-Query': location } : {})
+                },
+                timeout: 45000,
             });
+
             return response.data;
         } catch (error) {
-            console.error('[ChatService] Voice Upload Error:', error);
-            if (error.response && error.response.data) {
-                throw new Error(error.response.data.detail || 'Failed to process voice command.');
-            }
-            throw new Error(error.message || 'Network error while contacting AI Assistant.');
+            console.error('[ChatService] Voice Upload Error:', error?.response?.data || error.message);
+            const msg = error?.response?.data?.detail || error.message || 'Failed to process voice command.';
+            throw new Error(msg);
+        }
+    },
+
+    /**
+     * Fetch RAW Speech-to-Text transcription without triggering Gemini.
+     */
+    sendSpeechToText: async (audioUri, language = 'en') => {
+        try {
+            const formData = new FormData();
+
+            const cleanUri = Platform.OS === 'android' && !audioUri.startsWith('file://') && !audioUri.startsWith('content://')
+                ? `file://${audioUri}`
+                : audioUri;
+
+            const filename = cleanUri.split('/').pop() || 'voice.m4a';
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `audio/${match[1]}` : `audio/m4a`;
+
+            formData.append('file', {
+                uri: cleanUri,
+                name: filename,
+                type: type,
+            });
+            formData.append('language', language || 'en');
+
+            console.log(`[ChatService] Sending STT audio via Axios:`, filename);
+
+            const response = await api.post('/api/assistant/chat/speech-to-text', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+                timeout: 30000,
+            });
+
+            return response.data; // { text: "...", language: "..." }
+        } catch (error) {
+            console.error('[ChatService] STT Error:', error?.response?.data || error.message);
+            const msg = error?.response?.data?.detail || error.message || 'Audio transcription failed.';
+            throw new Error(msg);
         }
     },
 
@@ -78,6 +132,47 @@ export const chatService = {
         } catch (error) {
             console.error('[ChatService] History Error:', error);
             return [];
+        }
+    },
+
+    /**
+     * Fetch all aggregated chat sessions.
+     */
+    getSessions: async () => {
+        try {
+            const response = await api.get('/api/assistant/chat/sessions', {
+                timeout: 10000,
+            });
+            return response.data; // returns { sessions: [...] }
+        } catch (error) {
+            console.error('[ChatService] Fetch Sessions Error:', error);
+            return { sessions: [] };
+        }
+    },
+
+    /**
+     * Delete a specific chat session by ID.
+     */
+    deleteSession: async (sessionId) => {
+        try {
+            const response = await api.delete(`/api/assistant/chat/sessions/${sessionId}`);
+            return response.data;
+        } catch (error) {
+            console.error('[ChatService] Delete Session Error:', error);
+            throw new Error('Failed to delete session');
+        }
+    },
+
+    /**
+     * Wipes the entire history database for the user.
+     */
+    deleteAllSessions: async () => {
+        try {
+            const response = await api.delete('/api/assistant/chat/sessions');
+            return response.data;
+        } catch (error) {
+            console.error('[ChatService] Clear History Error:', error);
+            throw new Error('Failed to clear diagnostic history');
         }
     },
 };

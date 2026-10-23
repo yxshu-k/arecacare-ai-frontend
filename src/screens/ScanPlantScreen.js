@@ -3,18 +3,20 @@ import { View, StyleSheet, TouchableOpacity, Dimensions, Alert } from 'react-nat
 import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { requestCameraPermission } from '../services/permissionsService';
 import * as ImagePicker from 'expo-image-picker';
 import * as ImageManipulator from 'expo-image-manipulator';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import * as SecureStore from 'expo-secure-store';
 
 const { width, height } = Dimensions.get('window');
 
-// Wait... in a real app this uses expo-camera, but right now we are building the UI blueprint.
-// We will mock the camera view with a beautiful dark overlay.
-
 export default function ScanPlantScreen({ navigation }) {
+    const { colors } = useTheme();
+    const { t } = useLanguage();
+    const styles = React.useMemo(() => getStyles(colors), [colors]);
     const [permission, requestPermission] = useCameraPermissions();
     const [facing, setFacing] = useState('back');
     const [flash, setFlash] = useState('off');
@@ -22,10 +24,19 @@ export default function ScanPlantScreen({ navigation }) {
 
     const processImage = async (uri) => {
         try {
+            let isDataSaver = false;
+            try {
+                const saved = await SecureStore.getItemAsync('pref_data_saver');
+                isDataSaver = saved === 'true';
+            } catch (err) {}
+
+            const resizeWidth = isDataSaver ? 640 : 1080;
+            const compressQuality = isDataSaver ? 0.6 : 0.8;
+
             const manipResult = await ImageManipulator.manipulateAsync(
                 uri,
-                [{ resize: { width: 1080 } }], // Compress the image wildly down to 1080px to save rural bandwidth
-                { compress: 0.8, format: ImageManipulator.SaveFormat.JPEG }
+                [{ resize: { width: resizeWidth } }],
+                { compress: compressQuality, format: ImageManipulator.SaveFormat.JPEG }
             );
             navigation.navigate('ImagePreview', { imageUri: manipResult.uri });
         } catch (e) {
@@ -36,7 +47,7 @@ export default function ScanPlantScreen({ navigation }) {
 
     const pickImage = async () => {
         let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            mediaTypes: ['images'],
             allowsEditing: false,
             quality: 1,
         });
@@ -75,12 +86,12 @@ export default function ScanPlantScreen({ navigation }) {
         return (
             <View style={styles.permissionDenied}>
                 <Feather name="camera-off" size={60} color="#DC2626" />
-                <AppText variant="heading2" style={{ marginTop: 24, color: colors.white }}>Camera Access Denied</AppText>
+                <AppText variant="heading2" style={{ marginTop: 24, color: colors.white }}>{t('camera_permission')}</AppText>
                 <AppText variant="bodyMedium" style={{ marginTop: 12, color: colors.textLight, textAlign: 'center', marginHorizontal: 40 }}>
                     ArecaCare needs camera access to scan your crops. Please enable it in your device settings.
                 </AppText>
-                <AppButton title="Grant Permission" onPress={requestPermission} style={{ marginTop: 30, width: '60%' }} />
-                <AppButton title="Go Back" variant="outline" onPress={() => navigation.goBack()} style={{ marginTop: 16, width: '60%' }} />
+                <AppButton title={t('grant_permission')} onPress={requestPermission} style={{ marginTop: 30, width: '60%' }} />
+                <AppButton title={t('back')} variant="outline" onPress={() => navigation.goBack()} style={{ marginTop: 16, width: '60%' }} />
             </View>
         );
     }
@@ -108,7 +119,7 @@ export default function ScanPlantScreen({ navigation }) {
                     <TouchableOpacity style={styles.roundBtn} onPress={() => navigation.goBack()}>
                         <Feather name="x" size={24} color={colors.white} />
                     </TouchableOpacity>
-                    <AppText variant="heading2" style={{ color: colors.white }}>Scan Plant</AppText>
+                    <AppText variant="heading2" style={{ color: colors.white }}>{t('scan_plant')}</AppText>
                     <TouchableOpacity style={[styles.roundBtn, flash === 'on' && { backgroundColor: 'rgba(255, 255, 255, 0.4)' }]} onPress={toggleFlash}>
                         <Feather name={flash === 'on' ? "zap" : "zap-off"} size={24} color={colors.white} />
                     </TouchableOpacity>
@@ -121,7 +132,7 @@ export default function ScanPlantScreen({ navigation }) {
                     <View style={[styles.corner, styles.bl]} />
                     <View style={[styles.corner, styles.br]} />
                     <AppText variant="bodyMedium" style={styles.hintText}>
-                        Align the affected leaf within the frame
+                        {t('scanner_tip_1')}
                     </AppText>
                 </View>
 
@@ -147,7 +158,7 @@ export default function ScanPlantScreen({ navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors) => StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.black },
     cameraFrame: { flex: 1, position: 'relative' },
     placeholderBg: {

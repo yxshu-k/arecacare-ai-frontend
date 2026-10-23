@@ -4,10 +4,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 
 const Screen = ({ children, style, noPadding = false }) => {
-    const { colors } = useTheme();
+    const { colors, isDarkMode } = useTheme();
     const styles = React.useMemo(() => getStyles(colors), [colors]);
     return (
         <SafeAreaView style={styles.screen}>
+            <StatusBar
+                barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+                backgroundColor={colors.background}
+            />
             <View style={[styles.view, !noPadding && styles.padding, style]}>
                 {children}
             </View>
@@ -19,9 +23,6 @@ const getStyles = (colors) => StyleSheet.create({
     screen: {
         flex: 1,
         backgroundColor: colors.background,
-        // With react-native-safe-area-context we usually don't need manual pt, 
-        // but just in case for strict consistency on Android:
-        paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
     },
     view: {
         flex: 1,

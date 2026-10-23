@@ -1,7 +1,6 @@
 import React from 'react';
-import { View, StyleSheet, Platform, StatusBar } from 'react-native';
+import { View, StyleSheet, Platform } from 'react-native';
 import AppText from './AppText';
-import { colors } from '../theme/colors';
 
 // In production, this will be wrapped in a NetInfo listener 
 // to automatically toggle isVisible when the connection drops.
@@ -31,7 +30,7 @@ const styles = StyleSheet.create({
         elevation: (Platform.OS === 'android') ? 50 : 0,
     },
     text: {
-        color: colors.white,
+        color: '#FFFFFF',
         fontWeight: '600',
     },
 });

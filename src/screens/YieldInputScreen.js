@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Screen from '../components/Screen';
@@ -6,21 +6,26 @@ import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import AppTextInput from '../components/AppTextInput';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { yieldService } from '../services/yieldService';
 import { formatNumber } from '../utils/formatters';
+import { useKeyboard } from '../hooks/useKeyboard';
 
 export default function YieldInputScreen({ navigation }) {
-    const { colors } = useTheme();
-    const styles = React.useMemo(() => getStyles(colors), [colors]);
-    const [soilType, setSoilType] = useState('Loamy');
-    const [rainfall, setRainfall] = useState('1200');
-    const [age, setAge] = useState('5');
-    const [area, setArea] = useState('2');
+    const { colors, isDarkMode } = useTheme();
+    const { t } = useLanguage();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
+    const [soilType, setSoilType] = useState('');
+    const [rainfall, setRainfall] = useState('');
+    const [age, setAge] = useState('');
+    const [area, setArea] = useState('');
     const [loading, setLoading] = useState(false);
+    const scrollRef = useRef(null);
+    const { keyboardHeight, isKeyboardVisible } = useKeyboard();
 
     const handlePredict = async () => {
         if (!soilType.trim() || !rainfall.trim() || !age.trim() || !area.trim()) {
-            Alert.alert('Missing Data', 'Please fill in all farm parameters before predicting.');
+            Alert.alert(t('error') || 'Missing Data', 'Please fill in all farm parameters before predicting.');
             return;
         }
 
@@ -38,7 +43,7 @@ export default function YieldInputScreen({ navigation }) {
                 inputs: { soilType, rainfall, age, area },
             });
         } catch (error) {
-            Alert.alert('Prediction Error', error.message);
+            Alert.alert(t('error') || 'Prediction Error', error.message);
         } finally {
             setLoading(false);
         }
@@ -50,23 +55,32 @@ export default function YieldInputScreen({ navigation }) {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Feather name="chevron-left" size={28} color={colors.text} />
                 </TouchableOpacity>
-                <AppText variant="heading3">Yield Prediction</AppText>
+                <AppText variant="heading3" style={{ color: colors.text }}>{t('yield_prediction')}</AppText>
                 <View style={{ width: 28 }} />
             </View>
 
             <KeyboardAvoidingView
                 style={{ flex: 1 }}
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
             >
-                <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
+                <ScrollView
+                    ref={scrollRef}
+                    showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
+                    contentContainerStyle={[
+                        styles.scroll,
+                        { paddingBottom: isKeyboardVisible ? keyboardHeight + 60 : 40 }
+                    ]}
+                >
 
                     <AppText variant="bodyMedium" color="textMedium" style={styles.instructions}>
-                        Enter your farm data accurately to get An AI-powered estimation of your arecanut harvest.
+                        {t('calc_yield')}
                     </AppText>
 
                     <View style={styles.form}>
                         <AppTextInput
-                            label="Soil Type"
+                            label={t('soil_type')}
                             icon="map"
                             placeholder="e.g. Loamy, Sandy"
                             value={soilType}
@@ -74,7 +88,7 @@ export default function YieldInputScreen({ navigation }) {
                         />
 
                         <AppTextInput
-                            label="Avg. Rainfall (mm)"
+                            label={t('avg_rainfall')}
                             icon="cloud-rain"
                             placeholder="e.g. 1200"
                             keyboardType="numeric"
@@ -83,21 +97,31 @@ export default function YieldInputScreen({ navigation }) {
                         />
 
                         <AppTextInput
-                            label="Age of Plants (Years)"
+                            label={t('palm_age')}
                             icon="clock"
                             placeholder="e.g. 5"
                             keyboardType="numeric"
                             value={age}
                             onChangeText={(text) => setAge(formatNumber(text))}
+                            onFocus={() => {
+                                setTimeout(() => {
+                                    scrollRef.current?.scrollTo({ y: 120, animated: true });
+                                }, 120);
+                            }}
                         />
 
                         <AppTextInput
-                            label="Area (Acre)"
+                            label={t('area_acre')}
                             icon="maximize"
                             placeholder="e.g. 2"
                             keyboardType="numeric"
                             value={area}
                             onChangeText={(text) => setArea(formatNumber(text))}
+                            onFocus={() => {
+                                setTimeout(() => {
+                                    scrollRef.current?.scrollTo({ y: 200, animated: true });
+                                }, 120);
+                            }}
                         />
                     </View>
 
@@ -105,7 +129,7 @@ export default function YieldInputScreen({ navigation }) {
 
                 <View style={styles.footer}>
                     <AppButton
-                        title="Predict Yield"
+                        title={t('predict_yield')}
                         onPress={handlePredict}
                         loading={loading}
                     />
@@ -115,7 +139,7 @@ export default function YieldInputScreen({ navigation }) {
     );
 }
 
-const getStyles = (colors) => StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     header: {
         flexDirection: 'row',
@@ -123,11 +147,15 @@ const getStyles = (colors) => StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 16,
+        backgroundColor: colors.surface,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
     },
-    scroll: { paddingHorizontal: 20, paddingBottom: 40 },
+    scroll: { paddingHorizontal: 20, paddingBottom: 40, paddingTop: 16 },
     instructions: {
         marginBottom: 20,
         lineHeight: 22,
+        color: colors.textMedium,
     },
     form: {
         flex: 1,

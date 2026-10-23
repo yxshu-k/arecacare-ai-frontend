@@ -1,5 +1,4 @@
 import { Platform } from 'react-native';
-import { colors } from './colors';
 
 export const typography = {
     // We fall back to system fonts to keep the app lightweight and performant
@@ -19,13 +18,13 @@ export const typography = {
         xxl: 24,
         huge: 32,
     },
-    // Reusable text styles
+    // Reusable text styles (colors are supplied dynamically via ThemeContext/AppText)
     styles: {
-        heading1: { fontSize: 32, fontWeight: '700', color: colors.text },
-        heading2: { fontSize: 24, fontWeight: '700', color: colors.text },
-        heading3: { fontSize: 20, fontWeight: '700', color: colors.text },
-        body: { fontSize: 16, fontWeight: '400', color: colors.text },
-        bodyMedium: { fontSize: 14, fontWeight: '400', color: colors.textMedium },
-        caption: { fontSize: 12, fontWeight: '400', color: colors.textLight },
+        heading1: { fontSize: 32, fontWeight: '700' },
+        heading2: { fontSize: 24, fontWeight: '700' },
+        heading3: { fontSize: 20, fontWeight: '700' },
+        body: { fontSize: 16, fontWeight: '400' },
+        bodyMedium: { fontSize: 14, fontWeight: '400' },
+        caption: { fontSize: 12, fontWeight: '400' },
     },
 };

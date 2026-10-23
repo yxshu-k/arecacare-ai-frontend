@@ -4,11 +4,15 @@ import { Feather } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const { width } = Dimensions.get('window');
 
 export default function YieldResultScreen({ navigation, route }) {
+    const { colors, isDarkMode } = useTheme();
+    const { t } = useLanguage();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const prediction = route.params?.prediction || {};
     const inputs = route.params?.inputs || {};
 
@@ -34,7 +38,7 @@ export default function YieldResultScreen({ navigation, route }) {
     const getStatusColor = () => {
         const lower = statusLabel.toLowerCase();
         if (lower.includes('good') || lower.includes('high') || lower.includes('excellent')) return colors.primary;
-        if (lower.includes('low') || lower.includes('poor')) return '#DC2626';
+        if (lower.includes('low') || lower.includes('poor')) return isDarkMode ? '#F87171' : '#DC2626';
         return '#F59E0B';
     };
 
@@ -44,7 +48,7 @@ export default function YieldResultScreen({ navigation, route }) {
                 <TouchableOpacity onPress={() => navigation.navigate('HomeMain')}>
                     <Feather name="chevron-left" size={28} color={colors.text} />
                 </TouchableOpacity>
-                <AppText variant="heading3">Prediction Result</AppText>
+                <AppText variant="heading3" style={{ color: colors.text }}>{t('prediction_result')}</AppText>
                 <TouchableOpacity>
                     <Feather name="share-2" size={24} color={colors.text} />
                 </TouchableOpacity>
@@ -57,11 +61,13 @@ export default function YieldResultScreen({ navigation, route }) {
                     <View style={styles.outerCircle}>
                         <View style={styles.innerCircle}>
                             <AppText style={styles.metricValue}>{yieldValue}</AppText>
-                            <AppText variant="bodyMedium" color="textMedium">Tonnes / {inputs.area || '1'} Acre</AppText>
+                            <AppText variant="bodyMedium" color="textMedium" style={{ color: colors.textMedium }}>
+                                Tonnes / {inputs.area || '1'} {t('acres')}
+                            </AppText>
                         </View>
                     </View>
 
-                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '15' }]}>
+                    <View style={[styles.statusBadge, { backgroundColor: getStatusColor() + '20' }]}>
                         <Feather name={getStatusIcon()} size={16} color={getStatusColor()} />
                         <AppText variant="bodyMedium" style={[styles.statusText, { color: getStatusColor() }]}>
                             {statusLabel} ✨
@@ -73,41 +79,41 @@ export default function YieldResultScreen({ navigation, route }) {
                 <View style={styles.perAcreCard}>
                     <View style={styles.perAcreRow}>
                         <View>
-                            <AppText variant="caption" color="textMedium">Yield Per Acre</AppText>
-                            <AppText variant="heading2">{yieldPerAcre} T</AppText>
+                            <AppText variant="caption" color="textMedium" style={{ color: colors.textMedium }}>{t('yield_per_acre')}</AppText>
+                            <AppText variant="heading2" style={{ color: colors.text }}>{yieldPerAcre} T</AppText>
                         </View>
                         <View>
-                            <AppText variant="caption" color="textMedium">Quality</AppText>
+                            <AppText variant="caption" color="textMedium" style={{ color: colors.textMedium }}>{t('quality')}</AppText>
                             <AppText variant="heading3" style={{ color: getStatusColor() }}>{qualityRating}</AppText>
                         </View>
                     </View>
                 </View>
 
                 <View style={styles.insightsCard}>
-                    <AppText variant="heading3" style={{ marginBottom: 12 }}>AI Insights</AppText>
-                    <AppText variant="body" color="textMedium" style={{ lineHeight: 24 }}>
+                    <AppText variant="heading3" style={{ marginBottom: 12, color: colors.text }}>{t('ai_insights')}</AppText>
+                    <AppText variant="body" color="textMedium" style={{ lineHeight: 24, color: colors.textMedium }}>
                         {insights}
                     </AppText>
                 </View>
 
                 {/* Input Summary */}
                 <View style={styles.inputSummaryCard}>
-                    <AppText variant="heading3" style={{ marginBottom: 12 }}>Farm Parameters</AppText>
+                    <AppText variant="heading3" style={{ marginBottom: 12, color: colors.text }}>{t('farm_parameters')}</AppText>
                     <View style={styles.paramRow}>
-                        <AppText variant="caption" color="textMedium">Soil Type</AppText>
-                        <AppText variant="bodyMedium">{inputs.soilType || '—'}</AppText>
+                        <AppText variant="caption" color="textMedium" style={{ color: colors.textMedium }}>{t('soil_type')}</AppText>
+                        <AppText variant="bodyMedium" style={{ color: colors.text }}>{inputs.soilType || '—'}</AppText>
                     </View>
                     <View style={styles.paramRow}>
-                        <AppText variant="caption" color="textMedium">Rainfall</AppText>
-                        <AppText variant="bodyMedium">{inputs.rainfall || '—'} mm</AppText>
+                        <AppText variant="caption" color="textMedium" style={{ color: colors.textMedium }}>{t('rainfall')}</AppText>
+                        <AppText variant="bodyMedium" style={{ color: colors.text }}>{inputs.rainfall || '—'} mm</AppText>
                     </View>
                     <View style={styles.paramRow}>
-                        <AppText variant="caption" color="textMedium">Plant Age</AppText>
-                        <AppText variant="bodyMedium">{inputs.age || '—'} years</AppText>
+                        <AppText variant="caption" color="textMedium" style={{ color: colors.textMedium }}>{t('palm_age')}</AppText>
+                        <AppText variant="bodyMedium" style={{ color: colors.text }}>{inputs.age || '—'} {t('palm_age')}</AppText>
                     </View>
                     <View style={styles.paramRow}>
-                        <AppText variant="caption" color="textMedium">Farm Area</AppText>
-                        <AppText variant="bodyMedium">{inputs.area || '—'} acres</AppText>
+                        <AppText variant="caption" color="textMedium" style={{ color: colors.textMedium }}>{t('area_acre')}</AppText>
+                        <AppText variant="bodyMedium" style={{ color: colors.text }}>{inputs.area || '—'} {t('acres')}</AppText>
                     </View>
                 </View>
 
@@ -115,7 +121,7 @@ export default function YieldResultScreen({ navigation, route }) {
 
             <View style={styles.footer}>
                 <AppButton
-                    title="View Recommendations"
+                    title={t('view_recommendations')}
                     onPress={() => navigation.navigate('Tips')}
                 />
             </View>
@@ -123,7 +129,7 @@ export default function YieldResultScreen({ navigation, route }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     header: {
         flexDirection: 'row',
@@ -144,7 +150,7 @@ const styles = StyleSheet.create({
         height: width * 0.55,
         borderRadius: (width * 0.55) / 2,
         borderWidth: 6,
-        borderColor: '#D1FAE5',
+        borderColor: isDarkMode ? 'rgba(5, 150, 105, 0.25)' : '#D1FAE5',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
@@ -197,9 +203,9 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         borderWidth: 1,
         borderColor: colors.border,
-        shadowColor: colors.black,
+        shadowColor: '#000',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.04,
+        shadowOpacity: isDarkMode ? 0.3 : 0.04,
         shadowRadius: 12,
         elevation: 2,
         marginBottom: 16,
