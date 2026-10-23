@@ -18,6 +18,7 @@ import {
     requestMicrophonePermission, 
     createAudioRecorder 
 } from '../utils/audioService';
+import VoiceConversationModal from '../components/VoiceConversationModal';
 
 let Audio = null;
 try {
@@ -163,6 +164,7 @@ export default function ChatAssistantScreen({ navigation }) {
     const [messages, setMessages] = useState([]);
     const [inputText, setInputText] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+    const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
 
     // Audio engine state & refs
     const recordingRef = useRef(null);
@@ -326,6 +328,15 @@ export default function ChatAssistantScreen({ navigation }) {
             duration: 250,
             useNativeDriver: true,
         }).start(() => setIsDrawerOpen(false));
+    };
+
+    const handleNewVoiceTurn = ({ userQuestion, aiAnswer }) => {
+        setMessages(prev => [
+            ...prev,
+            { id: `v_u_${Date.now()}`, text: userQuestion, isAI: false },
+            { id: `v_a_${Date.now()}`, text: aiAnswer, isAI: true }
+        ]);
+        fetchSidebarSessions();
     };
 
     const handleSendText = async () => {
@@ -730,18 +741,12 @@ export default function ChatAssistantScreen({ navigation }) {
                                     </TouchableOpacity>
 
                                     <TouchableOpacity
-                                        style={isRecording ? styles.creativeMicBtnActive : styles.creativeMicBtnIdle}
-                                        onPress={toggleAudioRecording}
+                                        style={styles.creativeMicBtnIdle}
+                                        onPress={() => setIsVoiceModalOpen(true)}
                                         disabled={isTyping || isRecordingSTT}
                                         activeOpacity={0.7}
                                     >
-                                        {isRecording ? (
-                                            <Animated.View style={{ transform: [{ scale: pulseAnim }] }}>
-                                                <Feather name="square" size={18} color="white" />
-                                            </Animated.View>
-                                        ) : (
-                                            <MaterialCommunityIcons name="waveform" size={20} color="white" />
-                                        )}
+                                        <MaterialCommunityIcons name="waveform" size={20} color="white" />
                                     </TouchableOpacity>
                                 </View>
                             )}
@@ -749,6 +754,16 @@ export default function ChatAssistantScreen({ navigation }) {
                     </View>
                 </KeyboardAvoidingView>
             </View>
+
+            {/* ChatGPT / WhisperFlow Live Voice-to-Voice Conversation Modal */}
+            <VoiceConversationModal
+                visible={isVoiceModalOpen}
+                onClose={() => setIsVoiceModalOpen(false)}
+                sessionId={sessionId}
+                language={language}
+                activeFarm={activeFarm}
+                onNewTurn={handleNewVoiceTurn}
+            />
         </SafeAreaView>
     );
 }
