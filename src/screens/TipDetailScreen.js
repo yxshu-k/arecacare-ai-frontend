@@ -5,6 +5,7 @@ import * as Speech from 'expo-speech';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { useLanguage } from '../context/LanguageContext';
+import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
