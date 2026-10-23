@@ -73,11 +73,7 @@ export default function ForgotPasswordScreen({ navigation }) {
         setErrors({});
         setLoading(true);
         try {
-            const res = await authService.forgotPassword(cleanEmail);
-            // If backend is running without SMTP in dev mode, it returns dev_otp
-            if (res.dev_otp) {
-                setOtp(res.dev_otp);
-            }
+            await authService.forgotPassword(cleanEmail);
             setStep(2);
             setTimer(60);
             setTimerActive(true);
@@ -95,10 +91,7 @@ export default function ForgotPasswordScreen({ navigation }) {
         setResending(true);
         try {
             const cleanEmail = email.trim().toLowerCase();
-            const res = await authService.forgotPassword(cleanEmail);
-            if (res.dev_otp) {
-                setOtp(res.dev_otp);
-            }
+            await authService.forgotPassword(cleanEmail);
             setTimer(60);
             setTimerActive(true);
             Alert.alert('Code Resent', 'A fresh 6-digit verification code has been sent to your email.');
