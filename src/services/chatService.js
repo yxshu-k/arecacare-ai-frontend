@@ -45,40 +45,37 @@ export const chatService = {
         try {
             const formData = new FormData();
 
-            // Generate basic name + infer type
-            const filename = audioUri.split('/').pop() || 'voice.m4a';
+            const cleanUri = Platform.OS === 'android' && !audioUri.startsWith('file://') && !audioUri.startsWith('content://')
+                ? `file://${audioUri}`
+                : audioUri;
+
+            const filename = cleanUri.split('/').pop() || 'voice.m4a';
             const match = /\.(\w+)$/.exec(filename);
-            const type = match ? `audio/${match[1]}` : `audio/mp4`;
+            const type = match ? `audio/${match[1]}` : `audio/m4a`;
 
             formData.append('file', {
-                uri: audioUri,
+                uri: cleanUri,
                 name: filename,
                 type: type,
             });
             formData.append('session_id', sessionId);
             formData.append('language', language || 'en');
 
-            console.log(`[ChatService] Sending voice upload to backend: `, filename);
-            const token = Platform.OS === 'web'
-                ? localStorage.getItem('auth_token')
-                : await require('expo-secure-store').getItemAsync('auth_token');
-            const res = await fetch(`${api.defaults.baseURL}/api/assistant/chat/voice`, {
-                method: 'POST',
+            console.log(`[ChatService] Sending voice upload via Axios:`, filename);
+
+            const response = await api.post('/api/assistant/chat/voice', formData, {
                 headers: {
-                    ...(token && { Authorization: `Bearer ${token}` }),
+                    'Content-Type': 'multipart/form-data',
                     ...(location ? { 'X-Location-Query': location } : {})
                 },
-                body: formData,
+                timeout: 45000,
             });
 
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.detail || 'Failed to process voice command.');
-            }
-            return await res.json();
+            return response.data;
         } catch (error) {
-            console.error('[ChatService] Voice Upload Error:', error);
-            throw new Error(error.message || 'Network error while contacting AI Assistant.');
+            console.error('[ChatService] Voice Upload Error:', error?.response?.data || error.message);
+            const msg = error?.response?.data?.detail || error.message || 'Failed to process voice command.';
+            throw new Error(msg);
         }
     },
 
@@ -88,33 +85,36 @@ export const chatService = {
     sendSpeechToText: async (audioUri, language = 'en') => {
         try {
             const formData = new FormData();
-            const filename = audioUri.split('/').pop() || 'voice.m4a';
+
+            const cleanUri = Platform.OS === 'android' && !audioUri.startsWith('file://') && !audioUri.startsWith('content://')
+                ? `file://${audioUri}`
+                : audioUri;
+
+            const filename = cleanUri.split('/').pop() || 'voice.m4a';
             const match = /\.(\w+)$/.exec(filename);
-            const type = match ? `audio/${match[1]}` : `audio/mp4`;
+            const type = match ? `audio/${match[1]}` : `audio/m4a`;
 
-            formData.append('file', { uri: audioUri, name: filename, type: type });
-            formData.append('language', language);
+            formData.append('file', {
+                uri: cleanUri,
+                name: filename,
+                type: type,
+            });
+            formData.append('language', language || 'en');
 
-            console.log(`[ChatService] Sending STT audio...`);
-            const token = Platform.OS === 'web'
-                ? localStorage.getItem('auth_token')
-                : await require('expo-secure-store').getItemAsync('auth_token');
-            const res = await fetch(`${api.defaults.baseURL}/api/assistant/chat/speech-to-text`, {
-                method: 'POST',
+            console.log(`[ChatService] Sending STT audio via Axios:`, filename);
+
+            const response = await api.post('/api/assistant/chat/speech-to-text', formData, {
                 headers: {
-                    ...(token && { Authorization: `Bearer ${token}` }),
+                    'Content-Type': 'multipart/form-data',
                 },
-                body: formData,
+                timeout: 30000,
             });
 
-            if (!res.ok) {
-                const errorData = await res.json();
-                throw new Error(errorData.detail || 'Audio transcription failed.');
-            }
-            return await res.json(); // { text: "...", language: "..." }
+            return response.data; // { text: "...", language: "..." }
         } catch (error) {
-            console.error('[ChatService] STT Error:', error);
-            throw new Error('Audio transcription failed.');
+            console.error('[ChatService] STT Error:', error?.response?.data || error.message);
+            const msg = error?.response?.data?.detail || error.message || 'Audio transcription failed.';
+            throw new Error(msg);
         }
     },
 
