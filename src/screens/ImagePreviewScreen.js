@@ -4,11 +4,15 @@ import { Feather, MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
-import { colors } from '../theme/colors';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 import { diseaseService } from '../services/diseaseService';
 import * as ImageManipulator from 'expo-image-manipulator';
 
 export default function ImagePreviewScreen({ route, navigation }) {
+    const { colors, isDarkMode } = useTheme();
+    const { t } = useLanguage();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const { imageUri } = route.params || {};
     const [currentUri, setCurrentUri] = useState(imageUri);
     const [analyzing, setAnalyzing] = useState(false);
@@ -16,7 +20,7 @@ export default function ImagePreviewScreen({ route, navigation }) {
 
     const handleAnalyze = async () => {
         if (!currentUri) {
-            Alert.alert("Missing Image", "Please select an image first.");
+            Alert.alert(t('error') || "Missing Image", t('no_image_selected') || "Please select an image first.");
             return;
         }
 
@@ -33,7 +37,7 @@ export default function ImagePreviewScreen({ route, navigation }) {
             navigation.replace('Result', { prediction });
         } catch (error) {
             setAnalyzing(false);
-            Alert.alert("Analysis Error", error.message);
+            Alert.alert(t('error') || "Analysis Error", error.message);
         }
     };
 
@@ -44,7 +48,7 @@ export default function ImagePreviewScreen({ route, navigation }) {
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Feather name="chevron-left" size={28} color={colors.text} />
                 </TouchableOpacity>
-                <AppText variant="heading3">Preview Image</AppText>
+                <AppText variant="heading3" style={{ color: colors.text }}>{t('preview_image')}</AppText>
                 <View style={{ width: 28 }} />
             </View>
 
@@ -56,7 +60,7 @@ export default function ImagePreviewScreen({ route, navigation }) {
                     <View style={styles.mockOverlay}>
                         <MaterialCommunityIcons name="image-off" size={60} color={colors.textLight} />
                         <AppText variant="body" color="textLight" style={{ marginTop: 10 }}>
-                            No image selected
+                            {t('no_image_selected')}
                         </AppText>
                     </View>
                 )}
@@ -64,17 +68,17 @@ export default function ImagePreviewScreen({ route, navigation }) {
                 {/* Scanning Animation UI overlay */}
                 {analyzing && (
                     <View style={styles.analyzingOverlay}>
-                        <ActivityIndicator size="large" color={colors.white} />
-                        <AppText variant="heading3" style={{ color: colors.white, marginTop: 16 }}>
-                            {progress < 100 ? 'Uploading...' : 'AI Analyzing...'}
+                        <ActivityIndicator size="large" color="#FFFFFF" />
+                        <AppText variant="heading3" style={{ color: '#FFFFFF', marginTop: 16 }}>
+                            {progress < 100 ? t('uploading') : t('ai_analyzing')}
                         </AppText>
                         <AppText variant="bodyMedium" style={{ color: 'rgba(255,255,255,0.7)', marginTop: 8 }}>
-                            {progress < 100 ? `Transferring Image (${progress}%)` : 'Running Deep Learning Model'}
+                            {progress < 100 ? `${t('uploading')} (${progress}%)` : t('running_model')}
                         </AppText>
 
                         {/* Progress Bar Container */}
                         <View style={styles.progressBarContainer}>
-                            <View style={[styles.progressBarFill, { width: `${progress}%` }]} />
+                            <View style={[styles.progressBarFill, { width: `${progress}%`, backgroundColor: colors.primary }]} />
                         </View>
                     </View>
                 )}
@@ -95,7 +99,7 @@ export default function ImagePreviewScreen({ route, navigation }) {
                             }
                         }}>
                         <MaterialCommunityIcons name="rotate-left" size={24} color={colors.text} />
-                        <AppText variant="small" style={{ marginTop: 4 }}>Rotate</AppText>
+                        <AppText variant="small" style={{ marginTop: 4, color: colors.textMedium }}>{t('rotate')}</AppText>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -121,11 +125,23 @@ export default function ImagePreviewScreen({ route, navigation }) {
                                 );
                                 setCurrentUri(res.uri);
                             } catch (e) {
-                                console.error("Crop failure:", e);
+                                console.error("Zoom failure:", e);
                             }
                         }}>
+                        <MaterialCommunityIcons name="magnify-plus-outline" size={24} color={colors.text} />
+                        <AppText variant="small" style={{ marginTop: 4, color: colors.textMedium }}>{t('zoom_in')}</AppText>
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.toolbarBtn}
+                        onPress={() => {
+                            Alert.alert(
+                                "Manual Crop Unavailable",
+                                "React Native Expo Go requires a custom native module (like react-native-image-crop-picker) to manually draw crop boxes, which isn't supported in the basic Expo Go app."
+                            );
+                        }}>
                         <MaterialCommunityIcons name="crop" size={24} color={colors.text} />
-                        <AppText variant="small" style={{ marginTop: 4 }}>Crop</AppText>
+                        <AppText variant="small" style={{ marginTop: 4, color: colors.textMedium }}>{t('crop')}</AppText>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -140,7 +156,7 @@ export default function ImagePreviewScreen({ route, navigation }) {
                             }
                         }}>
                         <MaterialCommunityIcons name="flip-horizontal" size={24} color={colors.text} />
-                        <AppText variant="small" style={{ marginTop: 4 }}>Flip</AppText>
+                        <AppText variant="small" style={{ marginTop: 4, color: colors.textMedium }}>{t('flip')}</AppText>
                     </TouchableOpacity>
 
                     <TouchableOpacity
@@ -149,7 +165,7 @@ export default function ImagePreviewScreen({ route, navigation }) {
                             setCurrentUri(imageUri); // Reset to original
                         }}>
                         <MaterialCommunityIcons name="restore" size={24} color={colors.text} />
-                        <AppText variant="small" style={{ marginTop: 4 }}>Reset</AppText>
+                        <AppText variant="small" style={{ marginTop: 4, color: colors.textMedium }}>{t('reset')}</AppText>
                     </TouchableOpacity>
                 </View>
             )}
@@ -157,14 +173,14 @@ export default function ImagePreviewScreen({ route, navigation }) {
             {/* Action Bar */}
             <View style={styles.footer}>
                 <AppButton
-                    title="Retake"
+                    title={t('retake')}
                     variant="outline"
                     onPress={() => navigation.goBack()}
                     style={styles.retakeBtn}
                     disabled={analyzing}
                 />
                 <AppButton
-                    title="Upload & Predict"
+                    title={t('upload_and_predict')}
                     onPress={handleAnalyze}
                     style={styles.analyzeBtn}
                     loading={analyzing}
@@ -174,7 +190,7 @@ export default function ImagePreviewScreen({ route, navigation }) {
     );
 }
 
-const styles = StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     screen: { backgroundColor: colors.background },
     header: {
         flexDirection: 'row',
@@ -187,7 +203,9 @@ const styles = StyleSheet.create({
         flex: 1,
         marginHorizontal: 20,
         marginVertical: 10,
-        backgroundColor: '#E8F5E9',
+        backgroundColor: colors.surface,
+        borderWidth: 1,
+        borderColor: colors.border,
         borderRadius: 24,
         overflow: 'hidden',
         position: 'relative',
@@ -208,6 +226,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         paddingVertical: 20,
         gap: 16,
+        backgroundColor: colors.background,
     },
     retakeBtn: {
         flex: 1,
@@ -225,7 +244,6 @@ const styles = StyleSheet.create({
     },
     progressBarFill: {
         height: '100%',
-        backgroundColor: colors.primary,
         borderRadius: 3
     },
     editToolbar: {

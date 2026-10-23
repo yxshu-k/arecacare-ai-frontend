@@ -7,19 +7,23 @@ import Screen from '../components/Screen';
 import { AuthContext } from '../context/AuthContext';
 import HomeNavigator from './HomeNavigator';
 import HistoryScreen from '../screens/HistoryScreen';
-import TipsScreen from '../screens/TipsScreen';
+import TipsNavigator from './TipsNavigator';
 import ProfileNavigator from './ProfileNavigator';
 import { Feather } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
     const { colors } = useTheme();
+    const { t } = useLanguage();
+
     return (
         <Tab.Navigator
             screenOptions={{
                 headerShown: false,
+                tabBarHideOnKeyboard: true,
                 tabBarActiveTintColor: colors.primary,
                 tabBarInactiveTintColor: colors.textLight,
                 tabBarStyle: {
@@ -40,22 +44,34 @@ export default function AppNavigator() {
             <Tab.Screen
                 name="Dashboard"
                 component={HomeNavigator}
-                options={{ tabBarIcon: ({ color }) => <Feather name="grid" size={24} color={color} /> }}
+                options={{
+                    tabBarLabel: t('tab_dashboard'),
+                    tabBarIcon: ({ color }) => <Feather name="grid" size={24} color={color} />
+                }}
             />
             <Tab.Screen
                 name="History"
                 component={HistoryScreen}
-                options={{ tabBarIcon: ({ color }) => <Feather name="clock" size={24} color={color} /> }}
+                options={{
+                    tabBarLabel: t('tab_history'),
+                    tabBarIcon: ({ color }) => <Feather name="clock" size={24} color={color} />
+                }}
             />
             <Tab.Screen
                 name="Tips"
-                component={TipsScreen}
-                options={{ tabBarIcon: ({ color }) => <Feather name="book-open" size={24} color={color} /> }}
+                component={TipsNavigator}
+                options={{
+                    tabBarLabel: t('tab_tips'),
+                    tabBarIcon: ({ color }) => <Feather name="book-open" size={24} color={color} />
+                }}
             />
             <Tab.Screen
                 name="Profile"
                 component={ProfileNavigator}
-                options={{ tabBarIcon: ({ color }) => <Feather name="user" size={24} color={color} /> }}
+                options={{
+                    tabBarLabel: t('tab_profile'),
+                    tabBarIcon: ({ color }) => <Feather name="user" size={24} color={color} />
+                }}
             />
         </Tab.Navigator>
     );

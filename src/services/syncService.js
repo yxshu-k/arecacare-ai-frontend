@@ -68,9 +68,28 @@ export const syncService = {
             if (successfullyUploaded > 0) {
                 console.log(`[SyncService] Flushed ${successfullyUploaded} items. ${remainingQueue.length} items remain queued.`);
             }
-
+            return { uploaded: successfullyUploaded, remaining: remainingQueue.length };
         } catch (error) {
             console.error('[SyncService] Process Error:', error);
+            return { uploaded: 0, remaining: 0 };
+        }
+    },
+
+    getQueueCount: async () => {
+        try {
+            const queueStr = await AsyncStorage.getItem(QUEUE_KEY);
+            return queueStr ? JSON.parse(queueStr).length : 0;
+        } catch {
+            return 0;
+        }
+    },
+
+    clearQueue: async () => {
+        try {
+            await AsyncStorage.removeItem(QUEUE_KEY);
+            return true;
+        } catch {
+            return false;
         }
     }
 };
