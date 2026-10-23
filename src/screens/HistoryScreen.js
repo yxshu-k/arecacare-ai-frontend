@@ -21,6 +21,7 @@ const SkeletonItem = ({ colors, isDarkMode }) => (
 
 export default function HistoryScreen({ navigation }) {
     const { colors, isDarkMode } = useTheme();
+    const { t } = useLanguage();
     const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
