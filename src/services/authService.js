@@ -147,5 +147,52 @@ export const authService = {
         } catch (error) {
             throw new Error('Google Authentication failed.');
         }
+    },
+
+    // ----------------------------------------------------
+    // Password Reset via Email OTP
+    // ----------------------------------------------------
+
+    forgotPassword: async (email) => {
+        try {
+            const cleanEmail = (email || '').trim().toLowerCase();
+            const response = await api.post('/api/auth/forgot-password', { email: cleanEmail });
+            return response.data;
+        } catch (error) {
+            if (error.response && error.response.data) {
+                throw new Error(error.response.data.detail || error.response.data.message || 'Failed to request reset code');
+            }
+            throw new Error('Network error. Unable to connect to server. Please check your internet connection.');
+        }
+    },
+
+    verifyResetOtp: async (email, otp) => {
+        try {
+            const cleanEmail = (email || '').trim().toLowerCase();
+            const cleanOtp = (otp || '').trim();
+            const response = await api.post('/api/auth/verify-otp', { email: cleanEmail, otp: cleanOtp });
+            return response.data; // { reset_token: "...", message: "..." }
+        } catch (error) {
+            if (error.response && error.response.data) {
+                throw new Error(error.response.data.detail || error.response.data.message || 'Invalid or expired code');
+            }
+            throw new Error('Network error. Unable to connect to server. Please check your internet connection.');
+        }
+    },
+
+    resetPassword: async (resetToken, newPassword) => {
+        try {
+            const response = await api.post('/api/auth/reset-password', {
+                reset_token: resetToken,
+                new_password: newPassword
+            });
+            return response.data;
+        } catch (error) {
+            if (error.response && error.response.data) {
+                throw new Error(error.response.data.detail || error.response.data.message || 'Password reset failed');
+            }
+            throw new Error('Network error. Unable to connect to server. Please check your internet connection.');
+        }
     }
 };
+

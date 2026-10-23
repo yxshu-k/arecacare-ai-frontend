@@ -5,7 +5,6 @@ import { useFocusEffect } from '@react-navigation/native';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { useTheme } from '../context/ThemeContext';
-import { diseaseService } from '../services/diseaseService';
 import { useLanguage } from '../context/LanguageContext';
 import { diseaseService } from '../services/diseaseService';
 import { colors } from '../theme/colors';
