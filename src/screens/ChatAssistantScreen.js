@@ -13,12 +13,17 @@ import { AuthContext } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import * as Clipboard from 'expo-clipboard';
 import { useKeyboard } from '../hooks/useKeyboard';
+import { 
+    isAudioHardwareAvailable, 
+    requestMicrophonePermission, 
+    createAudioRecorder 
+} from '../utils/audioService';
 
 let Audio = null;
 try {
     Audio = require('expo-av').Audio;
 } catch (e) {
-    console.warn("[ArecaCare] Native Audio drivers missing.");
+    // legacy fallback if available
 }
 
 const { width, height } = Dimensions.get('window');
@@ -186,15 +191,10 @@ export default function ChatAssistantScreen({ navigation }) {
 
     useEffect(() => {
         const prepareAudio = async () => {
-            if (!Audio) return;
             try {
-                await Audio.requestPermissionsAsync();
-                await Audio.setAudioModeAsync({
-                    allowsRecordingIOS: true,
-                    playsInSilentModeIOS: true,
-                });
+                await requestMicrophonePermission();
             } catch (err) {
-                console.log("Audio permissions failed:", err);
+                console.log("Audio permissions check:", err);
             }
         };
         prepareAudio();
@@ -202,8 +202,8 @@ export default function ChatAssistantScreen({ navigation }) {
         fetchSidebarSessions();
 
         return () => {
-            if (recordingRef.current) {
-                recordingRef.current.stopAndUnloadAsync().catch(() => {});
+            if (recordingRef.current?.stop) {
+                recordingRef.current.stop().catch(() => {});
             }
             if (soundRef.current) {
                 soundRef.current.unloadAsync().catch(() => {});
@@ -366,37 +366,32 @@ export default function ChatAssistantScreen({ navigation }) {
     };
 
     const startAudioRecording = async () => {
-        if (!Audio) {
+        if (!isAudioHardwareAvailable()) {
             Alert.alert(
                 "Microphone Disabled",
-                "Your mobile app binary is missing the native audio hardware drivers."
+                "Your mobile app binary is missing the native audio hardware drivers. Please restart Expo to reload native modules."
             );
             return;
         }
         await stopAnyAudioPlayback();
         try {
-            const perm = await Audio.requestPermissionsAsync();
-            if (perm.status !== 'granted') {
+            const granted = await requestMicrophonePermission();
+            if (!granted) {
                 Alert.alert("Permission Required", "Microphone access is required to speak with AI.");
                 return;
             }
-
-            await Audio.setAudioModeAsync({
-                allowsRecordingIOS: true,
-                playsInSilentModeIOS: true,
-            });
 
             setIsRecording(true);
             isStartingRef.current = true;
             pendingStopActionRef.current = null;
 
-            const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-            recordingRef.current = recording;
+            const handle = await createAudioRecorder();
+            recordingRef.current = handle;
             isStartingRef.current = false;
 
             if (pendingStopActionRef.current === 'voice') {
                 pendingStopActionRef.current = null;
-                await processStopAudioRecording(recording);
+                await processStopAudioRecording(handle);
             }
         } catch (err) {
             console.error("Start audio recording error:", err);
@@ -419,14 +414,13 @@ export default function ChatAssistantScreen({ navigation }) {
         await processStopAudioRecording(currentRecording);
     };
 
-    const processStopAudioRecording = async (rec) => {
+    const processStopAudioRecording = async (handle) => {
         setIsRecording(false);
         setIsTyping(true);
         recordingRef.current = null;
 
         try {
-            await rec.stopAndUnloadAsync();
-            const uri = rec.getURI();
+            const uri = await handle.stop();
 
             setMessages(prev => [...prev, { id: `voice_${Date.now()}`, text: '🎙️ Processing voice note...', isAI: false }]);
             setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 100);
@@ -483,37 +477,32 @@ export default function ChatAssistantScreen({ navigation }) {
     };
 
     const startSTTRecording = async () => {
-        if (!Audio) {
+        if (!isAudioHardwareAvailable()) {
             Alert.alert(
                 "Microphone Disabled",
-                "Your mobile app binary is missing the native audio hardware drivers."
+                "Your mobile app binary is missing the native audio hardware drivers. Please restart Expo to reload native modules."
             );
             return;
         }
         await stopAnyAudioPlayback();
         try {
-            const perm = await Audio.requestPermissionsAsync();
-            if (perm.status !== 'granted') {
+            const granted = await requestMicrophonePermission();
+            if (!granted) {
                 Alert.alert("Permission Required", "Microphone access is required for speech to text.");
                 return;
             }
-
-            await Audio.setAudioModeAsync({
-                allowsRecordingIOS: true,
-                playsInSilentModeIOS: true,
-            });
 
             setIsRecordingSTT(true);
             isStartingRef.current = true;
             pendingStopActionRef.current = null;
 
-            const { recording } = await Audio.Recording.createAsync(Audio.RecordingOptionsPresets.HIGH_QUALITY);
-            recordingRef.current = recording;
+            const handle = await createAudioRecorder();
+            recordingRef.current = handle;
             isStartingRef.current = false;
 
             if (pendingStopActionRef.current === 'stt') {
                 pendingStopActionRef.current = null;
-                await processStopSTTRecording(recording);
+                await processStopSTTRecording(handle);
             }
         } catch (err) {
             console.error("Start STT recording error:", err);
@@ -536,14 +525,13 @@ export default function ChatAssistantScreen({ navigation }) {
         await processStopSTTRecording(currentRecording);
     };
 
-    const processStopSTTRecording = async (rec) => {
+    const processStopSTTRecording = async (handle) => {
         setIsRecordingSTT(false);
         setIsTyping(true);
         recordingRef.current = null;
 
         try {
-            await rec.stopAndUnloadAsync();
-            const uri = rec.getURI();
+            const uri = await handle.stop();
 
             const response = await chatService.sendSpeechToText(uri, language);
             if (response && response.text) {
