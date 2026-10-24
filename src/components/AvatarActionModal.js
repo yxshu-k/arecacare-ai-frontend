@@ -175,16 +175,16 @@ export default function AvatarActionModal({
                                 <View style={styles.actionGrid}>
                                     {/* Camera */}
                                     <TouchableOpacity style={styles.actionItem} onPress={handleCamera}>
-                                        <View style={[styles.actionIconBox, { backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5' }]}>
-                                            <Feather name="camera" size={22} color="#059669" />
+                                        <View style={[styles.actionIconBox, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage }]}>
+                                            <Feather name="camera" size={22} color={colors.primary} />
                                         </View>
                                         <AppText variant="caption" style={[styles.actionLabel, { color: colors.text }]}>Camera</AppText>
                                     </TouchableOpacity>
 
                                     {/* Gallery */}
                                     <TouchableOpacity style={styles.actionItem} onPress={handleGallery}>
-                                        <View style={[styles.actionIconBox, { backgroundColor: isDarkMode ? 'rgba(37, 99, 235, 0.2)' : '#EFF6FF' }]}>
-                                            <Feather name="image" size={22} color="#2563EB" />
+                                        <View style={[styles.actionIconBox, { backgroundColor: isDarkMode ? 'rgba(241, 163, 68, 0.15)' : colors.softCream }]}>
+                                            <Feather name="image" size={22} color={colors.accent} />
                                         </View>
                                         <AppText variant="caption" style={[styles.actionLabel, { color: colors.text }]}>Gallery</AppText>
                                     </TouchableOpacity>

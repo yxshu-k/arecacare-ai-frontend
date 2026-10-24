@@ -30,10 +30,8 @@ export default function DiseaseInfoScreen({ route, navigation }) {
     const { details, diseaseName } = route.params || {};
 
     const isHealthy = diseaseName?.toLowerCase().includes('healthy');
-    const heroColor = isHealthy ? (isDarkMode ? '#34D399' : '#16A34A') : colors.primary;
-    const heroBg = isHealthy
-        ? (isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#DCFCE7')
-        : (isDarkMode ? 'rgba(5, 150, 105, 0.15)' : '#F0FDF4');
+    const heroColor = isHealthy ? colors.primary : colors.primary;
+    const heroBg = isDarkMode ? 'rgba(85, 121, 69, 0.18)' : colors.lightSage;
 
     const localizedDisease = t(diseaseName) || diseaseName || t('condition_overview');
 

@@ -9,6 +9,7 @@ import { weatherService } from '../services/weatherService';
 import { AuthContext } from '../context/AuthContext';
 
 import { useLanguage } from '../context/LanguageContext';
+import { isUnreadableOrForeign } from '../utils/geoNormalizer';
 
 const { width } = Dimensions.get('window');
 
@@ -46,9 +47,9 @@ const MetricCard = ({ icon, title, value, unit, styles }) => (
 
 const RiskBadge = ({ disease, risk, message, colors, styles, t }) => {
     const riskGradient = {
-        'High': ['#EF4444', '#B91C1C'],
-        'Medium': ['#F59E0B', '#B45309'],
-        'Low': ['#10B981', '#047857'],
+        'High': [colors.error || '#DC2626', '#991B1B'],
+        'Medium': [colors.accent || '#F1A344', '#D97706'],
+        'Low': [colors.primary || '#557945', '#3E5932'],
     };
     const badgeColors = riskGradient[risk] || ['#6B7280', '#374151'];
     const translatedRisk = risk === 'High' ? t('risk_high') : risk === 'Medium' ? t('risk_moderate') : t('risk_low');
@@ -142,13 +143,11 @@ export default function WeatherScreen({ navigation }) {
 
                     <View style={{ alignItems: 'center' }}>
                         <AppText variant="bodyMedium" style={styles.locationText}>
-                            {activeFarm?.name && activeFarm.name !== 'Current Location'
-                                ? activeFarm.name
-                                : (weather?.location || t('location'))}
+                            {weather?.location || (!isUnreadableOrForeign(activeFarm?.name) && activeFarm?.name !== 'Current Location' ? activeFarm.name : t('location'))}
                         </AppText>
-                        {weather?.location && activeFarm?.name && activeFarm.name !== weather.location && activeFarm.name !== 'Current Location' ? (
+                        {activeFarm?.district && !isUnreadableOrForeign(activeFarm.district) && activeFarm.district !== weather?.location ? (
                             <AppText variant="caption" style={{ color: 'rgba(255,255,255,0.75)', marginTop: 2, fontSize: 12 }}>
-                                {weather.location}
+                                {activeFarm.district}
                             </AppText>
                         ) : null}
                     </View>
@@ -185,7 +184,7 @@ export default function WeatherScreen({ navigation }) {
                     {/* Overall Risk Summary */}
                     {advisory && (
                         <View style={styles.summaryCard}>
-                            <View style={[styles.summaryIconFrame, { backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5' }]}>
+                            <View style={[styles.summaryIconFrame, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage }]}>
                                 <Feather name="activity" size={24} color={colors.primary} />
                             </View>
                             <View style={{ flex: 1 }}>
@@ -216,7 +215,7 @@ export default function WeatherScreen({ navigation }) {
                             {advisory.recommendations.map((rec, index) => (
                                 <View key={index} style={styles.recCard}>
                                     <View style={styles.recHeader}>
-                                        <Feather name="check-circle" size={18} color="#059669" />
+                                        <Feather name="check-circle" size={18} color={colors.primary} />
                                         <AppText variant="bodyMedium" style={{ fontWeight: '800', marginLeft: 10, color: colors.text }}>
                                             {t(rec.disease)}
                                         </AppText>

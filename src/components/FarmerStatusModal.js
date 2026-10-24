@@ -186,7 +186,7 @@ export default function FarmerStatusModal({
                                                     style={[
                                                         styles.presetItem,
                                                         { borderColor: isSelected ? colors.primary : colors.border },
-                                                        isSelected && { backgroundColor: isDarkMode ? '#064E3B20' : '#ECFDF5' },
+                                                        isSelected && { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage },
                                                     ]}
                                                     onPress={() => handleSelectPreset(preset.text)}
                                                     activeOpacity={0.7}
@@ -209,8 +209,8 @@ export default function FarmerStatusModal({
                                                             <Feather name="check" size={12} color="#FFFFFF" />
                                                         </View>
                                                     ) : (
-                                                        <View style={[styles.tagBadge, { backgroundColor: isDarkMode ? '#27272A' : '#F3F4F6' }]}>
-                                                            <AppText variant="caption" style={{ fontSize: 11, color: colors.textLight }}>
+                                                        <View style={[styles.tagBadge, { backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.08)' : (colors.lightSage || '#E8F0E4') }]}>
+                                                            <AppText variant="caption" style={{ fontSize: 11, color: colors.textMedium }}>
                                                                 {preset.tag}
                                                             </AppText>
                                                         </View>

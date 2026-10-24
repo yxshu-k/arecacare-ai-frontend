@@ -107,8 +107,9 @@ export default function LoginScreen({ navigation }) {
                         <TouchableOpacity
                             style={styles.forgotPassword}
                             onPress={() => navigation.navigate('ForgotPassword')}
+                            hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
                         >
-                            <AppText variant="bodyMedium" color="primary">{t('forgot_password')}</AppText>
+                            <AppText variant="bodyMedium" style={{ color: colors.primary, fontWeight: '600' }}>{t('forgot_password')}</AppText>
                         </TouchableOpacity>
 
                         <AppButton
@@ -118,13 +119,19 @@ export default function LoginScreen({ navigation }) {
                             style={styles.loginBtn}
                         />
 
+                        <View style={styles.dividerRow}>
+                            <View style={styles.dividerLine} />
+                            <AppText variant="caption" style={styles.dividerText}>or continue with</AppText>
+                            <View style={styles.dividerLine} />
+                        </View>
+
                         <GoogleAuthButton title={t('continue_google')} />
                     </View>
 
                     <View style={styles.footer}>
                         <AppText variant="bodyMedium" color="textMedium">{t('dont_have_account')} </AppText>
-                        <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-                            <AppText variant="bodyMedium" color="primary" style={styles.signupText}>{t('sign_up')}</AppText>
+                        <TouchableOpacity onPress={() => navigation.navigate('Signup')} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                            <AppText variant="bodyMedium" style={styles.signupText}>{t('sign_up')}</AppText>
                         </TouchableOpacity>
                     </View>
                 </ScrollView>
@@ -136,20 +143,43 @@ export default function LoginScreen({ navigation }) {
 const getStyles = (colors, isDarkMode) => StyleSheet.create({
     container: { flex: 1 },
     scroll: { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 },
-    header: { alignItems: 'center', marginBottom: 40 },
+    header: { alignItems: 'center', marginBottom: 32 },
     iconBackground: {
-        backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.2)' : '#E8F5E9',
-        borderWidth: isDarkMode ? 1 : 0,
-        borderColor: isDarkMode ? '#064E3B' : 'transparent',
-        padding: 16,
+        backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : '#E8F0E4',
+        borderWidth: 1.5,
+        borderColor: isDarkMode ? '#2D3A2B' : '#DCE5D7',
+        padding: 18,
         borderRadius: 24,
-        marginBottom: 16
+        marginBottom: 16,
+        shadowColor: colors.primaryDark || '#1C241B',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: isDarkMode ? 0.3 : 0.08,
+        shadowRadius: 6,
+        elevation: 2,
     },
-    subtitle: { marginTop: 8, textAlign: 'center' },
-    form: { marginBottom: 30 },
-    errorText: { color: '#DC2626', fontSize: 12, marginBottom: 16, marginTop: -8, marginLeft: 4 },
-    forgotPassword: { alignItems: 'flex-end', marginTop: 4, marginBottom: 24 },
+    subtitle: { marginTop: 8, textAlign: 'center', color: colors.textMedium },
+    form: { marginBottom: 20 },
+    errorText: { color: colors.error, fontSize: 12, marginBottom: 12, marginTop: -4, marginLeft: 4, fontWeight: '500' },
+    forgotPassword: { alignItems: 'flex-end', marginTop: 4, marginBottom: 20 },
     loginBtn: { marginBottom: 16 },
-    footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 20, paddingBottom: 20 },
-    signupText: { fontWeight: '700' }
+    dividerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginVertical: 14,
+    },
+    dividerLine: {
+        flex: 1,
+        height: 1,
+        backgroundColor: colors.border,
+    },
+    dividerText: {
+        paddingHorizontal: 12,
+        color: colors.textLight,
+        fontSize: 12,
+        textTransform: 'uppercase',
+        letterSpacing: 0.5,
+    },
+    footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 16, paddingBottom: 20, alignItems: 'center' },
+    signupText: { fontWeight: '700', color: colors.primary }
 });
+

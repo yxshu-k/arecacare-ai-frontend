@@ -12,7 +12,7 @@ import { weatherService } from '../services/weatherService';
 export default function TipsScreen({ navigation }) {
     const { colors, isDarkMode } = useTheme();
     const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const { activeFarm } = useContext(AuthContext);
 
     const [tips, setTips] = useState([]);
@@ -38,8 +38,8 @@ export default function TipsScreen({ navigation }) {
             }
 
             const data = forceRefresh
-                ? await tipsService.refreshTips(weatherCondition)
-                : await tipsService.getSeasonalTips(weatherCondition);
+                ? await tipsService.refreshTips(weatherCondition, language)
+                : await tipsService.getSeasonalTips(weatherCondition, language);
 
             setTips(data);
         } catch (error) {
@@ -53,7 +53,7 @@ export default function TipsScreen({ navigation }) {
 
     useEffect(() => {
         loadTips();
-    }, [activeFarm]);
+    }, [activeFarm, language]);
 
     const handleRefresh = () => {
         setRefreshing(true);
@@ -68,7 +68,7 @@ export default function TipsScreen({ navigation }) {
         >
             <View style={styles.cardHeader}>
                 <View style={styles.iconBox}>
-                    <MaterialCommunityIcons name={item.icon || 'leaf'} size={24} color="#059669" />
+                    <MaterialCommunityIcons name={item.icon || 'leaf'} size={24} color={colors.primary} />
                 </View>
                 <View style={styles.badge}>
                     <AppText variant="overline" style={styles.badgeText}>{(t(item.category) || item.category)?.toUpperCase()}</AppText>
@@ -84,7 +84,7 @@ export default function TipsScreen({ navigation }) {
                     <Feather name="clock" size={14} color={colors.textLight || "#6B7280"} />
                     <AppText variant="caption" style={styles.readTimeText}>{t(item.readTime) || item.readTime}</AppText>
                 </View>
-                <Feather name="arrow-right" size={18} color="#059669" />
+                <Feather name="arrow-right" size={18} color={colors.primary} />
             </View>
         </TouchableOpacity>
     );
@@ -114,7 +114,7 @@ export default function TipsScreen({ navigation }) {
             <View style={styles.container}>
                 {loading ? (
                     <View style={styles.center}>
-                        <ActivityIndicator size="large" color="#059669" />
+                        <ActivityIndicator size="large" color={colors.primary} />
                         <AppText variant="bodyMedium" style={{ marginTop: 20, color: colors.textMedium }}>
                             AI is analyzing current weather...
                         </AppText>
@@ -154,12 +154,13 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 16,
-        backgroundColor: colors.background,
+        backgroundColor: colors.surface,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
     },
     subHeader: {
         paddingHorizontal: 20,
+        paddingTop: 12,
         paddingBottom: 8,
     },
     instructions: {
@@ -187,11 +188,11 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         marginBottom: 16,
         borderWidth: 1,
         borderColor: colors.border,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: isDarkMode ? 0.3 : 0.04,
-        shadowRadius: 3,
-        elevation: 1,
+        shadowColor: colors.primaryDark || '#1C241B',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: isDarkMode ? 0.3 : 0.05,
+        shadowRadius: 6,
+        elevation: 2,
     },
     cardHeader: {
         flexDirection: 'row',
@@ -203,23 +204,23 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         width: 44,
         height: 44,
         borderRadius: 12,
-        backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5',
+        backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage,
         borderWidth: 1,
-        borderColor: isDarkMode ? '#064E3B' : '#D1FAE5',
+        borderColor: isDarkMode ? '#2D3A2B' : '#DCE5D7',
         justifyContent: 'center',
         alignItems: 'center',
     },
     badge: {
-        backgroundColor: colors.background,
+        backgroundColor: isDarkMode ? 'rgba(241, 163, 68, 0.15)' : colors.softCream,
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: colors.border,
+        borderColor: '#F5D0A0',
     },
     badgeText: {
-        color: colors.primary,
-        fontWeight: '600',
+        color: colors.accent,
+        fontWeight: '700',
         fontSize: 11,
         letterSpacing: 0.5,
     },

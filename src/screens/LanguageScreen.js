@@ -45,7 +45,7 @@ export default function LanguageScreen({ navigation }) {
                     styles.langRow,
                     isSelected && [
                         styles.langRowSelected,
-                        { backgroundColor: isDarkMode ? '#064E3B30' : '#ECFDF5' }
+                        { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.18)' : (colors.lightSage || '#E8F0E4') }
                     ]
                 ]}
                 onPress={() => handleSelectLanguage(lang.id)}
@@ -106,7 +106,7 @@ export default function LanguageScreen({ navigation }) {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scroll}>
-                <View style={[styles.infoBox, { backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.15)' : '#ECFDF5', borderColor: isDarkMode ? 'rgba(5, 150, 105, 0.3)' : '#A7F3D0' }]}>
+                <View style={[styles.infoBox, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.15)' : (colors.lightSage || '#E8F0E4'), borderColor: colors.border }]}>
                     <Feather name="globe" size={20} color={colors.primary} style={{ marginTop: 2 }} />
                     <View style={{ flex: 1, marginLeft: 12 }}>
                         <AppText variant="bodyMedium" style={{ color: colors.text, fontWeight: '700' }}>

@@ -396,8 +396,8 @@ export default function ForgotPasswordScreen({ navigation }) {
                     {/* ==================================================== */}
                     {step === 4 && (
                         <View style={[styles.stepContainer, { alignItems: 'center', paddingTop: 40 }]}>
-                            <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? 'rgba(34, 197, 94, 0.2)' : '#DCFCE7', width: 90, height: 90, borderRadius: 45 }]}>
-                                <Feather name="check" size={48} color="#16A34A" />
+                            <View style={[styles.iconCircle, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : '#E8F0E4', width: 90, height: 90, borderRadius: 45, borderWidth: 1.5, borderColor: isDarkMode ? '#2D3A2B' : '#DCE5D7' }]}>
+                                <Feather name="check" size={48} color={colors.primary} />
                             </View>
                             <AppText variant="heading1" style={[styles.title, { textAlign: 'center', marginTop: 24 }]}>
                                 Password Reset Successful!
@@ -443,7 +443,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
     },
     progressBarBackground: {
         height: 4,
-        backgroundColor: isDarkMode ? '#262626' : '#E5E7EB',
+        backgroundColor: isDarkMode ? '#262626' : colors.border,
         width: '100%',
     },
     progressBarFill: {
@@ -462,7 +462,9 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         width: 72,
         height: 72,
         borderRadius: 36,
-        backgroundColor: isDarkMode ? 'rgba(34, 197, 94, 0.15)' : '#DCFCE7',
+        backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : '#E8F0E4',
+        borderWidth: 1.5,
+        borderColor: isDarkMode ? '#2D3A2B' : '#DCE5D7',
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
@@ -482,7 +484,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         width: '100%',
     },
     errorText: {
-        color: '#EF4444',
+        color: colors.error,
         fontSize: 13,
         marginTop: -4,
         marginBottom: 10,
@@ -490,7 +492,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
     },
     primaryBtn: {
         marginTop: 18,
-        borderRadius: 14,
+        borderRadius: 12,
     },
     otpInputWrapper: {
         marginVertical: 16,
@@ -499,7 +501,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
     otpInput: {
         width: '100%',
         height: 64,
-        borderRadius: 16,
+        borderRadius: 14,
         borderWidth: 2,
         textAlign: 'center',
         fontSize: 32,
@@ -520,7 +522,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
     },
     strengthBarBg: {
         height: 4,
-        backgroundColor: isDarkMode ? '#333333' : '#E5E7EB',
+        backgroundColor: isDarkMode ? '#333333' : colors.border,
         borderRadius: 2,
         overflow: 'hidden',
     },
@@ -529,3 +531,4 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         borderRadius: 2,
     },
 });
+

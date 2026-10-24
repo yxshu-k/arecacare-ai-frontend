@@ -90,7 +90,7 @@ export default function ProfileScreen({ navigation }) {
                                 </AppText>
                             )}
                         </View>
-                        <View style={[styles.cameraBadge, { backgroundColor: colors.primary }]}>
+                        <View style={[styles.cameraBadge, { backgroundColor: colors.accent }]}>
                             <Feather name="camera" size={14} color="#FFFFFF" />
                         </View>
                     </TouchableOpacity>
@@ -105,15 +105,15 @@ export default function ProfileScreen({ navigation }) {
                         style={[
                             styles.statusBar,
                             {
-                                backgroundColor: isDarkMode ? '#1E1E1E' : '#F8FAFC',
-                                borderColor: colors.border,
+                                backgroundColor: isDarkMode ? '#1C241B' : colors.lightSage,
+                                borderColor: isDarkMode ? colors.border : '#D5E0D0',
                             }
                         ]}
                         onPress={() => setStatusModalVisible(true)}
                         activeOpacity={0.75}
                     >
                         <View style={styles.statusBarLeft}>
-                            <View style={[styles.statusIconCircle, { backgroundColor: isDarkMode ? '#064E3B40' : '#ECFDF5' }]}>
+                            <View style={[styles.statusIconCircle, { backgroundColor: colors.surface }]}>
                                 <Feather name="message-circle" size={15} color={colors.primary} />
                             </View>
                             <View style={styles.statusBarTextWrapper}>

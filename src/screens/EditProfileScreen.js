@@ -241,7 +241,7 @@ export default function EditProfileScreen({ navigation }) {
                                     </AppText>
                                 )}
                             </View>
-                            <View style={[styles.cameraBadge, { backgroundColor: colors.primary }]}>
+                            <View style={[styles.cameraBadge, { backgroundColor: colors.accent }]}>
                                 <Feather name="camera" size={14} color="#FFFFFF" />
                             </View>
                         </TouchableOpacity>
@@ -256,9 +256,9 @@ export default function EditProfileScreen({ navigation }) {
                                     {farmerIdCode}
                                 </AppText>
                             </View>
-                            <View style={[styles.verifiedBadge, { backgroundColor: isDarkMode ? '#064E3B40' : '#ECFDF5' }]}>
-                                <Feather name="check-circle" size={12} color="#059669" style={{ marginRight: 4 }} />
-                                <AppText variant="caption" style={{ color: '#059669', fontWeight: 'bold', fontSize: 11 }}>
+                            <View style={[styles.verifiedBadge, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage }]}>
+                                <Feather name="check-circle" size={12} color={colors.primary} style={{ marginRight: 4 }} />
+                                <AppText variant="caption" style={{ color: colors.primary, fontWeight: 'bold', fontSize: 11 }}>
                                     {t('registered_farmer')}
                                 </AppText>
                             </View>

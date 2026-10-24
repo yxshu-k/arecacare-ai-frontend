@@ -389,8 +389,8 @@ export default function HelpCenterScreen({ navigation }) {
                                 onPress={handleCallHelpline}
                                 activeOpacity={0.8}
                             >
-                                <View style={[styles.channelIconBox, { backgroundColor: '#ECFDF5' }]}>
-                                    <Feather name="phone-call" size={20} color="#059669" />
+                                <View style={[styles.channelIconBox, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : (colors.lightSage || '#E8F0E4') }]}>
+                                    <Feather name="phone-call" size={20} color={colors.primary} />
                                 </View>
                                 <AppText variant="bodyMedium" style={{ fontWeight: '700', color: colors.text, marginTop: 8 }}>
                                     Kisan Helpline
@@ -399,7 +399,7 @@ export default function HelpCenterScreen({ navigation }) {
                                     1800-180-1551 (Toll-Free)
                                 </AppText>
                                 <View style={styles.actionPill}>
-                                    <AppText variant="caption" style={{ color: '#059669', fontWeight: 'bold', fontSize: 11 }}>
+                                    <AppText variant="caption" style={{ color: colors.primary, fontWeight: 'bold', fontSize: 11 }}>
                                         {t('call_now')} ›
                                     </AppText>
                                 </View>
@@ -411,8 +411,8 @@ export default function HelpCenterScreen({ navigation }) {
                                 onPress={handleOpenAgriBot}
                                 activeOpacity={0.8}
                             >
-                                <View style={[styles.channelIconBox, { backgroundColor: '#EFF6FF' }]}>
-                                    <MaterialCommunityIcons name="robot-outline" size={22} color="#2563EB" />
+                                <View style={[styles.channelIconBox, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : (colors.lightSage || '#E8F0E4') }]}>
+                                    <MaterialCommunityIcons name="robot-outline" size={22} color={colors.primary} />
                                 </View>
                                 <AppText variant="bodyMedium" style={{ fontWeight: '700', color: colors.text, marginTop: 8 }}>
                                     AgriBot AI
@@ -421,7 +421,7 @@ export default function HelpCenterScreen({ navigation }) {
                                     24/7 Crop Intelligence
                                 </AppText>
                                 <View style={styles.actionPill}>
-                                    <AppText variant="caption" style={{ color: '#2563EB', fontWeight: 'bold', fontSize: 11 }}>
+                                    <AppText variant="caption" style={{ color: colors.primary, fontWeight: 'bold', fontSize: 11 }}>
                                         {t('chat_now')} ›
                                     </AppText>
                                 </View>
@@ -433,8 +433,8 @@ export default function HelpCenterScreen({ navigation }) {
                                 onPress={handleOpenWhatsApp}
                                 activeOpacity={0.8}
                             >
-                                <View style={[styles.channelIconBox, { backgroundColor: '#F0FDF4' }]}>
-                                    <MaterialCommunityIcons name="whatsapp" size={22} color="#16A34A" />
+                                <View style={[styles.channelIconBox, { backgroundColor: isDarkMode ? 'rgba(241, 163, 68, 0.15)' : (colors.softCream || '#FFF3E2') }]}>
+                                    <MaterialCommunityIcons name="whatsapp" size={22} color={colors.secondary || '#F1A344'} />
                                 </View>
                                 <AppText variant="bodyMedium" style={{ fontWeight: '700', color: colors.text, marginTop: 8 }}>
                                     WhatsApp Desk
@@ -443,7 +443,7 @@ export default function HelpCenterScreen({ navigation }) {
                                     Share Photos with Experts
                                 </AppText>
                                 <View style={styles.actionPill}>
-                                    <AppText variant="caption" style={{ color: '#16A34A', fontWeight: 'bold', fontSize: 11 }}>
+                                    <AppText variant="caption" style={{ color: colors.secondary || '#F1A344', fontWeight: 'bold', fontSize: 11 }}>
                                         Connect ›
                                     </AppText>
                                 </View>
@@ -455,8 +455,8 @@ export default function HelpCenterScreen({ navigation }) {
                                 onPress={handleSendEmail}
                                 activeOpacity={0.8}
                             >
-                                <View style={[styles.channelIconBox, { backgroundColor: '#FEF3C7' }]}>
-                                    <Feather name="mail" size={20} color="#D97706" />
+                                <View style={[styles.channelIconBox, { backgroundColor: isDarkMode ? 'rgba(241, 163, 68, 0.15)' : (colors.softCream || '#FFF3E2') }]}>
+                                    <Feather name="mail" size={20} color={colors.secondary || '#F1A344'} />
                                 </View>
                                 <AppText variant="bodyMedium" style={{ fontWeight: '700', color: colors.text, marginTop: 8 }}>
                                     Email Desk
@@ -465,7 +465,7 @@ export default function HelpCenterScreen({ navigation }) {
                                     support@arecacare.ai
                                 </AppText>
                                 <View style={styles.actionPill}>
-                                    <AppText variant="caption" style={{ color: '#D97706', fontWeight: 'bold', fontSize: 11 }}>
+                                    <AppText variant="caption" style={{ color: colors.secondary || '#F1A344', fontWeight: 'bold', fontSize: 11 }}>
                                         Write ›
                                     </AppText>
                                 </View>
@@ -545,7 +545,7 @@ export default function HelpCenterScreen({ navigation }) {
                                                 activeOpacity={0.7}
                                             >
                                                 <View style={styles.faqQuestionLeft}>
-                                                    <View style={[styles.catPill, { backgroundColor: isDarkMode ? '#064E3B40' : '#ECFDF5' }]}>
+                                                    <View style={[styles.catPill, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : (colors.lightSage || '#E8F0E4') }]}>
                                                         <AppText variant="caption" style={{ color: colors.primary, fontSize: 10, fontWeight: '700' }}>
                                                             {getFaqText(item, 'c')}
                                                         </AppText>
@@ -581,8 +581,8 @@ export default function HelpCenterScreen({ navigation }) {
                     {/* Inquiry Submission Box */}
                     <View style={[styles.inquiryCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
                         <View style={styles.inquiryHeader}>
-                            <View style={[styles.inquiryIconCircle, { backgroundColor: '#ECFDF5' }]}>
-                                <Feather name="message-square" size={20} color="#059669" />
+                            <View style={[styles.inquiryIconCircle, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : (colors.lightSage || '#E8F0E4') }]}>
+                                <Feather name="message-square" size={20} color={colors.primary} />
                             </View>
                             <View style={{ flex: 1, marginLeft: 12 }}>
                                 <AppText variant="heading3" style={{ color: colors.text }}>
@@ -604,7 +604,7 @@ export default function HelpCenterScreen({ navigation }) {
                                         key={topic}
                                         style={[
                                             styles.topicChip,
-                                            inquiryTopic === topic && { backgroundColor: isDarkMode ? '#064E3B' : '#ECFDF5', borderColor: colors.primary }
+                                            inquiryTopic === topic && { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : (colors.lightSage || '#E8F0E4'), borderColor: colors.primary }
                                         ]}
                                         onPress={() => setInquiryTopic(topic)}
                                     >
@@ -777,7 +777,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         marginBottom: 12,
     },
     faqCountBadge: {
-        backgroundColor: isDarkMode ? '#064E3B40' : '#ECFDF5',
+        backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : (colors.lightSage || '#E8F0E4'),
         paddingHorizontal: 10,
         paddingVertical: 4,
         borderRadius: 12,

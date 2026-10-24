@@ -19,6 +19,7 @@ import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useKeyboard } from '../hooks/useKeyboard';
+import { getSoilLocalizedLabel, getSoilColor, SOIL_OPTIONS } from '../utils/soilHelper';
 
 const ARECA_VARIETIES = ['Mangala', 'South Kanara', 'Sumangala', 'Mohitnagar', 'Intercropped'];
 const SOIL_TYPES = ['Red Laterite', 'Loamy', 'Sandy Loam', 'Clay'];
@@ -346,9 +347,9 @@ export default function MyFarmsScreen({ navigation }) {
                                                     {farm.name}
                                                 </AppText>
                                                 {isPrimary && (
-                                                    <View style={styles.primaryBadge}>
-                                                        <Feather name="check-circle" size={12} color="#059669" style={{ marginRight: 4 }} />
-                                                        <AppText variant="caption" style={{ color: '#059669', fontWeight: 'bold', fontSize: 11 }}>
+                                                    <View style={[styles.primaryBadge, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage }]}>
+                                                        <Feather name="check-circle" size={12} color={colors.primary} style={{ marginRight: 4 }} />
+                                                        <AppText variant="caption" style={{ color: colors.primary, fontWeight: 'bold', fontSize: 11 }}>
                                                             {t('set_as_primary')}
                                                         </AppText>
                                                     </View>
@@ -391,7 +392,10 @@ export default function MyFarmsScreen({ navigation }) {
                                         </View>
                                         <View style={styles.metricPill}>
                                             <AppText variant="caption" style={styles.metricLabel}>{t('soil_type')}</AppText>
-                                            <AppText variant="bodyMedium" style={styles.metricValue}>{farm.soil_type || 'Red Laterite'}</AppText>
+                                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+                                                <View style={{ width: 7, height: 7, borderRadius: 3.5, backgroundColor: getSoilColor(farm.soil_type) }} />
+                                                <AppText variant="bodyMedium" style={styles.metricValue}>{getSoilLocalizedLabel(farm.soil_type, t)}</AppText>
+                                            </View>
                                         </View>
                                         <View style={styles.metricPill}>
                                             <AppText variant="caption" style={styles.metricLabel}>{t('irrigation_source')}</AppText>
@@ -610,23 +614,29 @@ export default function MyFarmsScreen({ navigation }) {
                                         <View style={styles.inputGroup}>
                                             <AppText variant="caption" style={styles.inputLabel}>{t('soil_type')}</AppText>
                                             <View style={styles.chipsWrap}>
-                                                {SOIL_TYPES.map(item => (
+                                                {SOIL_OPTIONS.map(item => (
                                                     <TouchableOpacity
-                                                        key={item}
+                                                        key={item.key}
                                                         style={[
                                                             styles.choiceChip,
-                                                            soilType === item && { backgroundColor: isDarkMode ? '#064E3B' : '#ECFDF5', borderColor: colors.primary }
+                                                            { flexDirection: 'row', alignItems: 'center' },
+                                                            soilType === item.key && {
+                                                                backgroundColor: isDarkMode ? item.darkBg : item.lightBg,
+                                                                borderColor: colors.primary,
+                                                                borderWidth: 1.5
+                                                            }
                                                         ]}
-                                                        onPress={() => setSoilType(item)}
+                                                        onPress={() => setSoilType(item.key)}
                                                     >
+                                                        <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: item.color, marginRight: 6 }} />
                                                         <AppText
                                                             variant="caption"
                                                             style={{
-                                                                color: soilType === item ? colors.primary : colors.text,
-                                                                fontWeight: soilType === item ? 'bold' : '500',
+                                                                color: soilType === item.key ? colors.primary : colors.text,
+                                                                fontWeight: soilType === item.key ? 'bold' : '500',
                                                             }}
                                                         >
-                                                            {item}
+                                                            {t(item.labelKey)}
                                                         </AppText>
                                                     </TouchableOpacity>
                                                 ))}

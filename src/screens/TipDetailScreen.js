@@ -11,7 +11,7 @@ const { width } = Dimensions.get('window');
 
 export default function TipDetailScreen({ route, navigation }) {
     const { colors, isDarkMode } = useTheme();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const { tip } = route.params || {};
     const [isSpeaking, setIsSpeaking] = useState(false);
@@ -31,16 +31,34 @@ export default function TipDetailScreen({ route, navigation }) {
                 setIsSpeaking(false);
             } else {
                 setIsSpeaking(true);
-                // Strip invalid symbols that crash parsing
-                let fullText = `${t(tip.title) || tip.title}. ${tip.content}`.replace(/[^a-zA-Z0-9 .,!?]/g, '');
+                // Strip markdown formatting symbols without stripping non-Latin unicode characters
+                let titleText = tip.title || '';
+                let contentText = tip.content || '';
+                let fullText = `${titleText}. ${contentText}`.replace(/[*#_~`]/g, '');
 
-                // CRITICAL FIX: Android TTS silently fails if text is too long.
-                // We must break it into sentences and enqueue them sequentially!
-                const sentences = fullText.split('.').filter(s => s.trim().length > 0);
+                const SPEECH_LANG_MAP = {
+                    kn: 'kn-IN',
+                    ml: 'ml-IN',
+                    hi: 'hi-IN',
+                    ta: 'ta-IN',
+                    te: 'te-IN',
+                    tu: 'kn-IN',
+                    ar: 'kn-IN',
+                    en: 'en-IN'
+                };
+                const speechLocale = SPEECH_LANG_MAP[language] || 'en-US';
+
+                // Break text into sentences to prevent Android TTS buffer overflow
+                const sentences = fullText.split(/[\.\n।]/).map(s => s.trim()).filter(s => s.length > 0);
+
+                if (sentences.length === 0) {
+                    setIsSpeaking(false);
+                    return;
+                }
 
                 sentences.forEach((sentence, index) => {
-                    Speech.speak(sentence.trim(), {
-                        language: 'en-US',
+                    Speech.speak(sentence, {
+                        language: speechLocale,
                         rate: 0.9,
                         onDone: () => {
                             if (index === sentences.length - 1) setIsSpeaking(false);
@@ -106,7 +124,7 @@ export default function TipDetailScreen({ route, navigation }) {
             <ScrollView style={styles.scrollRoot} showsVerticalScrollIndicator={false} contentContainerStyle={styles.content}>
                 <View style={styles.iconHeroCard}>
                     <View style={styles.iconBadge}>
-                        <MaterialCommunityIcons name={tip.icon || 'leaf'} size={48} color="#059669" />
+                        <MaterialCommunityIcons name={tip.icon || 'leaf'} size={48} color={colors.primary} />
                     </View>
                 </View>
 
@@ -156,7 +174,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         justifyContent: 'space-between',
         paddingHorizontal: 20,
         paddingVertical: 16,
-        backgroundColor: colors.background,
+        backgroundColor: colors.surface,
         borderBottomWidth: 1,
         borderBottomColor: colors.border,
     },
@@ -173,7 +191,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         marginLeft: 8,
     },
     activeSpeechBtn: {
-        backgroundColor: '#EF4444',
+        backgroundColor: colors.error || '#EF4444',
     },
     scrollRoot: {
         flex: 1,
@@ -189,14 +207,14 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         width: 88,
         height: 88,
         borderRadius: 24,
-        backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5',
+        backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage,
         borderWidth: 1,
-        borderColor: isDarkMode ? '#064E3B' : '#A7F3D0',
+        borderColor: isDarkMode ? '#2D3A2B' : '#DCE5D7',
         justifyContent: 'center',
         alignItems: 'center',
-        shadowColor: '#059669',
+        shadowColor: colors.primaryDark || '#1C241B',
         shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: isDarkMode ? 0.3 : 0.1,
+        shadowOpacity: isDarkMode ? 0.3 : 0.08,
         shadowRadius: 8,
         elevation: 2,
     },
@@ -210,16 +228,16 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         marginBottom: 16,
     },
     pill: {
-        backgroundColor: colors.surface,
+        backgroundColor: isDarkMode ? 'rgba(241, 163, 68, 0.15)' : colors.softCream,
         paddingHorizontal: 12,
         paddingVertical: 5,
         borderRadius: 16,
         borderWidth: 1,
-        borderColor: colors.border,
+        borderColor: '#F5D0A0',
     },
     pillText: {
         fontWeight: '700',
-        color: colors.primary,
+        color: colors.accent,
         letterSpacing: 0.5,
         fontSize: 11,
     },

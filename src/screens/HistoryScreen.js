@@ -21,7 +21,7 @@ const SkeletonItem = ({ colors, isDarkMode }) => (
 
 export default function HistoryScreen({ navigation }) {
     const { colors, isDarkMode } = useTheme();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const [history, setHistory] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -58,9 +58,10 @@ export default function HistoryScreen({ navigation }) {
     );
 
     const handleDelete = (id, name) => {
+        const localizedName = t ? (t(name) || name) : (name || '');
         Alert.alert(
             t("delete"),
-            `${t("delete")} ${name || ''}?`,
+            `${t("delete")} ${localizedName}?`,
             [
                 { text: t("cancel"), style: "cancel" },
                 {
@@ -107,11 +108,11 @@ export default function HistoryScreen({ navigation }) {
     };
 
     const getDiseaseColor = (name) => {
-        if (!name) return { color: colors.primary, bg: isDarkMode ? 'rgba(34, 197, 94, 0.2)' : '#F0FDF4' };
+        if (!name) return { color: colors.primary, bg: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage };
         const lower = name.toLowerCase();
-        if (lower.includes('healthy')) return { color: '#22C55E', bg: isDarkMode ? 'rgba(34, 197, 94, 0.2)' : '#DCFCE7' };
+        if (lower.includes('healthy')) return { color: colors.primary, bg: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage };
         if (lower.includes('unknown') || lower.includes('non-arecanut')) return { color: colors.textMedium, bg: isDarkMode ? '#262626' : '#F3F4F6' };
-        return { color: '#EF4444', bg: isDarkMode ? 'rgba(239, 68, 68, 0.2)' : '#FEF2F2' };
+        return { color: colors.error, bg: isDarkMode ? 'rgba(220, 38, 38, 0.2)' : '#FEF2F2' };
     };
 
     // Filter Logic
@@ -124,7 +125,7 @@ export default function HistoryScreen({ navigation }) {
 
     const renderItem = ({ item }) => {
         const rawDiseaseName = item.disease_name || item.disease || item.prediction || 'Unknown Condition';
-        const diseaseName = t ? t(rawDiseaseName) : rawDiseaseName;
+        const displayDisease = t ? t(rawDiseaseName) : rawDiseaseName;
         const style = getDiseaseColor(rawDiseaseName);
         const dateStr = item.created_at
             ? new Date(item.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
@@ -155,7 +156,7 @@ export default function HistoryScreen({ navigation }) {
 
                 <View style={styles.cardContent}>
                     <AppText variant="heading3" style={{ color: style.color, fontSize: 16 }}>
-                        {t((item.disease_name || 'Unknown').replace(/Non-Arecanut:\s*/i, ''))}
+                        {displayDisease}
                     </AppText>
                     <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 8 }}>
                         <AppText variant="caption" color="textMedium">{t('confidence')}: {item.confidence}%</AppText>
@@ -165,7 +166,7 @@ export default function HistoryScreen({ navigation }) {
 
                 {/* Trash Icon */}
                 <TouchableOpacity
-                    onPress={() => handleDelete(item.id, item.disease_name)}
+                    onPress={() => handleDelete(item.id, rawDiseaseName)}
                     style={[styles.deleteBtn, { backgroundColor: isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2' }]}
                 >
                     <Feather name="trash-2" size={20} color="#DC2626" />
@@ -235,7 +236,7 @@ export default function HistoryScreen({ navigation }) {
                 <View style={styles.modalOverlay}>
                     <View style={styles.bottomSheet}>
                         <View style={styles.sheetHeader}>
-                            <AppText variant="heading3">Filter Scans</AppText>
+                            <AppText variant="heading3">{t('filter_scans')}</AppText>
                             <TouchableOpacity onPress={() => setFilterMenuVisible(false)}>
                                 <Feather name="x" size={24} color={colors.textMedium} />
                             </TouchableOpacity>

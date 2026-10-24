@@ -10,6 +10,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { weatherService } from '../services/weatherService';
 import { diseaseService } from '../services/diseaseService';
 import { syncService } from '../services/syncService';
+import { isUnreadableOrForeign } from '../utils/geoNormalizer';
 
 export default function HomeScreen({ navigation }) {
     const { userData, logout, activeFarm } = useContext(AuthContext);
@@ -59,9 +60,9 @@ export default function HomeScreen({ navigation }) {
         // Ensure "Healthy Arecanut" is not flagged as a disease
         const diseases = recentScans.filter(scan => !scan.disease_name.toLowerCase().includes('healthy'));
 
-        if (diseases.length === 0) return { status: 'Optimal (All Clear)', color: '#22C55E', icon: 'check-circle' };
-        if (diseases.length === 1) return { status: 'Minor Risk Detected', color: '#F59E0B', icon: 'alert-circle' };
-        return { status: 'Critical Action Needed', color: '#DC2626', icon: 'alert-triangle' };
+        if (diseases.length === 0) return { status: 'Optimal (All Clear)', color: colors.primary, icon: 'check-circle' };
+        if (diseases.length === 1) return { status: 'Minor Risk Detected', color: colors.accent, icon: 'alert-circle' };
+        return { status: 'Critical Action Needed', color: colors.error, icon: 'alert-triangle' };
     };
 
     const health = getHealthStatus();
@@ -74,17 +75,17 @@ export default function HomeScreen({ navigation }) {
     };
 
     const ActionCard = ({ title, subtitle, icon, iconLib = 'Feather', color, onPress }) => (
-        <TouchableOpacity style={[styles.card, { borderColor: color + '40' }]} onPress={onPress}>
+        <TouchableOpacity style={[styles.card, { borderColor: color + '30' }]} onPress={onPress} activeOpacity={0.75}>
             <View style={[styles.cardIconContainer, { backgroundColor: color + '15' }]}>
                 {iconLib === 'Feather' ? (
-                    <Feather name={icon} size={28} color={color} />
+                    <Feather name={icon} size={26} color={color} />
                 ) : (
-                    <MaterialCommunityIcons name={icon} size={28} color={color} />
+                    <MaterialCommunityIcons name={icon} size={26} color={color} />
                 )}
             </View>
             <View style={styles.cardTextContainer}>
-                <AppText variant="heading3" style={{ color: colors.text }}>{title}</AppText>
-                <AppText variant="caption" color="textMedium">{subtitle}</AppText>
+                <AppText variant="heading3" style={{ color: colors.text, fontSize: 17 }}>{title}</AppText>
+                <AppText variant="caption" color="textMedium" style={{ marginTop: 2 }}>{subtitle}</AppText>
             </View>
             <Feather name="chevron-right" size={20} color={colors.textLight} />
         </TouchableOpacity>
@@ -107,7 +108,9 @@ export default function HomeScreen({ navigation }) {
                             >
                                 <Feather name="map-pin" size={12} color={colors.primary} />
                                 <AppText variant="caption" style={{ marginLeft: 4, color: colors.primary, fontWeight: '700' }}>
-                                    {activeFarm.name}
+                                    {activeFarm?.name && !isUnreadableOrForeign(activeFarm.name) && activeFarm.name !== 'Current Location'
+                                        ? activeFarm.name
+                                        : (weather?.location || 'Sullia')}
                                 </AppText>
                             </TouchableOpacity>
                         </View>
@@ -222,7 +225,7 @@ export default function HomeScreen({ navigation }) {
                     title={t("tips_advisory")}
                     subtitle={t("seasonal_practices")}
                     icon="book-open"
-                    color="#F59E0B"
+                    color={colors.accent}
                     onPress={() => navigation.navigate('Tips')}
                 />
 
@@ -340,6 +343,9 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         paddingHorizontal: 8,
         paddingVertical: 4,
         borderRadius: 12,
+        backgroundColor: colors.lightSage || '#E8F0E4',
+        borderWidth: 1,
+        borderColor: isDarkMode ? colors.border : '#D5E0D0',
     },
     cardTextContainer: {
         flex: 1,
@@ -350,7 +356,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         borderRadius: 16,
         marginBottom: 24,
         alignItems: 'center',
-        borderWidth: 1,
+        borderWidth: 1.5,
     },
     recentSection: {
         marginBottom: 24,
@@ -363,7 +369,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         overflow: 'hidden',
         borderWidth: 1,
         borderColor: colors.border,
-        shadowColor: '#000',
+        shadowColor: colors.primaryDark || '#1C241B',
         shadowOffset: { width: 0, height: 2 },
         shadowOpacity: isDarkMode ? 0.3 : 0.05,
         shadowRadius: 6,
@@ -372,9 +378,10 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
     recentImage: {
         width: '100%',
         height: 90,
-        backgroundColor: isDarkMode ? colors.background : '#E8F5E9'
+        backgroundColor: isDarkMode ? colors.background : colors.lightSage
     },
     recentTextWrap: {
         padding: 12,
     }
 });
+

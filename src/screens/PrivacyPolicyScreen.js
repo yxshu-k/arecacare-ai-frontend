@@ -219,8 +219,8 @@ const PILLARS = [
         descTa: 'தோட்டத் தரவு எந்த தரகர்களுக்கும் விற்கப்படுவதில்லை.',
         descTe: 'తోట డేటా బ్రోకర్లకు ఎప్పటికీ అమ్మబడదు.',
         descMl: 'തോട്ടം വിവരങ്ങൾ ബ്രോക്കർമാർക്ക് വിൽക്കില്ല.',
-        color: '#10B981',
-        bg: '#ECFDF5',
+        color: '#557945',
+        bg: '#E8F0E4',
     },
     {
         icon: 'map-marker-radius',
@@ -238,8 +238,8 @@ const PILLARS = [
         descTa: 'கொளை நோய் எச்சரிக்கைக்கு மட்டுமே இருப்பிடம் பயன்படும்.',
         descTe: 'కొలెరోగ హెచ్చరికలకు మాత్రమే స్థానం ఉపయోగించబడుతుంది.',
         descMl: 'മഹാളി രോഗ മുന്നറിയിപ്പുകൾക്ക് മാത്രം ലൊക്കേഷൻ ഉപയോഗിക്കുന്നു.',
-        color: '#3B82F6',
-        bg: '#EFF6FF',
+        color: '#557945',
+        bg: '#E8F0E4',
     },
     {
         icon: 'lock-check',
@@ -257,8 +257,8 @@ const PILLARS = [
         descTa: 'இந்தியாவில் உள்ள வங்கிகளுக்கு இணையான மறைகுறியீடு.',
         descTe: 'భారతదేశంలోని సర్వర్లలో ఎన్‌క్రిప్ట్ చేయబడిన డేటా.',
         descMl: 'ഇന്ത്യൻ ക്ലൗഡ് സെർവറുകളിൽ സുരക്ഷിതമായി സൂക്ഷിക്കുന്നു.',
-        color: '#8B5CF6',
-        bg: '#F5F3FF',
+        color: '#F1A344',
+        bg: '#FFF3E2',
     },
     {
         icon: 'account-remove-outline',
@@ -419,8 +419,8 @@ export default function PrivacyPolicyScreen({ navigation }) {
                                 <MaterialCommunityIcons name="shield-check" size={26} color="#FFFFFF" />
                             </View>
                             <View style={styles.verifiedTag}>
-                                <MaterialCommunityIcons name="check-decagram" size={14} color="#10B981" />
-                                <AppText variant="caption" style={{ color: '#10B981', fontWeight: 'bold', marginLeft: 4, fontSize: 11 }}>
+                                <MaterialCommunityIcons name="check-decagram" size={14} color="#F1A344" />
+                                <AppText variant="caption" style={{ color: '#F1A344', fontWeight: 'bold', marginLeft: 4, fontSize: 11 }}>
                                     DPDP 2023 Verified
                                 </AppText>
                             </View>
@@ -562,8 +562,8 @@ export default function PrivacyPolicyScreen({ navigation }) {
                 {/* Official Grievance Officer Card */}
                 <View style={[styles.dpoCard, { backgroundColor: colors.surface, borderColor: isDarkMode ? '#333' : '#E2E8F0' }]}>
                     <View style={styles.dpoHeader}>
-                        <View style={[styles.dpoIconBox, { backgroundColor: '#ECFDF5' }]}>
-                            <MaterialCommunityIcons name="badge-account-horizontal-outline" size={24} color="#059669" />
+                        <View style={[styles.dpoIconBox, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : (colors.lightSage || '#E8F0E4') }]}>
+                            <MaterialCommunityIcons name="badge-account-horizontal-outline" size={24} color={colors.primary} />
                         </View>
                         <View style={{ flex: 1, marginLeft: 12 }}>
                             <AppText variant="bodyMedium" style={{ fontWeight: '700', color: colors.text }}>
@@ -638,7 +638,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         marginTop: 18,
         borderRadius: 22,
         overflow: 'hidden',
-        backgroundColor: '#064E3B', // Deep Emerald Green
+        backgroundColor: '#354E2B',
         position: 'relative',
         elevation: 3,
         shadowColor: '#000',
@@ -653,7 +653,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         width: 140,
         height: 140,
         borderRadius: 70,
-        backgroundColor: '#10B981',
+        backgroundColor: '#557945',
         opacity: 0.25,
     },
     heroContent: {
@@ -669,19 +669,19 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         width: 46,
         height: 46,
         borderRadius: 23,
-        backgroundColor: '#059669',
+        backgroundColor: '#557945',
         justifyContent: 'center',
         alignItems: 'center',
     },
     verifiedTag: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(16, 185, 129, 0.15)',
+        backgroundColor: 'rgba(241, 163, 68, 0.15)',
         paddingHorizontal: 10,
         paddingVertical: 5,
         borderRadius: 12,
         borderWidth: 1,
-        borderColor: 'rgba(16, 185, 129, 0.3)',
+        borderColor: 'rgba(241, 163, 68, 0.35)',
     },
     heroTitle: {
         color: '#FFFFFF',
@@ -690,7 +690,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         marginBottom: 6,
     },
     heroSubtitle: {
-        color: '#D1FAE5',
+        color: '#E8F0E4',
         lineHeight: 20,
         marginBottom: 14,
         fontSize: 13,

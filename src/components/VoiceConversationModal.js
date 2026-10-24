@@ -363,13 +363,13 @@ export default function VoiceConversationModal({
     const getGradientColors = () => {
         switch (mode) {
             case 'listening':
-                return ['#10B981', '#059669', '#047857'];
+                return ['#557945', '#3E5932', '#2F4426'];
             case 'thinking':
-                return ['#6366F1', '#8B5CF6', '#A855F7'];
+                return ['#F1A344', '#E08B28', '#C97415'];
             case 'speaking':
-                return ['#06B6D4', '#0EA5E9', '#3B82F6'];
+                return ['#6B9458', '#557945', '#3E5932'];
             default:
-                return ['#10B981', '#059669', '#047857'];
+                return ['#557945', '#3E5932', '#2F4426'];
         }
     };
 
@@ -395,7 +395,7 @@ export default function VoiceConversationModal({
         >
             <View style={styles.modalBackdrop}>
                 <LinearGradient
-                    colors={['#051510', '#061D15', '#020C08']}
+                    colors={['#0B1209', '#121A0F', '#070D06']}
                     style={StyleSheet.absoluteFillObject}
                 />
 
@@ -403,7 +403,7 @@ export default function VoiceConversationModal({
                     {/* Header */}
                     <View style={styles.topBar}>
                         <View style={styles.liveIndicatorRow}>
-                            <View style={[styles.liveDot, { backgroundColor: mode === 'listening' ? '#10B981' : mode === 'speaking' ? '#0EA5E9' : '#8B5CF6' }]} />
+                            <View style={[styles.liveDot, { backgroundColor: mode === 'listening' ? '#557945' : mode === 'thinking' ? '#F1A344' : '#6B9458' }]} />
                             <AppText variant="caption" style={styles.liveBadgeText}>
                                 {mode.toUpperCase()}
                             </AppText>
@@ -595,7 +595,7 @@ const styles = StyleSheet.create({
         width: 170,
         height: 170,
         borderRadius: 85,
-        shadowColor: '#10B981',
+        shadowColor: '#557945',
         shadowOffset: { width: 0, height: 0 },
         shadowOpacity: 0.6,
         shadowRadius: 28,
@@ -614,7 +614,7 @@ const styles = StyleSheet.create({
         height: 220,
         borderRadius: 110,
         borderWidth: 2,
-        borderColor: 'rgba(16, 185, 129, 0.4)',
+        borderColor: 'rgba(85, 121, 69, 0.45)',
     },
     statusBox: {
         marginTop: 36,

@@ -27,22 +27,22 @@ export default function ResultScreen({ route, navigation }) {
 
     // Dynamic color theming based on prediction state & dark mode
     const themeBg = isHealthy
-        ? (isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#DCFCE7')
+        ? (isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage)
         : ((isUnknown || isNonArecanut)
             ? (isDarkMode ? 'rgba(156, 163, 175, 0.15)' : '#F3F4F6')
-            : (isDarkMode ? 'rgba(239, 68, 68, 0.15)' : '#FEF2F2'));
+            : (isDarkMode ? 'rgba(220, 38, 38, 0.15)' : '#FEF2F2'));
 
     const themeBorder = isHealthy
-        ? (isDarkMode ? 'rgba(16, 185, 129, 0.35)' : '#BBF7D0')
+        ? (isDarkMode ? 'rgba(85, 121, 69, 0.4)' : '#D5E0D0')
         : ((isUnknown || isNonArecanut)
-            ? (isDarkMode ? 'rgba(156, 163, 175, 0.3)' : '#E5E7EB')
-            : (isDarkMode ? 'rgba(239, 68, 68, 0.35)' : '#FECACA'));
+            ? (isDarkMode ? 'rgba(156, 163, 175, 0.3)' : colors.border)
+            : (isDarkMode ? 'rgba(220, 38, 38, 0.35)' : '#FECACA'));
 
     const themeText = isHealthy
-        ? (isDarkMode ? '#34D399' : '#16A34A')
+        ? colors.primary
         : ((isUnknown || isNonArecanut)
-            ? (isDarkMode ? '#D1D5DB' : '#4B5563')
-            : (isDarkMode ? '#F87171' : '#DC2626'));
+            ? (isDarkMode ? '#D1D5DB' : colors.textMedium)
+            : colors.error);
 
     const themeIcon = isHealthy ? 'check-circle' : ((isUnknown || isNonArecanut) ? 'info' : 'alert-triangle');
 
@@ -111,7 +111,7 @@ export default function ResultScreen({ route, navigation }) {
                         <AppText variant="heading3" style={[styles.sectionTitle, { color: colors.text }]}>{t('identified_symptoms')}</AppText>
                         {prediction.details.symptoms.map((symp, index) => (
                             <View key={index} style={styles.symptomRow}>
-                                <Feather name="alert-circle" size={20} color="#F59E0B" />
+                                <Feather name="alert-circle" size={20} color={colors.accent} />
                                 <AppText variant="body" style={styles.symptomText}>{symp}</AppText>
                             </View>
                         ))}
@@ -142,10 +142,13 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        backgroundColor: colors.surface,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
     },
-    scroll: { paddingHorizontal: 20, paddingBottom: 40 },
+    scroll: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 },
     resultCard: {
         flexDirection: 'row',
         backgroundColor: colors.surface,

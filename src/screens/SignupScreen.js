@@ -169,13 +169,13 @@ export default function SignupScreen({ navigation }) {
 const getStyles = (colors, isDarkMode) => StyleSheet.create({
     container: { flex: 1 },
     scroll: { flexGrow: 1, paddingVertical: 20 },
-    header: { marginBottom: 30, marginTop: 20 },
-    subtitle: { marginTop: 8 },
+    header: { marginBottom: 24, marginTop: 12 },
+    subtitle: { marginTop: 6, color: colors.textMedium },
     form: { marginBottom: 20 },
-    signupBtn: { marginBottom: 16, marginTop: 10 },
-    errorText: { color: '#DC2626', fontSize: 12, marginBottom: 16, marginTop: -8, marginLeft: 4 },
-    footer: { flexDirection: 'row', justifyContent: 'center', paddingBottom: 40, marginTop: 10 },
-    loginText: { fontWeight: '700' },
+    signupBtn: { marginBottom: 16, marginTop: 14 },
+    errorText: { color: colors.error, fontSize: 12, marginBottom: 12, marginTop: -4, marginLeft: 4, fontWeight: '500' },
+    footer: { flexDirection: 'row', justifyContent: 'center', paddingBottom: 40, marginTop: 10, alignItems: 'center' },
+    loginText: { fontWeight: '700', color: colors.primary },
     checkboxContainer: {
         flexDirection: 'row',
         alignItems: 'center',
@@ -183,8 +183,8 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         paddingHorizontal: 4,
     },
     checkbox: {
-        width: 20,
-        height: 20,
+        width: 22,
+        height: 22,
         borderRadius: 6,
         borderWidth: 1.5,
         borderColor: colors.border,
@@ -200,5 +200,8 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
     checkboxText: {
         flex: 1,
         lineHeight: 18,
+        color: colors.textMedium,
+        fontSize: 13,
     }
 });
+

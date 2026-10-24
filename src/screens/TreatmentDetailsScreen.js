@@ -1,67 +1,164 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
+import TreatmentReminderModal from '../components/TreatmentReminderModal';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { notificationService } from '../services/notificationService';
 
-const TreatmentCard = ({ type, title, description, iconLib, icon, color, styles, colors, t }) => (
-    <View style={[styles.card, { borderColor: color + '40' }]}>
-        <View style={styles.cardHeader}>
-            <View style={[styles.iconBox, { backgroundColor: color + '20' }]}>
-                {iconLib === 'Feather' ? (
-                    <Feather name={icon} size={24} color={color} />
-                ) : (
-                    <MaterialCommunityIcons name={icon} size={24} color={color} />
-                )}
-            </View>
-            <View style={{ marginLeft: 12, flex: 1 }}>
-                <AppText variant="caption" style={{ color: color, fontWeight: '700', textTransform: 'uppercase' }}>
-                    {type}
-                </AppText>
-                <AppText variant="heading3" style={{ color: colors.text }}>{title}</AppText>
-            </View>
-        </View>
-        <AppText variant="bodyMedium" style={{ marginTop: 12, lineHeight: 22, color: colors.textMedium }}>
-            {description}
-        </AppText>
+const TreatmentCard = ({
+    type,
+    title,
+    description,
+    iconLib,
+    icon,
+    color,
+    styles,
+    colors,
+    t,
+    language,
+    activeReminder,
+    onPressReminder
+}) => {
+    const isScheduled = !!activeReminder;
+    const formattedDate = isScheduled
+        ? notificationService.formatDate(activeReminder.scheduledTimestamp, language)
+        : '';
+    const daysLeft = isScheduled
+        ? notificationService.getDaysRemaining(activeReminder.scheduledTimestamp)
+        : 0;
 
-        <TouchableOpacity
-            style={[styles.remindBtn, { backgroundColor: color + '20' }]}
-            onPress={() => notificationService.scheduleTreatmentReminder(title, 5).then((success) => {
-                if (success) Alert.alert("Reminder Set", "You will receive a native push notification when it's time to re-apply this treatment.");
-            })}
-        >
-            <Feather name="bell" size={16} color={color} />
-            <AppText variant="bodySmall" style={{ color: color, fontWeight: '700', marginLeft: 6 }}>
-                {t('remind_reapply')}
+    return (
+        <View style={[styles.card, { borderColor: color + '40' }]}>
+            <View style={styles.cardHeader}>
+                <View style={[styles.iconBox, { backgroundColor: color + '20' }]}>
+                    {iconLib === 'Feather' ? (
+                        <Feather name={icon} size={24} color={color} />
+                    ) : (
+                        <MaterialCommunityIcons name={icon} size={24} color={color} />
+                    )}
+                </View>
+                <View style={{ marginLeft: 12, flex: 1 }}>
+                    <AppText variant="caption" style={{ color: color, fontWeight: '700', textTransform: 'uppercase' }}>
+                        {type}
+                    </AppText>
+                    <AppText variant="heading3" style={{ color: colors.text }}>{title}</AppText>
+                </View>
+            </View>
+            <AppText variant="bodyMedium" style={{ marginTop: 12, lineHeight: 22, color: colors.textMedium }}>
+                {description}
             </AppText>
-        </TouchableOpacity>
-    </View>
-);
+
+            {/* PRODUCTION-LEVEL REMINDER BUTTON / ACTIVE STATUS CAPSULE */}
+            {isScheduled ? (
+                <TouchableOpacity
+                    activeOpacity={0.8}
+                    style={[styles.activeReminderBtn, { backgroundColor: color + '12', borderColor: color + '60' }]}
+                    onPress={onPressReminder}
+                >
+                    <View style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                        <View style={[styles.activeDot, { backgroundColor: color }]} />
+                        <View style={{ marginLeft: 8, flex: 1 }}>
+                            <AppText variant="caption" style={{ color: color, fontWeight: '700' }}>
+                                {daysLeft <= 0
+                                    ? t('due_today')
+                                    : (t('scheduled_active_btn') || '✓ Re-apply: {date} • Tap to manage').replace('{date}', formattedDate)}
+                            </AppText>
+                            <AppText variant="overline" style={{ color: colors.textMedium, marginTop: 1 }}>
+                                {activeReminder.timeOfDay || '07:00 AM'} • {t('tap_to_manage')}
+                            </AppText>
+                        </View>
+                    </View>
+                    <Feather name="chevron-right" size={16} color={color} />
+                </TouchableOpacity>
+            ) : (
+                <TouchableOpacity
+                    activeOpacity={0.75}
+                    style={[styles.remindBtn, { backgroundColor: color + '15', borderColor: color + '40' }]}
+                    onPress={onPressReminder}
+                >
+                    <Feather name="bell" size={16} color={color} />
+                    <AppText variant="bodySmall" style={{ color: color, fontWeight: '700', marginLeft: 8 }}>
+                        {t('remind_reapply')}
+                    </AppText>
+                </TouchableOpacity>
+            )}
+        </View>
+    );
+};
 
 export default function TreatmentDetailsScreen({ route, navigation }) {
     const { colors, isDarkMode } = useTheme();
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
     const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     const { details, diseaseName } = route.params || {};
 
+    const [remindersMap, setRemindersMap] = useState({});
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectedTreatment, setSelectedTreatment] = useState(null);
+
+    // Load active reminders from persistent storage
+    const loadReminders = useCallback(async () => {
+        try {
+            const list = await notificationService.getReminders();
+            const map = {};
+            list.forEach(item => {
+                if (item.status === 'active' && item.treatmentTitle) {
+                    map[item.treatmentTitle.trim().toLowerCase()] = item;
+                }
+            });
+            setRemindersMap(map);
+        } catch (e) {
+            console.error('Failed to load reminders map', e);
+        }
+    }, []);
+
+    useEffect(() => {
+        loadReminders();
+    }, [loadReminders]);
+
+    const handleOpenReminderModal = (treatmentObj) => {
+        setSelectedTreatment(treatmentObj);
+        setModalVisible(true);
+    };
+
+    const handleReminderSaved = (reminder) => {
+        if (reminder?.treatmentTitle) {
+            setRemindersMap(prev => ({
+                ...prev,
+                [reminder.treatmentTitle.trim().toLowerCase()]: reminder
+            }));
+        }
+        loadReminders();
+    };
+
+    const handleReminderCancelled = (reminderId) => {
+        loadReminders();
+    };
+
+    const handleReminderCompleted = (reminderId) => {
+        loadReminders();
+    };
+
     const isHealthy = diseaseName?.toLowerCase().includes('healthy');
     const headerTitle = isHealthy ? t('care_guide') : t('recommended_treatment');
-    const headerIconColor = isHealthy ? "#10B981" : colors.primary;
+    const headerIconColor = isHealthy ? colors.primary : colors.accent;
     const headerBgColor = isHealthy
-        ? (isDarkMode ? 'rgba(16, 185, 129, 0.15)' : '#DCFCE7')
-        : (isDarkMode ? 'rgba(5, 150, 105, 0.15)' : '#F0FDF4');
+        ? (isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage)
+        : (isDarkMode ? 'rgba(241, 163, 68, 0.15)' : colors.softCream);
     const headerBorder = isHealthy
-        ? (isDarkMode ? 'rgba(16, 185, 129, 0.3)' : '#BBF7D0')
-        : (isDarkMode ? 'rgba(5, 150, 105, 0.3)' : '#DCFCE7');
+        ? (isDarkMode ? 'rgba(85, 121, 69, 0.4)' : '#D5E0D0')
+        : (isDarkMode ? 'rgba(241, 163, 68, 0.3)' : '#F5D0A0');
 
     const introText = isHealthy
         ? "Your arecanut palm appears in excellent condition! To maintain this high vitality, please follow the prophylactic maintenance recommendations below."
         : "Immediate action helps control the spread of diseases. Please follow the expert agricultural treatments recommended below.";
+
+    const chemTitleKey = details?.chemical_treatment?.title?.trim().toLowerCase();
+    const orgTitleKey = details?.organic_treatment?.title?.trim().toLowerCase();
 
     return (
         <Screen style={styles.screen} noPadding>
@@ -93,6 +190,14 @@ export default function TreatmentDetailsScreen({ route, navigation }) {
                         styles={styles}
                         colors={colors}
                         t={t}
+                        language={language}
+                        activeReminder={remindersMap[chemTitleKey]}
+                        onPressReminder={() => handleOpenReminderModal({
+                            type: t('chemical_option'),
+                            title: details.chemical_treatment.title,
+                            description: details.chemical_treatment.desc,
+                            color: '#3B82F6',
+                        })}
                     />
                 )}
 
@@ -107,6 +212,14 @@ export default function TreatmentDetailsScreen({ route, navigation }) {
                         styles={styles}
                         colors={colors}
                         t={t}
+                        language={language}
+                        activeReminder={remindersMap[orgTitleKey]}
+                        onPressReminder={() => handleOpenReminderModal({
+                            type: t('organic_option'),
+                            title: details.organic_treatment.title,
+                            description: details.organic_treatment.desc,
+                            color: colors.primary,
+                        })}
                     />
                 )}
 
@@ -130,6 +243,20 @@ export default function TreatmentDetailsScreen({ route, navigation }) {
                     onPress={() => navigation.navigate('HomeMain')}
                 />
             </View>
+
+            {/* INTERACTIVE PRODUCTION REMINDER MODAL */}
+            {selectedTreatment && (
+                <TreatmentReminderModal
+                    visible={modalVisible}
+                    onClose={() => setModalVisible(false)}
+                    treatment={selectedTreatment}
+                    diseaseName={diseaseName}
+                    existingReminder={remindersMap[selectedTreatment?.title?.trim().toLowerCase()]}
+                    onReminderSaved={handleReminderSaved}
+                    onReminderCancelled={handleReminderCancelled}
+                    onReminderCompleted={handleReminderCompleted}
+                />
+            )}
         </Screen>
     );
 }
@@ -140,10 +267,13 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        backgroundColor: colors.surface,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
     },
-    scroll: { paddingHorizontal: 20, paddingBottom: 40 },
+    scroll: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 },
     summaryBox: {
         flexDirection: 'row',
         padding: 16,
@@ -178,12 +308,28 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
     },
     remindBtn: {
         marginTop: 16,
-        paddingVertical: 8,
-        paddingHorizontal: 12,
-        borderRadius: 8,
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderRadius: 10,
         alignSelf: 'flex-start',
         flexDirection: 'row',
-        alignItems: 'center'
+        alignItems: 'center',
+        borderWidth: 1,
+    },
+    activeReminderBtn: {
+        marginTop: 16,
+        paddingVertical: 10,
+        paddingHorizontal: 14,
+        borderRadius: 12,
+        borderWidth: 1.5,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+    activeDot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
     },
     section: {
         marginTop: 10,

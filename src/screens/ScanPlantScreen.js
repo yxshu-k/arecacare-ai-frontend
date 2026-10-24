@@ -247,6 +247,8 @@ const getStyles = (colors) => StyleSheet.create({
         width: 64,
         height: 64,
         borderRadius: 32,
-        backgroundColor: colors.white,
+        backgroundColor: colors.primary,
+        borderWidth: 2,
+        borderColor: colors.white,
     }
 });

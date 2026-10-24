@@ -88,8 +88,8 @@ const ChatLineAI = ({ text, colors, isDarkMode, styles, t, language = 'en' }) =>
     return (
         <Animated.View style={[styles.chatRowAI, { opacity: fadeAnim, transform: [{ translateY }] }]}>
             <View style={styles.avatarAIContainer}>
-                <View style={[styles.avatarAIBox, { backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5', borderColor: isDarkMode ? '#064E3B' : '#D1FAE5' }]}>
-                    <MaterialCommunityIcons name="robot-outline" size={18} color="#059669" />
+                <View style={[styles.avatarAIBox, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : colors.lightSage, borderColor: isDarkMode ? '#2D3A2B' : '#DCE5D7' }]}>
+                    <MaterialCommunityIcons name="robot-outline" size={18} color={colors.primary} />
                 </View>
             </View>
             <View style={styles.aiBubbleContainer}>
@@ -99,14 +99,14 @@ const ChatLineAI = ({ text, colors, isDarkMode, styles, t, language = 'en' }) =>
                     </AppText>
                     <View style={[styles.aiActionBar, { borderTopColor: colors.border }]}>
                         <TouchableOpacity onPress={handleSpeak} style={styles.actionIconBtn}>
-                            <Feather name={isSpeaking ? "volume-x" : "volume-2"} size={14} color={isSpeaking ? "#EF4444" : colors.textMedium} />
-                            <AppText variant="caption" style={{ color: isSpeaking ? '#EF4444' : colors.textMedium, marginLeft: 6, fontSize: 11, fontWeight: '500' }}>
+                            <Feather name={isSpeaking ? "volume-x" : "volume-2"} size={14} color={isSpeaking ? colors.error : colors.textMedium} />
+                            <AppText variant="caption" style={{ color: isSpeaking ? colors.error : colors.textMedium, marginLeft: 6, fontSize: 11, fontWeight: '500' }}>
                                 {isSpeaking ? (t ? t('stop') : "Stop") : (t ? t('listen') : "Listen")}
                             </AppText>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={handleCopy} style={styles.actionIconBtn} disabled={copied}>
-                            <Feather name={copied ? "check" : "copy"} size={14} color={copied ? "#059669" : colors.textMedium} />
-                            <AppText variant="caption" style={{ color: copied ? '#059669' : colors.textMedium, marginLeft: 6, fontSize: 11, fontWeight: '500' }}>
+                            <Feather name={copied ? "check" : "copy"} size={14} color={copied ? colors.primary : colors.textMedium} />
+                            <AppText variant="caption" style={{ color: copied ? colors.primary : colors.textMedium, marginLeft: 6, fontSize: 11, fontWeight: '500' }}>
                                 {copied ? (t ? t('copied') : "Copied") : (t ? t('copy') : "Copy")}
                             </AppText>
                         </TouchableOpacity>
@@ -137,15 +137,15 @@ const ChatLineUser = ({ text, styles }) => {
     );
 };
 
-const TypingIndicator = ({ styles, isDarkMode }) => (
+const TypingIndicator = ({ styles, isDarkMode, colors }) => (
     <View style={styles.chatRowAI}>
         <View style={styles.avatarAIContainer}>
-            <View style={[styles.avatarAIBox, { backgroundColor: isDarkMode ? 'rgba(5, 150, 105, 0.2)' : '#ECFDF5', borderColor: isDarkMode ? '#064E3B' : '#D1FAE5' }]}>
-                <MaterialCommunityIcons name="robot-outline" size={18} color="#059669" />
+            <View style={[styles.avatarAIBox, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : (colors?.lightSage || '#E8F0E4'), borderColor: isDarkMode ? '#2D3A2B' : '#DCE5D7' }]}>
+                <MaterialCommunityIcons name="robot-outline" size={18} color={colors?.primary || '#557945'} />
             </View>
         </View>
         <View style={[styles.aiBubbleStyle, { flexDirection: 'row', alignItems: 'center', height: 42, width: 72, justifyContent: 'center' }]}>
-            <ActivityIndicator size="small" color="#059669" />
+            <ActivityIndicator size="small" color={colors?.primary || '#557945'} />
         </View>
     </View>
 );

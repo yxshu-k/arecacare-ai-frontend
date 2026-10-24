@@ -3,8 +3,8 @@ import { View, StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 
 const Card = ({ children, style }) => {
-    const { colors } = useTheme();
-    const styles = React.useMemo(() => getStyles(colors), [colors]);
+    const { colors, isDarkMode } = useTheme();
+    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
     return (
         <View style={[styles.card, style]}>
             {children}
@@ -12,20 +12,23 @@ const Card = ({ children, style }) => {
     );
 };
 
-const getStyles = (colors) => StyleSheet.create({
+const getStyles = (colors, isDarkMode) => StyleSheet.create({
     card: {
         backgroundColor: colors.surface,
         borderRadius: 16,
         padding: 16,
         marginVertical: 8,
+        borderWidth: 1,
+        borderColor: colors.border,
         // iOS shadow
-        shadowColor: colors.black,
+        shadowColor: colors.primaryDark || '#1C241B',
         shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.05,
+        shadowOpacity: isDarkMode ? 0.25 : 0.05,
         shadowRadius: 8,
         // Android elevation
-        elevation: 3,
+        elevation: 2,
     }
 });
 
 export default Card;
+

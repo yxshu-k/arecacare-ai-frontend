@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
-import { View, StyleSheet, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ActivityIndicator, Image } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import { useTheme } from '../context/ThemeContext';
@@ -33,7 +32,11 @@ export default function SplashScreen({ navigation }) {
             <View style={styles.container}>
                 <View style={styles.logoContainer}>
                     <View style={styles.iconBackground}>
-                        <MaterialCommunityIcons name="leaf" size={72} color={colors.primary} />
+                        <Image
+                            source={require('../../assets/icon.png')}
+                            style={{ width: 90, height: 90 }}
+                            resizeMode="contain"
+                        />
                     </View>
                     <AppText variant="heading1" style={styles.title}>ArecaCare AI</AppText>
                     <AppText variant="bodyMedium" color="textMedium" style={styles.subtitle}>

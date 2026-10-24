@@ -5,6 +5,7 @@ import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import AppTextInput from '../components/AppTextInput';
+import SoilTypeSelector from '../components/SoilTypeSelector';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
 import { yieldService } from '../services/yieldService';
@@ -15,7 +16,7 @@ export default function YieldInputScreen({ navigation }) {
     const { colors, isDarkMode } = useTheme();
     const { t } = useLanguage();
     const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
-    const [soilType, setSoilType] = useState('');
+    const [soilType, setSoilType] = useState('Red Laterite');
     const [rainfall, setRainfall] = useState('');
     const [age, setAge] = useState('');
     const [area, setArea] = useState('');
@@ -24,8 +25,27 @@ export default function YieldInputScreen({ navigation }) {
     const { keyboardHeight, isKeyboardVisible } = useKeyboard();
 
     const handlePredict = async () => {
-        if (!soilType.trim() || !rainfall.trim() || !age.trim() || !area.trim()) {
-            Alert.alert(t('error') || 'Missing Data', 'Please fill in all farm parameters before predicting.');
+        if (!soilType || !rainfall.trim() || !age.trim() || !area.trim()) {
+            Alert.alert(t('error') || 'Missing Data', t('fill_all_fields') || 'Please fill in all farm parameters before predicting.');
+            return;
+        }
+
+        const rainVal = parseFloat(rainfall);
+        const ageVal = parseInt(age, 10);
+        const areaVal = parseFloat(area);
+
+        if (isNaN(rainVal) || rainVal <= 0) {
+            Alert.alert(t('error') || 'Validation Error', 'Please enter a valid average rainfall in mm (e.g. 1200).');
+            return;
+        }
+
+        if (isNaN(ageVal) || ageVal <= 0 || ageVal > 100) {
+            Alert.alert(t('error') || 'Validation Error', 'Please enter a valid palm age between 1 and 100 years.');
+            return;
+        }
+
+        if (isNaN(areaVal) || areaVal <= 0) {
+            Alert.alert(t('error') || 'Validation Error', 'Please enter a valid plantation area in acres.');
             return;
         }
 
@@ -79,12 +99,9 @@ export default function YieldInputScreen({ navigation }) {
                     </AppText>
 
                     <View style={styles.form}>
-                        <AppTextInput
-                            label={t('soil_type')}
-                            icon="map"
-                            placeholder="e.g. Loamy, Sandy"
-                            value={soilType}
-                            onChangeText={setSoilType}
+                        <SoilTypeSelector
+                            selectedSoil={soilType}
+                            onSelectSoil={setSoilType}
                         />
 
                         <AppTextInput
@@ -94,6 +111,11 @@ export default function YieldInputScreen({ navigation }) {
                             keyboardType="numeric"
                             value={rainfall}
                             onChangeText={(text) => setRainfall(formatNumber(text))}
+                            onFocus={() => {
+                                setTimeout(() => {
+                                    scrollRef.current?.scrollTo({ y: 240, animated: true });
+                                }, 120);
+                            }}
                         />
 
                         <AppTextInput
@@ -105,7 +127,7 @@ export default function YieldInputScreen({ navigation }) {
                             onChangeText={(text) => setAge(formatNumber(text))}
                             onFocus={() => {
                                 setTimeout(() => {
-                                    scrollRef.current?.scrollTo({ y: 120, animated: true });
+                                    scrollRef.current?.scrollTo({ y: 340, animated: true });
                                 }, 120);
                             }}
                         />
@@ -119,7 +141,7 @@ export default function YieldInputScreen({ navigation }) {
                             onChangeText={(text) => setArea(formatNumber(text))}
                             onFocus={() => {
                                 setTimeout(() => {
-                                    scrollRef.current?.scrollTo({ y: 200, animated: true });
+                                    scrollRef.current?.scrollTo({ y: 440, animated: true });
                                 }, 120);
                             }}
                         />

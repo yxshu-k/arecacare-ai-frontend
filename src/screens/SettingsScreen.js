@@ -309,7 +309,7 @@ export default function SettingsScreen({ navigation }) {
                     />
 
                     {/* GPS Status Banner */}
-                    <View style={[styles.locationBanner, { backgroundColor: isDarkMode ? '#1E293B' : '#F1F5F9' }]}>
+                    <View style={[styles.locationBanner, { backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.15)' : (colors.lightSage || '#E8F0E4') }]}>
                         <View style={{ flex: 1 }}>
                             <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                                 <View style={styles.liveDot} />
@@ -468,12 +468,12 @@ export default function SettingsScreen({ navigation }) {
                                     : `${queueCount} scan${queueCount === 1 ? '' : 's'} waiting for cloud synchronization.`}
                             </AppText>
                         </View>
-                        <View style={[styles.queueCountBadge, { backgroundColor: queueCount > 0 ? '#FEF3C7' : '#ECFDF5' }]}>
+                        <View style={[styles.queueCountBadge, { backgroundColor: queueCount > 0 ? (colors.softCream || '#FFF3E2') : (colors.lightSage || '#E8F0E4') }]}>
                             <AppText
                                 variant="caption"
                                 style={{
                                     fontWeight: 'bold',
-                                    color: queueCount > 0 ? '#D97706' : '#059669',
+                                    color: queueCount > 0 ? (colors.secondary || '#F1A344') : colors.primary,
                                 }}
                             >
                                 {queueCount}
@@ -528,7 +528,7 @@ export default function SettingsScreen({ navigation }) {
                         <AppText variant="caption" style={{ color: colors.textMedium }}>Radar Network</AppText>
                         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                             <View style={styles.greenDot} />
-                            <AppText variant="caption" style={{ color: '#059669', fontWeight: 'bold' }}>Live Satellites Active</AppText>
+                            <AppText variant="caption" style={{ color: colors.primary, fontWeight: 'bold' }}>Live Satellites Active</AppText>
                         </View>
                     </View>
                 </View>
@@ -601,7 +601,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         width: 36,
         height: 36,
         borderRadius: 18,
-        backgroundColor: isDarkMode ? '#1E293B' : '#F1F5F9',
+        backgroundColor: isDarkMode ? 'rgba(255, 255, 255, 0.06)' : (colors.lightSage || '#E8F0E4'),
         justifyContent: 'center',
         alignItems: 'center',
         borderWidth: 1,
@@ -619,7 +619,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         width: 6,
         height: 6,
         borderRadius: 3,
-        backgroundColor: '#059669',
+        backgroundColor: colors.primary,
         marginRight: 6,
     },
     refreshGpsBtn: {
@@ -690,7 +690,7 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         width: 8,
         height: 8,
         borderRadius: 4,
-        backgroundColor: '#059669',
+        backgroundColor: colors.primary,
         marginRight: 6,
     },
 });

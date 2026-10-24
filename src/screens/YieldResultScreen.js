@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Share } from 'react-native';
 import { Feather } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
 import AppButton from '../components/AppButton';
 import { useTheme } from '../context/ThemeContext';
 import { useLanguage } from '../context/LanguageContext';
+import { getSoilLocalizedLabel, getSoilColor } from '../utils/soilHelper';
 
 const { width } = Dimensions.get('window');
 
@@ -38,18 +39,46 @@ export default function YieldResultScreen({ navigation, route }) {
     const getStatusColor = () => {
         const lower = statusLabel.toLowerCase();
         if (lower.includes('good') || lower.includes('high') || lower.includes('excellent')) return colors.primary;
-        if (lower.includes('low') || lower.includes('poor')) return isDarkMode ? '#F87171' : '#DC2626';
-        return '#F59E0B';
+        if (lower.includes('low') || lower.includes('poor')) return colors.error;
+        return colors.accent;
+    };
+
+    const getQualityLabel = (rating) => {
+        if (!rating) return '—';
+        const lower = String(rating).toLowerCase();
+        if (lower.includes('optimal') || lower.includes('high') || lower.includes('excellent')) {
+            return t('quality_optimal') || rating;
+        }
+        if (lower.includes('good')) {
+            return t('quality_good') || rating;
+        }
+        if (lower.includes('moderate')) {
+            return t('quality_moderate') || rating;
+        }
+        if (lower.includes('low') || lower.includes('sub') || lower.includes('poor')) {
+            return t('quality_low') || rating;
+        }
+        return rating;
+    };
+
+    const handleShare = async () => {
+        try {
+            await Share.share({
+                message: `🌿 ArecaCare AI: ${t('yield_prediction')} — ${yieldValue} ${t('tonnes') || 'Tonnes'} (${yieldPerAcre} T/${t('acres')}) for ${inputs.area || '1'} ${t('acres')} (${getSoilLocalizedLabel(inputs.soilType, t)}).`,
+            });
+        } catch (e) {
+            // User dismissed share
+        }
     };
 
     return (
         <Screen style={styles.screen} noPadding>
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.navigate('HomeMain')}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Feather name="chevron-left" size={28} color={colors.text} />
                 </TouchableOpacity>
                 <AppText variant="heading3" style={{ color: colors.text }}>{t('prediction_result')}</AppText>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={handleShare}>
                     <Feather name="share-2" size={24} color={colors.text} />
                 </TouchableOpacity>
             </View>
@@ -62,7 +91,7 @@ export default function YieldResultScreen({ navigation, route }) {
                         <View style={styles.innerCircle}>
                             <AppText style={styles.metricValue}>{yieldValue}</AppText>
                             <AppText variant="bodyMedium" color="textMedium" style={{ color: colors.textMedium }}>
-                                Tonnes / {inputs.area || '1'} {t('acres')}
+                                {t('tonnes') || 'Tonnes'} / {inputs.area || '1'} {t('acres')}
                             </AppText>
                         </View>
                     </View>
@@ -84,7 +113,7 @@ export default function YieldResultScreen({ navigation, route }) {
                         </View>
                         <View>
                             <AppText variant="caption" color="textMedium" style={{ color: colors.textMedium }}>{t('quality')}</AppText>
-                            <AppText variant="heading3" style={{ color: getStatusColor() }}>{qualityRating}</AppText>
+                            <AppText variant="heading3" style={{ color: getStatusColor() }}>{getQualityLabel(qualityRating)}</AppText>
                         </View>
                     </View>
                 </View>
@@ -101,7 +130,12 @@ export default function YieldResultScreen({ navigation, route }) {
                     <AppText variant="heading3" style={{ marginBottom: 12, color: colors.text }}>{t('farm_parameters')}</AppText>
                     <View style={styles.paramRow}>
                         <AppText variant="caption" color="textMedium" style={{ color: colors.textMedium }}>{t('soil_type')}</AppText>
-                        <AppText variant="bodyMedium" style={{ color: colors.text }}>{inputs.soilType || '—'}</AppText>
+                        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                            <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: getSoilColor(inputs.soilType) }} />
+                            <AppText variant="bodyMedium" style={{ color: colors.text, fontWeight: '600' }}>
+                                {getSoilLocalizedLabel(inputs.soilType, t)}
+                            </AppText>
+                        </View>
                     </View>
                     <View style={styles.paramRow}>
                         <AppText variant="caption" color="textMedium" style={{ color: colors.textMedium }}>{t('rainfall')}</AppText>
@@ -109,7 +143,7 @@ export default function YieldResultScreen({ navigation, route }) {
                     </View>
                     <View style={styles.paramRow}>
                         <AppText variant="caption" color="textMedium" style={{ color: colors.textMedium }}>{t('palm_age')}</AppText>
-                        <AppText variant="bodyMedium" style={{ color: colors.text }}>{inputs.age || '—'} {t('palm_age')}</AppText>
+                        <AppText variant="bodyMedium" style={{ color: colors.text }}>{inputs.age || '—'} {t('years') || 'Years'}</AppText>
                     </View>
                     <View style={styles.paramRow}>
                         <AppText variant="caption" color="textMedium" style={{ color: colors.textMedium }}>{t('area_acre')}</AppText>
@@ -135,22 +169,25 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         justifyContent: 'space-between',
-        paddingHorizontal: 20,
-        paddingVertical: 16,
+        paddingHorizontal: 16,
+        paddingVertical: 14,
+        backgroundColor: colors.surface,
+        borderBottomWidth: 1,
+        borderBottomColor: colors.border,
     },
     scroll: { paddingHorizontal: 20, paddingBottom: 40, alignItems: 'center' },
     metricContainer: {
         width: '100%',
         alignItems: 'center',
-        marginTop: 30,
-        marginBottom: 40,
+        marginTop: 24,
+        marginBottom: 32,
     },
     outerCircle: {
         width: width * 0.55,
         height: width * 0.55,
         borderRadius: (width * 0.55) / 2,
         borderWidth: 6,
-        borderColor: isDarkMode ? 'rgba(5, 150, 105, 0.25)' : '#D1FAE5',
+        borderColor: isDarkMode ? 'rgba(85, 121, 69, 0.25)' : colors.lightSage,
         justifyContent: 'center',
         alignItems: 'center',
         marginBottom: 20,
