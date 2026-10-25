@@ -1,10 +1,10 @@
 import React, { useContext } from 'react';
+import { View } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import AuthNavigator from './AuthNavigator';
 import AppNavigator from './AppNavigator';
-import SplashScreen from '../screens/SplashScreen'; // Pure visual component if loading
 
 export default function RootNavigator() {
     const { userToken, isLoading } = useContext(AuthContext);
@@ -23,7 +23,7 @@ export default function RootNavigator() {
     };
 
     if (isLoading) {
-        return <SplashScreen />;
+        return <View style={{ flex: 1, backgroundColor: colors.background }} />;
     }
 
     return (

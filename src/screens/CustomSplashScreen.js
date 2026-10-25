@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import { View, StyleSheet, Animated } from 'react-native';
+import React, { useEffect, useRef, useCallback } from 'react';
+import { StyleSheet, Animated, TouchableWithoutFeedback } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { splashHtml } from '../constants/splashHtml';
 import { useTheme } from '../context/ThemeContext';
@@ -7,44 +7,56 @@ import { useTheme } from '../context/ThemeContext';
 export default function CustomSplashScreen({ onAnimationDone }) {
     const { isDarkMode } = useTheme();
     const fadeAnim = useRef(new Animated.Value(1)).current;
+    const isFinishedRef = useRef(false);
 
-    useEffect(() => {
-        // Generous hold time so the animated logo completes its full draw & pulse sequence
-        const timer = setTimeout(() => {
-            Animated.timing(fadeAnim, {
-                toValue: 0,
-                duration: 600, // Smooth 600ms fade out transition
-                useNativeDriver: true,
-            }).start(() => {
-                if (onAnimationDone) onAnimationDone();
-            });
-        }, 4500);
+    const finishSplash = useCallback(() => {
+        if (isFinishedRef.current) return;
+        isFinishedRef.current = true;
 
-        return () => clearTimeout(timer);
+        Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 400, // Crisp 400ms cross-fade into next screen
+            useNativeDriver: true,
+        }).start(() => {
+            if (onAnimationDone) onAnimationDone();
+        });
     }, [fadeAnim, onAnimationDone]);
 
-    // Pass the system color context dynamically to the WebView by augmenting the HTML
+    useEffect(() => {
+        // Hold for 2.8s so animated logo completes full draw, sweep & pulse sequence
+        const timer = setTimeout(() => {
+            finishSplash();
+        }, 2800);
+
+        return () => clearTimeout(timer);
+    }, [finishSplash]);
+
+    // Pass the system color context dynamically to the WebView
     const themedHtml = isDarkMode
         ? splashHtml.replace('<html lang="en">', '<html lang="en" data-theme="dark">')
         : splashHtml;
 
-    const bgColor = isDarkMode ? '#06130E' : '#ffffff';
+    const bgColor = isDarkMode ? '#121611' : '#ffffff';
 
     return (
-        <Animated.View style={[styles.container, { backgroundColor: bgColor, opacity: fadeAnim }]}>
-            <WebView
-                originWhitelist={['*']}
-                source={{ html: themedHtml, baseUrl: 'https://localhost' }}
-                style={[styles.webview, { backgroundColor: bgColor }]}
-                scrollEnabled={false}
-                javaScriptEnabled={true}
-                domStorageEnabled={true}
-                showsVerticalScrollIndicator={false}
-                showsHorizontalScrollIndicator={false}
-                bounces={false}
-                onLoadEnd={() => console.log("[CustomSplashScreen] WebView engine fully initialized.")}
-            />
-        </Animated.View>
+        <TouchableWithoutFeedback onPress={finishSplash}>
+            <Animated.View style={[styles.container, { backgroundColor: bgColor, opacity: fadeAnim }]}>
+                <WebView
+                    originWhitelist={['*']}
+                    source={{ html: themedHtml }}
+                    style={[styles.webview, { backgroundColor: bgColor }]}
+                    scrollEnabled={false}
+                    javaScriptEnabled={true}
+                    domStorageEnabled={true}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
+                    bounces={false}
+                    androidHardwareAccelerationDisabled={false}
+                    overScrollMode="never"
+                    pointerEvents="none"
+                />
+            </Animated.View>
+        </TouchableWithoutFeedback>
     );
 }
 

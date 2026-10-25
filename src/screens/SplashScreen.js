@@ -6,51 +6,17 @@ import AppText from '../components/AppText';
 import { useTheme } from '../context/ThemeContext';
 
 export default function SplashScreen({ navigation }) {
-    const { colors, isDarkMode } = useTheme();
-    const styles = React.useMemo(() => getStyles(colors, isDarkMode), [colors, isDarkMode]);
+    const { colors } = useTheme();
 
     useEffect(() => {
         if (navigation) {
-            const timer = setTimeout(async () => {
-                try {
-                    const hasOnboarded = await SecureStore.getItemAsync('has_onboarded');
-                    if (hasOnboarded === 'true') {
-                        navigation.replace('Login');
-                    } else {
-                        navigation.replace('Onboarding');
-                    }
-                } catch (e) {
-                    navigation.replace('Login');
-                }
-            }, 1200);
-            return () => clearTimeout(timer);
+            navigation.replace('Onboarding');
         }
     }, [navigation]);
 
     return (
-        <Screen noPadding style={styles.screen}>
-            <View style={styles.container}>
-                <View style={styles.logoContainer}>
-                    <View style={styles.iconBackground}>
-                        <Image
-                            source={require('../../assets/icon.png')}
-                            style={{ width: 90, height: 90 }}
-                            resizeMode="contain"
-                        />
-                    </View>
-                    <AppText variant="heading1" style={styles.title}>ArecaCare AI</AppText>
-                    <AppText variant="bodyMedium" color="textMedium" style={styles.subtitle}>
-                        Smart Farming, Better Future
-                    </AppText>
-                </View>
-
-                <View style={styles.loadingContainer}>
-                    <ActivityIndicator size="large" color={colors.primary} />
-                    <AppText variant="caption" color="textLight" style={styles.loadingText}>
-                        Initializing framework...
-                    </AppText>
-                </View>
-            </View>
+        <Screen noPadding style={{ flex: 1, backgroundColor: colors.background }}>
+            <View style={{ flex: 1, backgroundColor: colors.background }} />
         </Screen>
     );
 }

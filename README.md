@@ -17,11 +17,20 @@
 
 ### 🌟 Core Capabilities
 1. **Camera AI Disease Scanner:** Point your smartphone camera at an infected arecanut leaf or nut bunch for instant computer vision disease diagnosis (Koleroga, Yellow Leaf Disease, Bud Rot, Anabe Roga, or Healthy) with confidence percentages and certified organic/chemical remedies.
-2. **Weather & Disease Vulnerability Radar:** Real-time environmental monitoring that correlates humidity (>85%), monsoon precipitation, and temperature to calculate risk levels for seasonal fungal outbreaks before crops are damaged.
-3. **Regional Voice AI Agronomist:** A voice-enabled conversational assistant powered by Google Gemini AI that listens to farmers in their native tongue and speaks back practical advice.
-4. **Precision Yield Estimator:** Custom calculators analyzing palm density, spacing, soil chemistry, and irrigation to accurately forecast annual harvest quintals.
-5. **Real Email OTP Password Recovery:** Production-grade security workflow delivering 6-digit verification codes directly to farmers' inboxes.
-6. **Native Multilingual Engine:** Instant in-app toggling across 6 Indian regional languages without requiring an application restart.
+2. **Out-of-Distribution (OOD) Rejection:** Protects diagnosis accuracy by rejecting non-arecanut or corrupted imagery if Shannon entropy > 1.85 or confidence < 0.45.
+3. **Weather & Disease Vulnerability Radar:** Real-time environmental monitoring that correlates humidity (>85%), monsoon precipitation, and temperature to calculate risk levels for seasonal fungal outbreaks before crops are damaged.
+4. **Regional Voice AI Agronomist:** A voice-enabled conversational assistant powered by Google Gemini AI that listens to farmers in their native tongue and speaks back practical advice.
+5. **Precision Yield Estimator:** Custom calculators analyzing palm density, spacing, soil chemistry, and irrigation to accurately forecast annual harvest quintals using `agronomics.py`.
+6. **Real Email OTP Password Recovery:** Production-grade security workflow delivering 6-digit verification codes directly to farmers' inboxes with sub-second API response.
+7. **Native Multilingual Engine:** Instant in-app toggling across 6 Indian regional languages (Kannada, Malayalam, Hindi, Tamil, Telugu, English) without requiring an application restart.
+8. **Multi-Farm Plantation Management:** Add, configure, and monitor multiple farm plots with acreage, palm counts, soil classification, and irrigation methods.
+9. **Offline Network Resilience & Sync:** Queues leaf scans and notes in `AsyncStorage` when offline, automatically dispatching them via `syncService.js` once network connectivity returns.
+10. **Plant Pathology & Treatment Encyclopedia:** Comprehensive disease library featuring step-by-step chemical and organic remedies, dosage calculators, and Bordeaux mixture preparation guides.
+11. **Historical Scan Timeline:** Searchable, chronological archive of past diagnostic scans with Cloudinary CDN thumbnails and full report retrieval.
+12. **Seasonal Crop Directives & Articles:** Contextual advice synchronized with real-time weather and seasonal plantation milestones.
+13. **Farmer Profile & Cloudinary Avatars:** Profile customization, photo upload/deletion hosted on Cloudinary, and farm stat tracking.
+14. **System-Wide Theming:** High-contrast Light Mode and Dark Mode support built for outdoor sunlight visibility.
+15. **Help Center & Agricultural Hotline:** Searchable FAQ and direct one-touch dialer connecting to Kisan Call Centers and ICAR-CPCRI experts.
 
 ---
 
@@ -51,7 +60,7 @@ Language accessibility is vital for rural farmers. ArecaCare AI includes compreh
 
 ---
 
-## 📱 4. Screen Inventory (19 Production Screens)
+## 📱 4. Screen Inventory (27 Production Screens)
 
 ```text
 arecacare-ai-frontend/
@@ -73,29 +82,38 @@ arecacare-ai-frontend/
 │   │   ├── RootNavigator.js   # Auth state gatekeeper
 │   │   ├── AuthNavigator.js   # Onboarding, Login, Signup, Forgot Password
 │   │   └── AppNavigator.js    # Bottom Tabs & Feature Stacks
-│   ├── screens/               # 19 Feature Screens
+│   ├── screens/               # 27 Production Screens
 │   │   ├── SplashScreen.js           # Animated brand launch screen
+│   │   ├── CustomSplashScreen.js     # Lightweight secondary splash loader
 │   │   ├── OnboardingScreen.js       # 3-step farmer intro wizard
 │   │   ├── LoginScreen.js            # Email & Google SSO login
 │   │   ├── SignupScreen.js           # New farmer account creation
 │   │   ├── ForgotPasswordScreen.js   # 4-step live Email OTP wizard
-│   │   ├── HomeScreen.js             # Central dashboard with action cards
+│   │   ├── HomeScreen.js             # Central dashboard with action cards & weather glance
 │   │   ├── ScanPlantScreen.js        # Camera viewfinder & photo selector
-│   │   ├── ResultScreen.js           # AI disease diagnostic readout
-│   │   ├── TreatmentDetailsScreen.js # Chemical & organic remedy guide
+│   │   ├── ImagePreviewScreen.js     # Image inspection, crop & confirmation before upload
+│   │   ├── ResultScreen.js           # AI disease diagnostic readout & severity gauge
+│   │   ├── TreatmentDetailsScreen.js # Chemical & organic remedy guide with dosage calculator
 │   │   ├── DiseaseInfoScreen.js      # Plant pathology encyclopedia
-│   │   ├── HistoryScreen.js          # Timeline of past disease scans
-│   │   ├── WeatherScreen.js          # Climate dashboard & disease risk radar
-│   │   ├── YieldInputScreen.js       # Plantation parameters form
-│   │   ├── YieldResultScreen.js      # Graphical harvest prediction gauge
-│   │   ├── ChatAssistantScreen.js    # Multimodal text & voice AI agronomist
-│   │   ├── TipsScreen.js             # Weather-driven seasonal farming advice
+│   │   ├── HistoryScreen.js          # Timeline of past disease scans with filters
+│   │   ├── WeatherScreen.js          # Climate dashboard & disease risk radar (Koleroga, Bud Rot)
+│   │   ├── YieldInputScreen.js       # Multi-factor plantation parameters form
+│   │   ├── YieldResultScreen.js      # Graphical harvest prediction gauge & agronomic tips
+│   │   ├── ChatAssistantScreen.js    # Multimodal text & voice AI agronomist with photo attachment
+│   │   ├── TipsScreen.js             # Weather-driven seasonal farming advice catalog
 │   │   ├── TipDetailScreen.js        # Detailed agricultural article reader
-│   │   ├── ProfileScreen.js          # Farm acreage, avatar, & account control
-│   │   └── LanguageScreen.js         # 6-dialect switcher
+│   │   ├── MyFarmsScreen.js          # Multi-farm parcel management, acreages & irrigation
+│   │   ├── ProfileScreen.js          # Farm acreage, avatar, & account stats
+│   │   ├── EditProfileScreen.js      # Update farmer name, bio, phone, region & photo
+│   │   ├── SettingsScreen.js         # Theme toggle, notification prefs, security & deactivation
+│   │   ├── LanguageScreen.js         # 6-dialect switcher with live preview
+│   │   ├── HelpCenterScreen.js       # Searchable FAQ & one-touch helpline dialer
+│   │   ├── PrivacyPolicyScreen.js    # Data protection, privacy policy & terms
+│   │   └── ErrorScreen.js            # Graceful network / runtime error fallback
 │   ├── services/              # External Integrations & APIs
 │   │   ├── api.js             # Axios client with interceptors & auto-switch
-│   │   └── authService.js     # Auth, tokens, profile, & OTP endpoints
+│   │   ├── authService.js     # Auth, tokens, profile, & OTP endpoints
+│   │   └── syncService.js     # Offline queuing & network reconnection sync
 │   └── utils/                 # Utilities, validators, & formatters
 ```
 

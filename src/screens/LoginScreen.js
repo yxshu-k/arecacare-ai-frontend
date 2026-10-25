@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, Alert, Keyboard } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Platform, KeyboardAvoidingView, Alert, Keyboard, Image } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Screen from '../components/Screen';
 import AppText from '../components/AppText';
@@ -73,7 +73,11 @@ export default function LoginScreen({ navigation }) {
                 >
                     <View style={styles.header}>
                         <View style={styles.iconBackground}>
-                            <MaterialCommunityIcons name="leaf" size={48} color={colors.primary} />
+                            <Image
+                                source={require('../../assets/icon.png')}
+                                style={styles.logoImage}
+                                resizeMode="contain"
+                            />
                         </View>
                         <AppText variant="heading1" style={{ color: colors.text }}>{t('welcome_back_title')}</AppText>
                         <AppText variant="bodyMedium" color="textMedium" style={styles.subtitle}>
@@ -145,17 +149,24 @@ const getStyles = (colors, isDarkMode) => StyleSheet.create({
     scroll: { flexGrow: 1, justifyContent: 'center', paddingVertical: 20 },
     header: { alignItems: 'center', marginBottom: 32 },
     iconBackground: {
+        width: 88,
+        height: 88,
         backgroundColor: isDarkMode ? 'rgba(85, 121, 69, 0.2)' : '#E8F0E4',
         borderWidth: 1.5,
         borderColor: isDarkMode ? '#2D3A2B' : '#DCE5D7',
-        padding: 18,
         borderRadius: 24,
+        justifyContent: 'center',
+        alignItems: 'center',
         marginBottom: 16,
         shadowColor: colors.primaryDark || '#1C241B',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: isDarkMode ? 0.3 : 0.08,
-        shadowRadius: 6,
-        elevation: 2,
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: isDarkMode ? 0.35 : 0.08,
+        shadowRadius: 8,
+        elevation: 3,
+    },
+    logoImage: {
+        width: 66,
+        height: 66,
     },
     subtitle: { marginTop: 8, textAlign: 'center', color: colors.textMedium },
     form: { marginBottom: 20 },
