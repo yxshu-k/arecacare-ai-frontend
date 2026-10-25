@@ -20,12 +20,6 @@ import {
 } from '../utils/audioService';
 import VoiceConversationModal from '../components/VoiceConversationModal';
 
-let Audio = null;
-try {
-    Audio = require('expo-av').Audio;
-} catch (e) {
-    // legacy fallback if available
-}
 
 const { width, height } = Dimensions.get('window');
 

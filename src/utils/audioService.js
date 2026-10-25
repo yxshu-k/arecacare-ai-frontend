@@ -1,7 +1,6 @@
 /**
- * Universal Audio Service for ArecaCare AI
- * Supports modern Expo SDK 52+ / 57 via `expo-audio` (native in Expo Go)
- * with graceful fallback to `expo-av` for custom binary builds.
+ * Modern Audio Service for ArecaCare AI
+ * Uses modern Expo SDK 58 `expo-audio`.
  */
 
 let ExpoAudioModule = null;
@@ -14,15 +13,8 @@ try {
     // expo-audio not available
 }
 
-let LegacyAudio = null;
-try {
-    LegacyAudio = require('expo-av').Audio;
-} catch (e) {
-    // expo-av not available
-}
-
 export const isAudioHardwareAvailable = () => {
-    return !!(ExpoAudioModule?.AudioRecorder || LegacyAudio?.Recording);
+    return !!ExpoAudioModule?.AudioRecorder;
 };
 
 export const requestMicrophonePermission = async () => {
@@ -30,15 +22,10 @@ export const requestMicrophonePermission = async () => {
         const res = await ExpoAudioModule.requestRecordingPermissionsAsync();
         return res.granted;
     }
-    if (LegacyAudio?.requestPermissionsAsync) {
-        const res = await LegacyAudio.requestPermissionsAsync();
-        return res.status === 'granted';
-    }
     return false;
 };
 
 export const createAudioRecorder = async () => {
-    // Try modern expo-audio first (Expo Go compatible)
     if (ExpoAudioModule?.AudioRecorder) {
         try {
             await ExpoAudioModule.setAudioModeAsync({
@@ -58,33 +45,11 @@ export const createAudioRecorder = async () => {
                 }
             };
         } catch (err) {
-            console.warn('[AudioService] expo-audio start error, trying legacy fallback:', err);
-        }
-    }
-
-    // Try legacy expo-av
-    if (LegacyAudio?.Recording) {
-        try {
-            await LegacyAudio.setAudioModeAsync({
-                allowsRecordingIOS: true,
-                playsInSilentModeIOS: true,
-            });
-            const { recording } = await LegacyAudio.Recording.createAsync(
-                LegacyAudio.RecordingOptionsPresets.HIGH_QUALITY
-            );
-            return {
-                engine: 'expo-av',
-                recorder: recording,
-                stop: async () => {
-                    await recording.stopAndUnloadAsync();
-                    return recording.getURI();
-                }
-            };
-        } catch (err) {
-            console.warn('[AudioService] expo-av start error:', err);
+            console.warn('[AudioService] expo-audio record error:', err);
             throw err;
         }
     }
 
     throw new Error('No compatible native audio recording driver found.');
 };
+
