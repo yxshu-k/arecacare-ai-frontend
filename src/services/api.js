@@ -2,10 +2,8 @@ import axios from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
-// Dynamically resolve API URL:
-// - Physical Mobile: Routes to your PC's Wi-Fi LAN IP (e.g., 192.168.x.x)
-// - Android Studio Emulator: Automatically routes through QEMU's dedicated loopback gateway (10.0.2.2)
-const rawApiUrl = process.env.EXPO_PUBLIC_API_URL || 'http://192.168.1.16:8000';
+// Production live backend on Render (fallback if EXPO_PUBLIC_API_URL not injected)
+const rawApiUrl = process.env.EXPO_PUBLIC_API_URL || 'https://arecacare-ai.onrender.com';
 
 const getInitialBaseUrl = () => {
     let url = rawApiUrl.replace(/\/+$/, '');
@@ -27,7 +25,7 @@ const api = axios.create({
     headers: {
         'Content-Type': 'application/json',
     },
-    timeout: 20000,
+    timeout: 60000, // 60s timeout accommodates Render free-tier initial spin-up
 });
 
 // --- REQUEST INTERCEPTOR ---

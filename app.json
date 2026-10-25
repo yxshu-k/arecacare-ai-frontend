@@ -7,28 +7,13 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
     "ios": {
-      "supportsTablet": true,
-      "splash": {
-        "image": "./assets/icon.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff"
-      }
+      "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/android-icon-foreground.png"
-      },
-      "splash": {
-        "image": "./assets/icon.png",
-        "resizeMode": "contain",
-        "backgroundColor": "#ffffff"
       },
       "package": "com.yakshitha.arecacareaifrontend",
       "softwareKeyboardLayoutMode": "resize",
@@ -43,7 +28,9 @@
       "expo-secure-store",
       "expo-web-browser",
       "expo-status-bar",
-      "expo-audio"
+      "expo-audio",
+      "expo-font",
+      "expo-asset"
     ],
     "extra": {
       "eas": {

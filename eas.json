@@ -14,12 +14,18 @@
             "distribution": "internal",
             "android": {
                 "buildType": "apk"
+            },
+            "env": {
+                "EXPO_PUBLIC_API_URL": "https://arecacare-ai.onrender.com"
             }
         },
         "production": {
             "distribution": "internal",
             "android": {
                 "buildType": "apk"
+            },
+            "env": {
+                "EXPO_PUBLIC_API_URL": "https://arecacare-ai.onrender.com"
             }
         }
     }
