@@ -37,7 +37,13 @@
       "expo-font",
       "expo-asset",
       "expo-camera",
-      "expo-location"
+      "expo-location",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#ffffff"
+        }
+      ]
     ],
     "extra": {
       "eas": {
